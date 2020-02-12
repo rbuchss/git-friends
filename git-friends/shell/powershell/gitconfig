@@ -1,2 +1,4 @@
+[core]
+  symlinks = true
 [init]
   templatedir = ~/.git-friends/shell/powershell/template
