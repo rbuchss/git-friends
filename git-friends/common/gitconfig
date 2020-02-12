@@ -1,0 +1,12 @@
+[core]
+  excludesfile = ~/.gitignore
+[push]
+  default = tracking # limit no arg push behavior to just the current branch
+[hub]
+  host = github.com
+[include]
+  path = ~/.git-friends/common/aliases/base.config
+  path = ~/.git-friends/common/aliases/hooks.config
+  path = ~/.git-friends/common/styles.config
+  path = ~/.gitconfig.shell # loads shell specific configs
+  path = ~/.gitconfig.local # loads local specific configs
