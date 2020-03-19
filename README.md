@@ -10,7 +10,7 @@ homesick link git-friends
 
 ## Windows install
 ```powershell
-git -c core.symlinks=true clone git@github.com:rbuchss/git-friends.git ~/.homesick/repos/
-cd ~/.homesick/repos
-./bootstrap/homewick.ps1
+# uses posh-homesick module
+homesick clone git@github.com:rbuchss/git-friends.git
+homesick link git-friends
 ```
