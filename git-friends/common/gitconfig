@@ -10,3 +10,8 @@
   path = ~/.git-friends/common/styles.config
   path = ~/.gitconfig.shell # loads shell specific configs
   path = ~/.gitconfig.local # loads local specific configs
+[filter "lfs"]
+  clean = git-lfs clean -- %f
+  smudge = git-lfs smudge -- %f
+  process = git-lfs filter-process
+  required = true
