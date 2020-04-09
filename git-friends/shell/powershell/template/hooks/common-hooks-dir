@@ -1,0 +1,5 @@
+#!/bin/bash
+
+shell_template_dir=$(git config init.templatedir)
+common_hooks_dir=$(readlink -f "${shell_template_dir/#\~/$HOME}/../../../common/template/hooks")
+echo "$common_hooks_dir"
