@@ -6,18 +6,6 @@
 ## list all local branches, sorted by last commit, formatted real purdy
 ##
 
-# Windows needs more basic format (#8, git-for-windows/git#865)
-case $(uname -s) in
-  CYGWIN*|MINGW*|MSYS*)
-    branch='%(refname:short)'
-    spacer=' '
-    ;;
-  *)
-    branch='%(color:yellow)%(refname:short)%(color:reset)'
-    spacer='%(color:black) %(color:reset)'
-    ;;
-esac
-
 COUNT=0
 while getopts "n:" opt; do
   case ${opt} in
@@ -32,6 +20,9 @@ while getopts "n:" opt; do
   esac
 done
 shift $((OPTIND-1))
+
+branch='%(color:yellow)%(refname:short)%(color:reset)'
+spacer='%(color:black) %(color:reset)'
 
 format="\
 %(HEAD) \
