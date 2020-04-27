@@ -1,19 +1,29 @@
 #!/bin/bash
-source $HOME/.bash_func
+# shellcheck source=/dev/null
+source "${HOME}/.git-friends/src/url.sh"
+source "${HOME}/.git-friends/src/utility.sh"
+
 exec < /dev/tty
 
-read -p "${RED}Enter upstream user or organization name: ${RESET}" upstream_user
-if [ -n "$upstream_user" ]; then
-  origin_url=`git config --get remote.origin.url`
-  protocol=`git_url_parse $origin_url 1`
-  base_url=`git_url_parse $origin_url 2`
-  base_separator=`git_url_parse $origin_url 3`
-  user=`git_url_parse $origin_url 4`
-  repo=`git_url_parse $origin_url 5`
+upstream_user="$1"
+
+if [[ -z "${upstream_user}" ]]; then
+  read -r -p 'Enter upstream user or organization name: ' upstream_user
+fi
+
+if [[ -n "${upstream_user}" ]]; then
+  origin_url="$(git config --get remote.origin.url)"
+  protocol="$(git::url::parse "${origin_url}" 1)"
+  base_url="$(git::url::parse "${origin_url}" 2)"
+  base_separator="$(git::url::parse "${origin_url}" 3)"
+  # user="$(git::url::parse "${origin_url}" 4)"
+  repo="$(git::url::parse "${origin_url}" 5)"
   upstream_url="${protocol}${base_url}${base_separator}${upstream_user}/${repo}"
-  if ask "add upstream? $upstream_url"; then
-    git remote add upstream $upstream_url
+
+  if git::utility::ask "add upstream? ${upstream_url}"; then
+    git remote add upstream "${upstream_url}"
   fi
 else
-  echo "${RED}ERROR: no upstream name provided; so no upstream added${RESET}"
+  >&2 echo "ERROR: no upstream name provided; so no upstream added"
+  exit 1
 fi
