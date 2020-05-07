@@ -31,6 +31,12 @@ PS_SCRIPT_ANALYZER_GIT_INCLUDE := $(addsuffix ',$(addprefix ':,$(PS_SCRIPT_ANALY
 .PHONY: guards
 guards: guards-bash guards-posh
 
+.PHONY: test
+test: test-bash test-posh
+
+.PHONY: lint
+lint: lint-bash lint-posh
+
 .PHONY: guards-bash
 guards-bash: test-bash lint-bash
 
