@@ -1,23 +1,7 @@
 #!/bin/bash
 # shellcheck source=/dev/null
-source "${HOME}/.git-friends/src/url.sh"
-source "${HOME}/.git-friends/src/utility.sh"
+source "${HOME}/.git-friends/src/hooks/add_upstream.sh"
 
 exec < /dev/tty
 
-upstream_user="$1"
-
-if [[ -z "${upstream_user}" ]]; then
-  read -r -p 'Enter upstream user or organization name: ' upstream_user
-fi
-
-if [[ -z "${upstream_user}" ]]; then
-  >&2 echo 'ERROR: no upstream name provided; so no upstream added'
-  exit 1
-fi
-
-if origin_url="$(git config --get remote.origin.url)" \
-  && upstream_url="$(git::url::change_user "${origin_url}" "${upstream_user}")" \
-  && git::utility::ask "add upstream? ${upstream_url}"; then
-    git remote add upstream "${upstream_url}"
-fi
+git::hooks::add_upstream "$@"
