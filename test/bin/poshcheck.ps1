@@ -98,3 +98,5 @@ $reportMessage = `
   $color['Off']
 
 Write-Output $reportMessage
+
+exit $report['Violations'] -eq 0 ? 0 : 1

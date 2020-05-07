@@ -1,14 +1,25 @@
 #!/usr/bin/env pwsh
 
+$ESC = [char]0x1B
+
+$color = @{
+  Error = "$ESC[0;91m";
+  Warning = "$ESC[0;93m";
+  Information = "$ESC[0;92m";
+  Violation = "$ESC[0;31m";
+  Off = "$ESC[0m"
+}
+
 function Test-FileContainsBOM {
   [CmdletBinding()]
+  [OutputType([bool])]
   param (
     [Parameter()]
     [string]
     $Path
   )
 
-  $fullPath = (Get-Item $Path)
+  $fullPath = (Get-Item -Force $Path)
   $contents = new-object byte[] 3
   $stream = [System.IO.File]::OpenRead($fullPath.FullName)
   $stream.Read($contents, 0, 3) | Out-Null
@@ -17,6 +28,7 @@ function Test-FileContainsBOM {
 }
 
 function Test-StagedFilesContainBOM {
+  # TODO have param/lookup for this?
   $extensions = @(
     '*.cs', '*.csx', '*.vb', '*.vbx',
     '*.sln',
@@ -33,7 +45,8 @@ function Test-StagedFilesContainBOM {
   )
 
   $extensionsRegex = "^($($extensions -join '|' -replace '\.', '\.' -replace '\*', '.*'))$"
-  $stagedFiles = @(git diff --cached --name-only --diff-filter=ACM | Get-Item)
+  # TODO use git filtering here?
+  $stagedFiles = @(git diff --cached --name-only --diff-filter=ACM | Get-Item -Force)
   $files = $stagedFiles.Where( { $_.Name -match $extensionsRegex }) | `
     Select-Object -ExpandProperty FullName | `
     Resolve-Path -Relative
@@ -55,21 +68,41 @@ function Test-StagedFilesContainBOM {
 
 # Check for byte-order marker
 function Test-CommitHasNoBOM {
-  $testName = "Has No BOM "
+  $testName = 'Has No BOM'
   $outputWidth = 80 - $testName.Length
-
-  Write-Host $testName -NoNewline
 
   $response = (Test-StagedFilesContainBOM)
 
-  if ($response.status -eq 0) {
-    Write-Host " Passed".PadLeft($outputWidth, '.') -ForegroundColor Green
-  } else {
-    Write-Host " Failed".PadLeft($outputWidth, '.') -ForegroundColor Red
-  }
+  $result = '{0} {1}{2}{3}' -f `
+    $testName,
+    ($response.status -eq 0 ? $color['Information'] : $color['Error']),
+    ($response.status -eq 0 ? ' Passed' : ' Failed').PadLeft($outputWidth, '.'),
+    $color['Off']
 
-  foreach ($file in $response.files) {
-    Write-Host "file '$file' starts with a Unicode BOM. Please remove the BOM and re-add the file for commit"
+  Write-Output $result
+
+  if ($response.status -ne 0 ) {
+    $header = '{0}{1} {2} found:{3}' -f `
+      $color['Error'],
+      $response.files.Count,
+      ($response.files.Count -gt 1 ? 'violations' : 'violation'),
+      $color['Off']
+
+    Write-Output $header
+    Write-Output $color['Violation']
+
+    foreach ($file in $response.files) {
+      Write-Output $file
+    }
+
+    $footer = '{0}{1}Please remove the {2} and re-add the {3} for commit:{4}' -f `
+      "`n",
+      $color['Error'],
+      ($response.files.Count -gt 1 ? 'BOMs' : 'BOM'),
+      ($response.files.Count -gt 1 ? 'files' : 'file'),
+      $color['Off']
+
+    Write-Output $footer
   }
 
   exit $response.status
