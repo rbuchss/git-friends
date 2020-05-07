@@ -11,19 +11,13 @@ if [[ -z "${upstream_user}" ]]; then
   read -r -p 'Enter upstream user or organization name: ' upstream_user
 fi
 
-if [[ -n "${upstream_user}" ]]; then
-  origin_url="$(git config --get remote.origin.url)"
-  protocol="$(git::url::parse "${origin_url}" 1)"
-  base_url="$(git::url::parse "${origin_url}" 2)"
-  base_separator="$(git::url::parse "${origin_url}" 3)"
-  # user="$(git::url::parse "${origin_url}" 4)"
-  repo="$(git::url::parse "${origin_url}" 5)"
-  upstream_url="${protocol}${base_url}${base_separator}${upstream_user}/${repo}"
-
-  if git::utility::ask "add upstream? ${upstream_url}"; then
-    git remote add upstream "${upstream_url}"
-  fi
-else
-  >&2 echo "ERROR: no upstream name provided; so no upstream added"
+if [[ -z "${upstream_user}" ]]; then
+  >&2 echo 'ERROR: no upstream name provided; so no upstream added'
   exit 1
+fi
+
+if origin_url="$(git config --get remote.origin.url)" \
+  && upstream_url="$(git::url::change_user "${origin_url}" "${upstream_user}")" \
+  && git::utility::ask "add upstream? ${upstream_url}"; then
+    git remote add upstream "${upstream_url}"
 fi
