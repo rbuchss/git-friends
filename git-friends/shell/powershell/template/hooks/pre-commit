@@ -1,9 +1,5 @@
 #!/bin/bash
+# shellcheck source=/dev/null
+source "${HOME}/.git-friends/src/hooks/pre_commit.sh"
 
-if git diff --cached --quiet --exit-code; then
-  # Nothing to commit so exit
-  exit 0
-fi
-
-echo "Running pre-commit tests:"
-.git/hooks/pre-commit-test-no-bom.ps1
+git::hooks::pre_commit "$@"
