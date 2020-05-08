@@ -1,0 +1,1 @@
+../git-friends/config/os/linux/gitconfig

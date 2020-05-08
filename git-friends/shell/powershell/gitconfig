@@ -1,5 +1,0 @@
-[core]
-  symlinks = true
-  safecrlf = false
-[init]
-  templatedir = ~/.git-friends/shell/powershell/template

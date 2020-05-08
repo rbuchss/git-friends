@@ -5,10 +5,10 @@
 [hub]
   host = github.com
 [include]
-  path = ~/.git-friends/common/aliases/base.config
-  path = ~/.git-friends/common/aliases/hooks.config
-  path = ~/.git-friends/common/styles.config
-  path = ~/.gitconfig.shell # loads shell specific configs
+  path = ~/.git-friends/config/aliases/base.config
+  path = ~/.git-friends/config/aliases/hooks.config
+  path = ~/.git-friends/config/styles.config
+  path = ~/.gitconfig.os # loads os specific configs
   path = ~/.gitconfig.local # loads local specific configs
 [filter "lfs"]
   clean = git-lfs clean -- %f
