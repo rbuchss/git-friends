@@ -1,7 +1,0 @@
-#!/bin/bash
-# shellcheck source=/dev/null
-source "${HOME}/.git-friends/src/hooks/change_protocol.sh"
-
-exec < /dev/tty
-
-git::hooks::change_protocol::to_https "$@"

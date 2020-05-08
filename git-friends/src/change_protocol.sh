@@ -1,9 +1,9 @@
 #!/bin/bash
 # shellcheck source=/dev/null
-source "${BASH_SOURCE[0]%/*/*}/url.sh"
-source "${BASH_SOURCE[0]%/*/*}/utility.sh"
+source "${BASH_SOURCE[0]%/*}/url.sh"
+source "${BASH_SOURCE[0]%/*}/utility.sh"
 
-function git::hooks::change_protocol() {
+function git::change_protocol() {
   local protocol="$1" \
     remote="${2:-origin}" \
     url \
@@ -20,10 +20,10 @@ function git::hooks::change_protocol() {
   fi
 }
 
-function git::hooks::change_protocol::to_https() {
-  git::hooks::change_protocol 'https' "$@"
+function git::change_protocol::to_https() {
+  git::change_protocol 'https' "$@"
 }
 
-function git::hooks::change_protocol::to_ssh() {
-  git::hooks::change_protocol 'ssh' "$@"
+function git::change_protocol::to_ssh() {
+  git::change_protocol 'ssh' "$@"
 }

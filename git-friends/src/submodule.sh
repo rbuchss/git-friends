@@ -1,8 +1,8 @@
 #!/bin/bash
 # shellcheck source=/dev/null
-source "${BASH_SOURCE[0]%/*/*}/utility.sh"
+source "${BASH_SOURCE[0]%/*}/utility.sh"
 
-function git::hooks::submodule::remove() {
+function git::submodule::remove() {
   local submodule_path
 
   for submodule_path in "$@"; do
@@ -22,7 +22,7 @@ function git::hooks::submodule::remove() {
   done
 }
 
-function git::hooks::submodule::upgrade() {
+function git::submodule::upgrade() {
   # NOTE: old way: git submodule foreach git pull origin master
   if (( $# > 0 )); then
     git submodule update --recursive --remote -- "$@"

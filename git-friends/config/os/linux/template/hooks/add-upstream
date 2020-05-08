@@ -1,7 +1,0 @@
-#!/bin/bash
-# shellcheck source=/dev/null
-source "${HOME}/.git-friends/src/hooks/add_upstream.sh"
-
-exec < /dev/tty
-
-git::hooks::add_upstream "$@"

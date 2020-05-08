@@ -1,6 +1,6 @@
 #!/bin/bash
 
-function git::hooks::history::recent() {
+function git::history::recent() {
   # show local branches
   # (change to "ref/heads"
   # to include both local + remote branches)

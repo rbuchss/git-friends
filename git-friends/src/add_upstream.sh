@@ -1,9 +1,9 @@
 #!/bin/bash
 # shellcheck source=/dev/null
-source "${BASH_SOURCE[0]%/*/*}/url.sh"
-source "${BASH_SOURCE[0]%/*/*}/utility.sh"
+source "${BASH_SOURCE[0]%/*}/url.sh"
+source "${BASH_SOURCE[0]%/*}/utility.sh"
 
-function git::hooks::add_upstream() {
+function git::add_upstream() {
   local upstream_user="$1" \
     origin_url \
     upstream_url
