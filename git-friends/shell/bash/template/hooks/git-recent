@@ -1,3 +1,3 @@
 #!/bin/sh
 
-"$(.git/hooks/common-hooks-dir)"/git-recent
+"$(.git/hooks/common-hooks-dir)"/git-recent "$@"
