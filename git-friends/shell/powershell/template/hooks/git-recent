@@ -1,3 +1,5 @@
-#!/bin/sh
+#!/bin/bash
+# shellcheck source=/dev/null
+source "${HOME}/.git-friends/src/hooks/history.sh"
 
-"$(.git/hooks/common-hooks-dir)"/git-recent
+git::hooks::history::recent "$@"
