@@ -40,3 +40,12 @@ function git::history::recent() {
     | column -ts '|' \
     | less "${lessopts[@]}"
 }
+
+function git::history::churn() {
+  git log --all -M -C --name-only --format='format:' "$@" \
+    | sort \
+    | grep -v '^$' \
+    | uniq -c \
+    | sort \
+    | awk 'BEGIN { print "count file" } { print $1 " " $2 }'
+}
