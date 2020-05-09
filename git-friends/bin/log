@@ -1,0 +1,5 @@
+#!/bin/bash
+# shellcheck source=/dev/null
+source "${HOME}/.git-friends/src/log.sh"
+
+git::log::pretty "$@"
