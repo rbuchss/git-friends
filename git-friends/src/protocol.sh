@@ -3,7 +3,7 @@
 source "${BASH_SOURCE[0]%/*}/url.sh"
 source "${BASH_SOURCE[0]%/*}/utility.sh"
 
-function git::change_protocol() {
+function git::protocol::set() {
   local protocol="$1" \
     remote="${2:-origin}" \
     url \
@@ -18,12 +18,4 @@ function git::change_protocol() {
     && git::utility::ask "convert remote ${remote}: ${url} to ~~~> ${new_url}"; then
       git remote set-url "${remote}" "${new_url}"
   fi
-}
-
-function git::change_protocol::to_https() {
-  git::change_protocol 'https' "$@"
-}
-
-function git::change_protocol::to_ssh() {
-  git::change_protocol 'ssh' "$@"
 }

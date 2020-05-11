@@ -1,7 +1,0 @@
-#!/bin/bash
-# shellcheck source=/dev/null
-source "${HOME}/.git-friends/src/change_protocol.sh"
-
-exec < /dev/tty
-
-git::change_protocol::to_ssh "$@"
