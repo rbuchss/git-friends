@@ -2,6 +2,4 @@
 # shellcheck source=/dev/null
 source "${HOME}/.git-friends/src/hooks/refresh.sh"
 
-exec < /dev/tty
-
 git::hooks::refresh "$@"

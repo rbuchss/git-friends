@@ -3,20 +3,19 @@
 function git::hooks::refresh() {
   local hooks=(.git/hooks/*)
 
-  # No hooks exist so exit
-  (( "${#hooks[@]}" == 0 )) && return
+  if (( "${#hooks[@]}" != 0 )); then
+    echo 'Clearing out old hooks:'
 
-  echo 'Clearing out old hooks:'
+    for hook in "${hooks[@]}"; do
+      echo " - remove: ${hook}"
+      rm -r "${hook}" || {
+        >&2 echo "ERROR: ${FUNCNAME[0]} failed: cannot remove '${hook}'"
+        return 1
+      }
+    done
+  fi
 
-  for hook in "${hooks[@]}"; do
-    echo " - remove: ${hook}"
-    rm -r "${hook}" || {
-      >&2 echo "ERROR: ${FUNCNAME[0]} failed: cannot remove '${hook}'"
-      return 1
-    }
-  done
-
-  echo 'Reloading current hooks:'
+  echo 'Loading current hooks:'
 
   git init
 

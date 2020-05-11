@@ -34,8 +34,7 @@ function git::utility::ask() {
     esac
   fi
 
-  echo -n "${question} [yes/no (y/n)] ? "
-  read -r response
+  read -r -p "${question} [yes/no (y/n)] ? " response
 
   case "${response}" in
     [yY]|[yY][eE][sS]) return 0 ;;
