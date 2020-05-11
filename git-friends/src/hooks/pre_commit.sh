@@ -15,6 +15,7 @@ function git::hooks::pre_commit() {
 
   echo 'Running pre-commit tests:'
 
+  # TODO enable config to disable rules/set props like project type, etc
   for rule in "${rules[@]}"; do
     "${rule}" || exit_status=$?
   done

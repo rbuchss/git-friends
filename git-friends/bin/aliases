@@ -1,0 +1,5 @@
+#!/bin/bash
+# shellcheck source=/dev/null
+source "${HOME}/.git-friends/src/config.sh"
+
+git::config::aliases "$@"

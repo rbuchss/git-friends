@@ -73,7 +73,7 @@ function git::prune::branches::local() {
 
   for branch in "${merged_branches[@]}"; do
     if (( force == 1 )) \
-      || git::utility::ask "remove: '${branch}' ?" all_response; then
+      || git::utility::ask "remove: '${branch}'" all_response; then
         git branch -d "${branch}"
     fi
   done
@@ -98,7 +98,7 @@ function git::prune::branches::remote() {
     "${dry_run_response}"
 
   if (( force == 1 )) \
-    || git::utility::ask "confirm prune remote: '${remote}' ?"; then
+    || git::utility::ask "confirm prune remote: '${remote}'"; then
       git remote prune "${remote}"
   fi
 }
