@@ -1,0 +1,7 @@
+#!/bin/bash
+# shellcheck source=/dev/null
+source "${HOME}/.git-friends/src/prune.sh"
+
+exec < /dev/tty
+
+git::prune::branches "$@"
