@@ -2,7 +2,6 @@
 # shellcheck source=/dev/null
 source "${BASH_SOURCE[0]%/*}/utility.sh"
 
-# TODO add completion?
 function git::prune::branches() {
   local OPTIND \
     flag \
