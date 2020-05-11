@@ -89,6 +89,14 @@ assert_regexp() {
   fi
 }
 
+assert_null_or_empty() {
+  if [[ -n "$1" ]]; then
+    { echo "expected null or empty:"
+      echo "actual:   $1"
+    } | flunk
+  fi
+}
+
 # ShellCheck doesn't know about $output from Bats
 # shellcheck disable=SC2154
 assert_output() {

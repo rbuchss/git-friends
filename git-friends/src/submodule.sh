@@ -4,6 +4,8 @@ source "${BASH_SOURCE[0]%/*}/utility.sh"
 
 function git::submodule::remove() {
   local submodule_path
+  # shellcheck disable=SC2034
+  local all_response
 
   for submodule_path in "$@"; do
     if [[ ! -d "${submodule_path}" ]]; then
@@ -11,7 +13,7 @@ function git::submodule::remove() {
       return 1
     fi
 
-    if git::utility::ask "remove submodule? ${submodule_path}"; then
+    if git::utility::ask "remove submodule? ${submodule_path}" all_response; then
       # 1: Remove the submodule entry from .git/config
       # 2: Remove the submodule directory from the superproject's .git/modules directory
       # 3: Remove the entry in .gitmodules and remove the submodule directory located at ${submodule_path}
