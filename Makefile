@@ -53,7 +53,7 @@ guards-posh: test-posh lint-posh
 
 .PHONY: test-posh
 test-posh:
-	@#pwsh -Command 'Invoke-Pester'
+	pwsh -Command 'Invoke-Pester test/ -EnableExit'
 
 .PHONY: lint-posh
 lint-posh:

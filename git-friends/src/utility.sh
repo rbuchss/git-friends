@@ -41,3 +41,16 @@ function git::utility::ask() {
     *) return 1 ;;
   esac
 }
+
+function git::utility::array_contains() {
+  local match="$1" \
+    element
+  shift
+
+  for element; do
+    [[ "${element}" == "${match}" ]] \
+      && return 0
+  done
+
+  return 1
+}
