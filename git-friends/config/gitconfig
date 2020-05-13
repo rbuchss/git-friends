@@ -7,7 +7,6 @@
 [include]
   path = ~/.git-friends/config/aliases/base.config
   path = ~/.git-friends/config/aliases/executables.config
-  path = ~/.git-friends/config/aliases/hooks.config
   path = ~/.git-friends/config/styles.config
   path = ~/.gitconfig.os # loads os specific configs
   path = ~/.gitconfig.local # loads local specific configs
