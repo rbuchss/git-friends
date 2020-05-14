@@ -1,5 +1,12 @@
 SHELL := /bin/bash
-PATH := $(PATH):$(PWD)/test/bin
+THIS_DIR := $(patsubst %/,%,$(dir $(realpath $(firstword $(MAKEFILE_LIST)))))
+
+ifeq ($(OS),Windows_NT)
+  THIS_DIR := $(subst /,\,$(THIS_DIR))
+  PATH := $(PATH);$(THIS_DIR)\test\bin
+else
+  PATH := $(PATH):$(THIS_DIR)/test/bin
+endif
 
 SHELLCHECK_IGNORE := \
   *.bats \
@@ -46,7 +53,7 @@ test-bash:
 
 .PHONY: lint-bash
 lint-bash:
-	shellcheck $$(git ls-files -- . $(SHELLCHECK_GIT_IGNORE))
+	shellcheck $(shell git ls-files -- . $(SHELLCHECK_GIT_IGNORE))
 
 .PHONY: guards-posh
 guards-posh: test-posh lint-posh
@@ -57,4 +64,4 @@ test-posh:
 
 .PHONY: lint-posh
 lint-posh:
-	poshcheck.ps1 $$(git ls-files -- $(PS_SCRIPT_ANALYZER_GIT_INCLUDE))
+	pwsh -Command 'poshcheck.ps1 $(shell git ls-files -- $(PS_SCRIPT_ANALYZER_GIT_INCLUDE))'
