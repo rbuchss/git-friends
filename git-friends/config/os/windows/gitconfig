@@ -1,5 +1,6 @@
 [core]
   symlinks = true
-  safecrlf = false
+  safecrlf = warn
+  autocrlf = input
 [init]
   templatedir = ~/.git-friends/config/os/windows/template
