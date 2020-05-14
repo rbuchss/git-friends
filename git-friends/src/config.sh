@@ -25,3 +25,51 @@ function git::config::aliases() {
     }' \
     | column -t -s '#'
 }
+
+function git::config::exists() {
+  local value key="$1"
+
+  value="$(git config --get "${key}")" \
+    && [[ -n "${value}" ]] \
+    && return 0
+
+  return 1
+}
+
+function git::config::is_null() {
+  git::config::exists "$@" \
+    && return 1
+
+  return 0
+}
+
+function git::config::is_true() {
+  local value key="$1"
+
+  value="$(git config --get "${key}")" \
+    && [[ "${value}" == 'true' ]] \
+    && return 0
+
+  return 1
+}
+
+function git::config::is_false() {
+  git::config::is_true "$@" \
+    && return 1
+
+  return 0
+}
+
+function git::config::get_array() {
+  local value key="$1"
+
+  if ! value="$(git config --get "${key}")"; then
+    return 1
+  fi
+
+  tr ',' '\n' <<< "${value}"
+}
+
+function git::dir() {
+  git rev-parse --git-dir
+}

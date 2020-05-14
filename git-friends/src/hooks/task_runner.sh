@@ -1,4 +1,7 @@
 #!/bin/bash
+# shellcheck source=/dev/null
+source "${BASH_SOURCE[0]%/*/*}/config.sh"
+source "${BASH_SOURCE[0]%/*/*}/utility.sh"
 
 function git::hooks::task_runner() {
   if (( $# == 0 )); then
@@ -9,23 +12,26 @@ function git::hooks::task_runner() {
 
   local hook_name="$1" \
     config_section="git-friends.$1" \
-    disabled \
-    log_enabled \
     log_file=/dev/null \
-    git_dir \
+    skip=() \
     tasks=("${@:2}")
 
-  if disabled="$(git config --get "${config_section}.disabled")" \
-    && [[ "${disabled}" == 'true' ]]; then
-      # Disabled so exit
-      return 0
+  git::config::is_true "${config_section}.disabled" \
+    && return 0 # Disabled so exit
+
+  if git::config::exists "${config_section}.tasks"; then
+    tasks=()
+    while IFS= read -r task; do
+      tasks+=("${task//[[:blank:]]/}")
+    done < <(git::config::get_array "${config_section}.tasks")
   fi
 
-  if log_enabled="$(git config --get "${config_section}.log")" \
-    && [[ "${log_enabled}" == 'true' ]] \
-    && git_dir="$(git rev-parse --git-dir)"; then
-      log_file="${git_dir}/git-friends/logs/${hook_name}.log"
+  while IFS= read -r task; do
+    skip+=("${task//[[:blank:]]/}")
+  done < <(git::config::get_array "${config_section}.skip")
 
+  if git::config::is_true "${config_section}.log" \
+    && log_file="$(git::dir)/git-friends/logs/${hook_name}.log"; then
       if [[ ! -d "${log_file%/*}" ]] \
         && ! mkdir -p "${log_file%/*}"; then
           >&2 echo "ERROR: ${FUNCNAME[0]}: cannot make log directory: '${log_file%/*}'"
@@ -33,17 +39,22 @@ function git::hooks::task_runner() {
       fi
   fi
 
-  # TODO add skip and task configs?
-
   if (( "${#tasks[@]}" == 0 )); then
     git::hooks::task_runner::log 'INFO' "no tasks to run\n" >> "${log_file}"
     return
   fi
 
   git::hooks::task_runner::log 'INFO' \
-    "running ${#tasks[@]} tasks: (${tasks[*]})" >> "${log_file}"
+    "queue ${#tasks[@]} tasks:" \
+    "${tasks[@]}" >> "${log_file}"
 
   for task in "${tasks[@]}"; do
+    if git::utility::array_contains "${task}" "${skip[@]}"; then
+      git::hooks::task_runner::log 'WARNING' \
+        "skipped ${task}" >> "${log_file}"
+      continue
+    fi
+
     (
       if ! declare -F "${task}" > /dev/null 2>&1 \
         && ! command -v "${task}" > /dev/null 2>&1; then

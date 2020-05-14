@@ -1,35 +1,29 @@
 #!/bin/bash
 # shellcheck source=/dev/null
+source "${BASH_SOURCE[0]%/*/*}/config.sh"
 source "${BASH_SOURCE[0]%/*/*}/utility.sh"
 
 function git::hooks::pre_commit() {
   local exit_status=0 \
     config_section='git-friends.pre-commit' \
-    disabled \
-    rule_name \
     rule_name_regexp='^.*pre-commit-test-([^\.]+).*$' \
     rule_flags \
     rules_to_skip=()
 
-  if disabled="$(git config --get "${config_section}.disabled")" \
-    && [[ "${disabled}" == 'true' ]]; then
-      # Disabled so exit
+  if git diff --cached --quiet --exit-code \
+    || git::config::is_true "${config_section}.disabled"; then
+      # Nothing to commit or disabled so exit
       return "${exit_status}"
   fi
 
-  if git diff --cached --quiet --exit-code; then
-    # Nothing to commit so exit
-    return "${exit_status}"
-  fi
-
-  local rules=(.git/hooks/pre-commit-test-*)
+  local rules=("$(git::dir)"/hooks/pre-commit-test-*)
 
   # No rules exist so exit
   (( "${#rules[@]}" == 0 )) && return "${exit_status}"
 
   while IFS= read -r rule; do
     rules_to_skip+=("${rule//[[:blank:]]/}")
-  done < <(git config --get "${config_section}.skip" | tr ',' '\n')
+  done < <(git::config::get_array "${config_section}.skip")
 
   echo 'Running pre-commit tests:'
 
@@ -37,8 +31,7 @@ function git::hooks::pre_commit() {
     rule_flags=()
 
     if [[ "${rule}" =~ $rule_name_regexp ]]; then
-      rule_name="${BASH_REMATCH[1]}"
-      git::utility::array_contains "${rule_name}" "${rules_to_skip[@]}" \
+      git::utility::array_contains "${BASH_REMATCH[1]}" "${rules_to_skip[@]}" \
         && rule_flags+=('-n')
     fi
 
