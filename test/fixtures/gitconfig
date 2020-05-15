@@ -1,0 +1,16 @@
+[git-friends]
+  in-fixture = noop
+  literal-true = true
+  literal-false = false
+  literal-yes = yes
+  literal-no = no
+  literal-on = on
+  literal-off = off
+  num-1 = 1
+  num-0 = 0
+  implicit-true
+  blarg = blarg
+  single-value = yarp
+  multi-value = yarp
+  multi-value = carp
+  multi-value = narp

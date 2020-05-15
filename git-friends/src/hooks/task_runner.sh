@@ -54,8 +54,8 @@ Usage: ${FUNCNAME[1]} [OPTIONS] [<name>] <tasks>
   -n, --name    Name of relevant git config subsection: git-friends.<name>
                 Used to determine:
                   - If all tasks are disabled (key: disabled, value: bool)
-                  - Overrides to the tasks provided in the command arguments (key: tasks, value: array)
-                  - Tasks to skip (key: skip, value: array)
+                  - Additional tasks to run (key: task, value: string, multiple)
+                  - Tasks to skip (key: skip, value: string, multiple)
                   - If logging is enabled (key: log, value: bool)
                     Outputs to <git-dir>/git-friends/logs/<name>.log
 
@@ -86,16 +86,13 @@ function git::hooks::task_runner::body() {
   git::config::is_true "${config_section}.disabled" \
     && return
 
-  if git::config::exists "${config_section}.tasks"; then
-    tasks=()
-    while IFS= read -r task; do
-      tasks+=("${task//[[:blank:]]/}")
-    done < <(git::config::get_array "${config_section}.tasks")
-  fi
+  while IFS= read -r task; do
+    tasks+=("${task}")
+  done < <(git::config::get_all "${config_section}.task")
 
   while IFS= read -r task; do
-    skip+=("${task//[[:blank:]]/}")
-  done < <(git::config::get_array "${config_section}.skip")
+    skip+=("${task}")
+  done < <(git::config::get_all "${config_section}.skip")
 
   if git::config::is_true "${config_section}.log" \
     && logfile="$(git::dir)/git-friends/logs/${hook_name}.log"; then

@@ -27,47 +27,61 @@ function git::config::aliases() {
 }
 
 function git::config::exists() {
-  local value key="$1"
+  local key="$1" \
+    flags=("${@:2}")
 
-  value="$(git config --get "${key}")" \
-    && [[ -n "${value}" ]] \
-    && return 0
-
-  return 1
+  git config "${flags[@]}" --get "${key}" > /dev/null
 }
 
 function git::config::is_null() {
-  git::config::exists "$@" \
-    && return 1
-
-  return 0
+  ! git::config::exists "$@"
 }
 
 function git::config::is_true() {
-  local value key="$1"
+  local value \
+    key="$1" \
+    flags=("${@:2}")
 
-  value="$(git config --get "${key}")" \
-    && [[ "${value}" == 'true' ]] \
-    && return 0
+  git::config::is_null "$@" \
+    && return 2
 
-  return 1
+  value="$(git config "${flags[@]}" --type=bool --get "${key}")" \
+    && [[ "${value}" == 'true' ]]
 }
 
 function git::config::is_false() {
-  git::config::is_true "$@" \
-    && return 1
+  local value \
+    key="$1" \
+    flags=("${@:2}")
 
-  return 0
+  git::config::is_null "$@" \
+    && return 2
+
+  value="$(git config "${flags[@]}" --type=bool --get "${key}")" \
+    && [[ "${value}" == 'false' ]]
 }
 
-function git::config::get_array() {
-  local value key="$1"
+function git::config::is_truthy() {
+  git::config::exists "$@" \
+    && ! git::config::is_false "$@"
+}
 
-  if ! value="$(git config --get "${key}")"; then
-    return 1
-  fi
+function git::config::is_falsey() {
+  ! git::config::is_truthy "$@"
+}
 
-  tr ',' '\n' <<< "${value}"
+function git::config::get() {
+  local key="$1" \
+    flags=("${@:2}")
+
+  git config "${flags[@]}" --get "${key}"
+}
+
+function git::config::get_all() {
+  local key="$1" \
+    flags=("${@:2}")
+
+  git config "${flags[@]}" --get-all "${key}"
 }
 
 function git::dir() {
