@@ -3,46 +3,53 @@
 source "${BASH_SOURCE[0]%/*}/utility.sh"
 
 function git::prune::branches() {
-  local OPTIND \
-    flag \
-    cmd='git::prune::branches::local' \
-    force=0
+  local cmd='git::prune::branches::local' \
+    force=0 \
+    arguments=()
 
-  while getopts 'aflr-:' flag; do
-    case "${flag}" in
-      -)
-        case "${OPTARG}" in
-          all) cmd='git::prune::branches::all' ;;
-          local) cmd='git::prune::branches::local' ;;
-          remote) cmd='git::prune::branches::remote' ;;
-          force) force=1 ;;
-          *)
-            >&2 echo "illegal option --${OPTARG}"
-            git::prune::branches::usage
-            return 1
-            ;;
-        esac
+  while (( $# != 0 )); do
+    case "$1" in
+      -a | --all)
+        cmd='git::prune::branches::all'
         ;;
-      a) cmd='git::prune::branches::all' ;;
-      l) cmd='git::prune::branches::local' ;;
-      r) cmd='git::prune::branches::remote' ;;
-      f) force=1 ;;
-      *)
-        git::prune::branches::usage
+      -f | --force)
+        force=1
+        ;;
+      -l | --local)
+        cmd='git::prune::branches::local'
+        ;;
+      -r | --remote)
+        cmd='git::prune::branches::remote'
+        ;;
+      -*)
+        >&2 echo "ERROR: ${FUNCNAME[0]} invalid option: '$1'"
+        git::prune::branches::usage >&2
         return 1
         ;;
+      *)
+        arguments+=("$1")
+        ;;
     esac
+    shift
   done
-  shift $((OPTIND-1))
 
-  "${cmd}" "${force}" "$@"
+  "${cmd}" "${force}" "${arguments[@]}"
 }
 
 function git::prune::branches::usage() {
-  >&2 echo "Usage: ${FUNCNAME[1]}: [-a|--all] [-r|--remote] [-l|--local]"
-  >&2 echo '    -a|--all: prune local and remote branches'
-  >&2 echo '    -l|--local: prune remote branches'
-  >&2 echo '    -r|--remote: prune local branches (default)'
+  cat <<USAGE_TEXT
+Usage: ${FUNCNAME[1]}: [OPTIONS] <target>
+  -a, --all     Prune local and remote branches
+                <target> = <remote> <branch>
+
+  -f, --force   Do not prompt
+
+  -l, --local   prune local branches (default)
+                <target> = <branch>
+
+  -r, --remote  prune remote branches
+                <target> = <remote>
+USAGE_TEXT
 }
 
 function git::prune::branches::local() {
