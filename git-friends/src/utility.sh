@@ -54,3 +54,16 @@ function git::utility::array_contains() {
 
   return 1
 }
+
+function git::utility::is_executable() {
+  local task="$1"
+
+  if ! declare -F "${task}" > /dev/null 2>&1 \
+    && ! command -v "${task}" > /dev/null 2>&1; then
+      return 1
+  fi
+}
+
+function git::utility::is_not_executable() {
+  ! git::utility::is_executable "$@"
+}
