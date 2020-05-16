@@ -1,8 +1,9 @@
 #!/bin/bash
+# shellcheck source=/dev/null
+source "${BASH_SOURCE[0]%/*}/config.sh"
 
 function git::ctags::generate() {
   local cmd_path \
-    git_dir \
     tmp_file \
     tags_file \
     extra_flags=("$@")
@@ -16,12 +17,11 @@ function git::ctags::generate() {
     extra_flags+=('--exclude=@.ctagsignore')
   fi
 
-  if ! git_dir="$(git rev-parse --git-dir)"; then
+  if ! tmp_file="$(git::dir "git-friends/tags.$$")"; then
     >&2 echo "ERROR: ${FUNCNAME[0]}: git-dir could not be found"
     return 1
   fi
 
-  tmp_file="${git_dir}/git-friends/tags.$$"
   tags_file="${tmp_file%.*}"
 
   if [[ ! -d "${tmp_file%/*}" ]] \

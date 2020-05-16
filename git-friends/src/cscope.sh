@@ -1,8 +1,9 @@
 #!/bin/bash
+# shellcheck source=/dev/null
+source "${BASH_SOURCE[0]%/*}/config.sh"
 
 function git::cscope::generate() {
   local cmd_path \
-    git_dir \
     tmp_file \
     extra_flags=("$@")
 
@@ -11,12 +12,10 @@ function git::cscope::generate() {
     return 1
   fi
 
-  if ! git_dir="$(git rev-parse --git-dir)"; then
+  if ! tmp_file="$(git::dir "git-friends/cscope.out.$$")"; then
     >&2 echo "ERROR: ${FUNCNAME[0]}: git-dir could not be found"
     return 1
   fi
-
-  tmp_file="${git_dir}/git-friends/cscope.out.$$"
 
   if [[ ! -d "${tmp_file%/*}" ]] \
     && ! mkdir -p "${tmp_file%/*}"; then

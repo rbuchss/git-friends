@@ -95,7 +95,7 @@ function git::hooks::task_runner::body() {
   done < <(git::config::get_all "${config_section}.skip")
 
   if git::config::is_true "${config_section}.log" \
-    && logfile="$(git::dir)/git-friends/logs/${hook_name}.log"; then
+    && logfile="$(git::dir "git-friends/logs/${hook_name}.log")"; then
       if [[ ! -d "${logfile%/*}" ]] \
         && ! mkdir -p "${logfile%/*}"; then
           >&2 echo "ERROR: ${FUNCNAME[0]}: cannot make log directory: '${logfile%/*}'"

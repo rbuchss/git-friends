@@ -85,5 +85,10 @@ function git::config::get_all() {
 }
 
 function git::dir() {
-  git rev-parse --git-dir
+  if (( $# == 0 )); then
+    git rev-parse --git-dir
+    return
+  fi
+
+  git rev-parse --git-path "$@"
 }
