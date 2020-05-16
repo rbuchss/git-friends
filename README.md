@@ -4,13 +4,13 @@ Tis my git profile!
 
 ## Linux/MacOS install
 ```bash
-homesick clone git@github.com:rbuchss/git-friends.git
-homesick link git-friends
+homeshick clone git@github.com:rbuchss/git-friends.git
 ```
+uses [homeshick](https://github.com/andsens/homeshick)
 
 ## Windows install
 ```powershell
 # uses posh-homesick module
 homesick clone git@github.com:rbuchss/git-friends.git
-homesick link git-friends
 ```
+uses [posh-homesick](https://github.com/rbuchss/posh-homesick)
