@@ -27,7 +27,7 @@ function Test-CommitHasNoBOM {
     [switch]
     $Skip
   )
-  return [PreCommitTest]::new(
+  [PreCommitTest]::new(
     'Has No BOM',
     'Please remove the BOM(s) and re-add the file(s) for commit',
     $Skip, {

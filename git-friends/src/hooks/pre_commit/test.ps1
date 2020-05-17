@@ -128,6 +128,17 @@ class PreCommitTestReport {
   [int] OutputWidth() {
     return 80 - $this.Name.Length
   }
+
+  [bool] Equals($other) {
+    if ($this.Name -eq $other.Name `
+      -and $this.Result -eq $this.Result `
+      -and $this.Fix -eq $this.Fix `
+      -and $this.Summary -eq $this.Summary `
+      -and $this.Details -eq $this.Details) {
+        return $true
+    }
+    return $false
+  }
 }
 
 class PreCommitTestResult {
