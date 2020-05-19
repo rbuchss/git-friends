@@ -29,7 +29,7 @@ $report = @{
   Information = 0;
 }
 
-forEach ($file in $args) {
+foreach ($file in $args) {
   $failures = Invoke-ScriptAnalyzer -Path $file | Sort-Object Line, Column
 
   if ($failures.Count -eq 0) {

@@ -1,7 +1,7 @@
 using namespace System.Diagnostics.CodeAnalysis
-. $PSScriptRoot/../git-friends/src/hooks/pre_commit/test.ps1
+using module '..\git-friends\src\hooks\pre_commit\Rule.psm1'
 
-Describe 'PreCommitTestReport' {
+Describe 'PreCommitRuleReport' {
   BeforeAll {
     $ESC = [char]0x1B
 
@@ -17,12 +17,13 @@ Describe 'PreCommitTestReport' {
 
   Context 'pre-commit test was skipped' {
     BeforeEach {
-      $result = [PreCommitTestResult]::new({
-        $this.Status = $null
+      $result = [PreCommitRuleResult]::new({
+        param($result)
+        $result.Status = $null
       })
 
       [SuppressMessage('PSReviewUnusedParameter', 'report')]
-      $report = [PreCommitTestReport]::new('name', $result, 'how-to-fix')
+      $report = [PreCommitRuleReport]::new('name', $result, 'how-to-fix')
     }
 
     It '#Name' {
@@ -33,7 +34,7 @@ Describe 'PreCommitTestReport' {
       $report.Result | Should -Be $result
       # NOTE: custom type checking not currently supported:
       #   see: https://github.com/pester/Pester/issues/1315
-      # $report.Result | Should -BeOfType PreCommitTestResult
+      # $report.Result | Should -BeOfType PreCommitRuleResult
     }
 
     It '#Fix' {
@@ -49,22 +50,23 @@ Describe 'PreCommitTestReport' {
     }
 
     It '#Show' {
-      Mock Write-Host { }
+      Mock Write-Host { } -ModuleName Rule
       $report.Show() | Should -Be 0
-      Assert-MockCalled Write-Host -Exactly 1
+      Assert-MockCalled Write-Host -Exactly 1 -ModuleName Rule
     }
   }
 
   Context 'pre-commit test was run' {
     Context 'and failed' {
       BeforeEach {
-        $result = [PreCommitTestResult]::new({
-          $this.Status = 1
-          $this.Violations = @('foo', 'bar', 'qux')
+        $result = [PreCommitRuleResult]::new({
+          param($result)
+          $result.Status = 1
+          $result.Violations = @('foo', 'bar', 'qux')
         })
 
         [SuppressMessage('PSReviewUnusedParameter', 'report')]
-        $report = [PreCommitTestReport]::new('name', $result, 'how-to-fix')
+        $report = [PreCommitRuleReport]::new('name', $result, 'how-to-fix')
       }
 
       It '#Name' {
@@ -94,18 +96,18 @@ Describe 'PreCommitTestReport' {
       }
 
       It '#Show' {
-        Mock Write-Host { }
+        Mock Write-Host { } -ModuleName Rule
         $report.Show() | Should -Be 1
-        Assert-MockCalled Write-Host -Exactly 3
+        Assert-MockCalled Write-Host -Exactly 3 -ModuleName Rule
       }
     }
 
     Context 'and passed' {
       BeforeEach {
-        $result = [PreCommitTestResult]::new({ })
+        $result = [PreCommitRuleResult]::new({ })
 
         [SuppressMessage('PSReviewUnusedParameter', 'report')]
-        $report = [PreCommitTestReport]::new('name', $result, 'how-to-fix')
+        $report = [PreCommitRuleReport]::new('name', $result, 'how-to-fix')
       }
 
       It '#Name' {
@@ -129,9 +131,9 @@ Describe 'PreCommitTestReport' {
       }
 
       It '#Show' {
-        Mock Write-Host { }
+        Mock Write-Host { } -ModuleName Rule
         $report.Show() | Should -Be 0
-        Assert-MockCalled Write-Host -Exactly 1
+        Assert-MockCalled Write-Host -Exactly 1 -ModuleName Rule
       }
     }
   }

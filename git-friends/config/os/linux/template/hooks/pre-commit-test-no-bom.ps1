@@ -1,5 +1,5 @@
 #!/usr/bin/env pwsh
 
-. ~/.git-friends/src/hooks/pre_commit/test/no_bom.ps1
+Import-Module $env:HOME/.git-friends/git-friends.psd1
 
 exit (Test-CommitHasNoBOM @args)

@@ -1,7 +1,7 @@
 #!/usr/bin/env pwsh
 
 using namespace System.Diagnostics.CodeAnalysis
-. ~/.git-friends/src/hooks/pre_commit/test.ps1
+using module '..\Rule.psm1'
 
 function Test-FileContainsBOM {
   [CmdletBinding()]
@@ -27,17 +27,20 @@ function Test-CommitHasNoBOM {
     [switch]
     $Skip
   )
-  [PreCommitTest]::new(
+  [PreCommitRule]::new(
     'Has No BOM',
     'Please remove the BOM(s) and re-add the file(s) for commit',
     $Skip, {
       param([array] $files)
 
-      [PreCommitTestResult]::new({
+      [PreCommitRuleResult]::new({
+        # TODO use delay-bind here?
+        param($result)
+
         foreach ($file in $files) {
           if (Test-FileContainsBOM $file) {
-            $this.Status = 1
-            $this.Violations += $file
+            $result.Status = 1
+            $result.Violations += $file
           }
         }
       })

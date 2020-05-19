@@ -1,24 +1,29 @@
 #!/usr/bin/env pwsh
 
-class PreCommitTest {
+using module '..\..\ProjectTypes.psm1'
+using module '..\..\ProjectType.psm1'
+
+class PreCommitRule {
   [string] $Name
   [string] $Fix
   [bool] $Skip
   [ScriptBlock] $Test
+  [ProjectType] $ProjectType
 
-  PreCommitTest([string] $name, [string] $fix, [bool] $skip, [ScriptBlock] $test) {
+  PreCommitRule([string] $name, [string] $fix, [bool] $skip, [ScriptBlock] $test) {
     $this.Name = $name
     $this.Fix = $fix
     $this.Skip = $skip
     $this.Test = $test
+    $this.ProjectType = [ProjectTypes]::Factory()
   }
 
-  [PreCommitTestReport] Run() {
+  [PreCommitRuleReport] Run() {
     $result = $this.Skip `
-      ? [PreCommitTestResult]::new({ $this.Status = $null }) `
+      ? [PreCommitRuleResult]::new({ $this.Status = $null }) `
       : $this.Test.Invoke((,$this.StagedFiles()))
 
-    return [PreCommitTestReport]::new($this.Name, $result, $this.Fix)
+    return [PreCommitRuleReport]::new($this.Name, $result, $this.Fix)
   }
 
   [int] RunAndReport() {
@@ -26,34 +31,13 @@ class PreCommitTest {
   }
 
   [string[]] StagedFiles() {
-    # TODO have param/lookup for this?
-    $extensions = @(
-      '*.cs', '*.csx', '*.vb', '*.vbx',
-      '*.sln',
-      '*.csproj', '*.vbproj', '*.vcxproj', '*.vcxproj.filters', '*.proj', '*.projitems', '*.shproj',
-      '*.json', '*.yml', '*.config', '*.props', '*.targets', '*.nuspec', '*.resx', '*.ruleset',
-      '*.xml', '*.axml', '*.xaml',
-      '*.md',
-      '*.htm', '*.html', '*.js', '*.ts', '*.css', '*.scss', '*.less',
-      '.editorconfig',
-      '.gitignore',
-      '*.ps1',
-      '*.plist',
-      '*.storyboard'
-    )
-
-    $extensionsRegex = "^($($extensions -join '|' -replace '\.', '\.' -replace '\*', '.*'))$"
-    # TODO use git filtering here?
-    $stagedFiles = @(git diff --cached --name-only --diff-filter=ACM | Get-Item -Force)
-    return @($stagedFiles.Where( { $_.Name -match $extensionsRegex }) | `
-      Select-Object -ExpandProperty FullName | `
-      Resolve-Path -Relative)
+    return $this.ProjectType.GitListCachedFiles()
   }
 }
 
-class PreCommitTestReport {
+class PreCommitRuleReport {
   [string] $Name
-  [PreCommitTestResult] $Result
+  [PreCommitRuleResult] $Result
   [string] $Fix
   [string] $Summary
   [string] $Details
@@ -66,7 +50,7 @@ class PreCommitTestReport {
     Off = "$($this.ESC)[0m"
   }
 
-  PreCommitTestReport([string] $name, [PreCommitTestResult] $result, [string] $fix) {
+  PreCommitRuleReport([string] $name, [PreCommitRuleResult] $result, [string] $fix) {
     $this.Name = $name
     $this.Result = $result
     $this.CreateSummary()
@@ -141,15 +125,15 @@ class PreCommitTestReport {
   }
 }
 
-class PreCommitTestResult {
+class PreCommitRuleResult {
   [Nullable[int]] $Status = 0
   [string[]] $Violations = @()
 
-  PreCommitTestResult([ScriptBlock] $block) {
-    $block.Invoke()
+  PreCommitRuleResult([ScriptBlock] $block) {
+    $block.Invoke($this)
   }
 
-  PreCommitTestResult([System.Collections.ObjectModel.Collection[PSObject]] $obj) {
+  PreCommitRuleResult([System.Collections.ObjectModel.Collection[PSObject]] $obj) {
     $this.Status = $obj.Status
     $this.Violations = $obj.Violations
   }

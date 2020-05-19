@@ -14,9 +14,12 @@ SHELLCHECK_IGNORE := \
   *.bats \
   *.conf \
   *.config \
-  *.md \
+  *.json \
   *.keep \
+  *.md \
   *.ps1 \
+  *.psd1 \
+  *.psm1 \
   *gitconfig \
   *gitignore \
   Makefile \

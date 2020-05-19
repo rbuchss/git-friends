@@ -1,14 +1,14 @@
 using namespace System.Diagnostics.CodeAnalysis
-. $PSScriptRoot/../git-friends/src/hooks/pre_commit/test.ps1
+using module '..\git-friends\src\hooks\pre_commit\Rule.psm1'
 
-Describe 'PreCommitTest' {
+Describe 'PreCommitRule' {
   function Test-DummyBlock { }
 
-  Mock Write-Host { }
+  Mock Write-Host { } -ModuleName Rule
 
   BeforeEach {
     [SuppressMessage('PSReviewUnusedParameter', 'rule')]
-    $rule = [PreCommitTest]::new(
+    $rule = [PreCommitRule]::new(
       'name',
       'how-to-fix',
       $false, { Test-DummyBlock }
@@ -17,12 +17,13 @@ Describe 'PreCommitTest' {
 
   Context 'was skipped' {
     BeforeEach {
-      $result = [PreCommitTestResult]::new({
-        $this.Status = $null
+      $result = [PreCommitRuleResult]::new({
+        param($result)
+        $result.Status = $null
       })
 
       [SuppressMessage('PSReviewUnusedParameter', 'report')]
-      $report = [PreCommitTestReport]::new('name', $result, 'how-to-fix')
+      $report = [PreCommitRuleReport]::new('name', $result, 'how-to-fix')
 
       Mock Test-DummyBlock {
         return $result
@@ -39,19 +40,20 @@ Describe 'PreCommitTest' {
     It '#RunAndReport' {
       $rule.RunAndReport() | Should -Be 0
       Assert-MockCalled Test-DummyBlock 0 -Scope It
-      Assert-MockCalled Write-Host -Exactly 1 -Scope It
+      Assert-MockCalled Write-Host -Exactly 1 -Scope It -ModuleName Rule
     }
   }
 
   Context 'was run' {
     Context 'and failed' {
       BeforeEach {
-        $result = [PreCommitTestResult]::new({
-          $this.Status = 1
+        $result = [PreCommitRuleResult]::new({
+          param($result)
+          $result.Status = 1
         })
 
         [SuppressMessage('PSReviewUnusedParameter', 'report')]
-        $report = [PreCommitTestReport]::new('name', $result, 'how-to-fix')
+        $report = [PreCommitRuleReport]::new('name', $result, 'how-to-fix')
 
         Mock Test-DummyBlock {
           return $result
@@ -66,18 +68,19 @@ Describe 'PreCommitTest' {
       It '#RunAndReport' {
         $rule.RunAndReport() | Should -Be 1
         Assert-MockCalled Test-DummyBlock -Exactly 1 -Scope It
-        Assert-MockCalled Write-Host -Exactly 3 -Scope It
+        Assert-MockCalled Write-Host -Exactly 3 -Scope It -ModuleName Rule
       }
     }
 
     Context 'and passed' {
       BeforeEach {
-        $result = [PreCommitTestResult]::new({
-          $this.Status = 0
+        $result = [PreCommitRuleResult]::new({
+          param($result)
+          $result.Status = 0
         })
 
         [SuppressMessage('PSReviewUnusedParameter', 'report')]
-        $report = [PreCommitTestReport]::new('name', $result, 'how-to-fix')
+        $report = [PreCommitRuleReport]::new('name', $result, 'how-to-fix')
 
         Mock Test-DummyBlock {
           return $result
@@ -92,7 +95,7 @@ Describe 'PreCommitTest' {
       It '#RunAndReport' {
         $rule.RunAndReport() | Should -Be 0
         Assert-MockCalled Test-DummyBlock -Exactly 1 -Scope It
-        Assert-MockCalled Write-Host -Exactly 1 -Scope It
+        Assert-MockCalled Write-Host -Exactly 1 -Scope It -ModuleName Rule
       }
     }
   }

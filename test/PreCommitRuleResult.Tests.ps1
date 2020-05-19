@@ -1,12 +1,13 @@
 using namespace System.Diagnostics.CodeAnalysis
-. $PSScriptRoot/../git-friends/src/hooks/pre_commit/test.ps1
+using module '..\git-friends\src\hooks\pre_commit\Rule.psm1'
 
-Describe 'PreCommitTestResult' {
+Describe 'PreCommitRuleResult' {
   Context 'pre-commit test was skipped' {
     BeforeEach {
       [SuppressMessage('PSReviewUnusedParameter', 'result')]
-      $result = [PreCommitTestResult]::new({
-        $this.Status = $null
+      $result = [PreCommitRuleResult]::new({
+        param($result)
+        $result.Status = $null
       })
     }
 
@@ -35,9 +36,10 @@ Describe 'PreCommitTestResult' {
     Context 'and failed' {
       BeforeEach {
         [SuppressMessage('PSReviewUnusedParameter', 'result')]
-        $result = [PreCommitTestResult]::new({
-          $this.Status = 1
-          $this.Violations = @('foo', 'bar', 'qux')
+        $result = [PreCommitRuleResult]::new({
+          param($result)
+          $result.Status = 1
+          $result.Violations = @('foo', 'bar', 'qux')
         })
       }
 
@@ -65,7 +67,7 @@ Describe 'PreCommitTestResult' {
     Context 'and passed' {
       BeforeEach {
         [SuppressMessage('PSReviewUnusedParameter', 'result')]
-        $result = [PreCommitTestResult]::new({ })
+        $result = [PreCommitRuleResult]::new({ })
       }
 
       It '#Passed' {
