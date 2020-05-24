@@ -11,9 +11,11 @@ function Merge-Hashtables {
     [Object[]]
     $Dictionary
   )
+
   begin {
     $output = @{}
   }
+
   process {
     $Dictionary | ForEach-Object {
       if ($_ -is [System.Collections.IDictionary]) {
@@ -26,14 +28,14 @@ function Merge-Hashtables {
         Write-Error("'$_' can't be converted to a hashtable")
       }
     }
+  }
 
+  end {
     if ($Block) {
       foreach ($key in @($output.Keys)) {
-        $output.$key = $Block.Invoke(@($output.$key))
+        $output.$key = $Block.InvokeReturnAsIs($output.$key)
       }
     }
-  }
-  end {
     $output
   }
 }

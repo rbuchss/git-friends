@@ -444,7 +444,7 @@ Describe 'Should -HaveDeepEquality' {
       | Should -Throw "- Context: '[0]' Expected 'b', but got 'a'"
 
     { @('a') | Should -HaveDeepEquality @('b', 'a') } `
-      | Should -Throw "- Expected a collection with size 1, but got collection with size 2"
+      | Should -Throw "- Expected a collection with size 2, but got collection with size 1"
 
     { @{ foo = 'a' } | Should -HaveDeepEquality @{} } `
       | Should -Throw "- Context: 'foo' Expected `$null, but got 'a'"

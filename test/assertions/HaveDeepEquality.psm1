@@ -17,8 +17,8 @@ class DeepComparator {
   [string] $Because
   [TypeOfReport] $ReportType
   [hashtable] $Report = @{
-    [TypeOfReport]::Equality = @();
-    [TypeOfReport]::Inequality = @();
+    [TypeOfReport]::Equality = @()
+    [TypeOfReport]::Inequality = @()
   }
 
   static [PSObject] Verify($actualValue,
@@ -67,8 +67,8 @@ class DeepComparator {
 
   hidden [void] ResetReport() {
     $this.Report = @{
-      [TypeOfReport]::Equality = @();
-      [TypeOfReport]::Inequality = @();
+      [TypeOfReport]::Equality = @()
+      [TypeOfReport]::Inequality = @()
     }
   }
 
@@ -77,15 +77,16 @@ class DeepComparator {
   }
 
   hidden [bool] HasRecursiveEquality($lhs, $rhs, $context) {
-    if ($lhs -is [array] -and $rhs -is [array]) {
+    if ($lhs -is [System.Collections.IList] `
+        -and $rhs -is [System.Collections.IList]) {
       if ($lhs.Count -ne $rhs.Count) {
         $this.AddToReport(
           [TypeOfReport]::Equality,
           ('- {0}Expected a collection with size {1},{2} but got collection with size {3}' -f `
             (($context) ? "Context: $(Format-Nicely $context) " : ''),
-            $lhs.Count,
+            $rhs.Count,
             $this.FormatBecause(),
-            $rhs.Count)
+            $lhs.Count)
         )
 
         $this.AddToReport(
