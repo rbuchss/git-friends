@@ -14,3 +14,9 @@
   multi-value = yarp
   multi-value = carp
   multi-value = narp
+[git-friends "pre-commit"]
+  skip = pom.xml
+  skip = junit.java
+  skip = Runit.java
+  skip = Runit2.java
+  disable = false
