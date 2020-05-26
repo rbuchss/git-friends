@@ -33,6 +33,15 @@ Describe 'Config' {
         group = 'git-friends'
       })
       $config.Metadata | Should -HaveDeepEquality $expected
+      $config.Get('literal-off') | Should -Be 'off'
+      $config.Get('missing-key') | Should -BeNullorEmpty
+      $config.Get(@('pre-commit', 'skip')) | Should -Be @(
+        'pom.xml',
+        'junit.java',
+        'Runit.java',
+        'Runit2.java'
+      $config.Get(@('pre-commit', 'missing-key')) | Should -BeNullorEmpty
+      )
     }
 
     It 'parses the git-friends.pre-commit config group' {

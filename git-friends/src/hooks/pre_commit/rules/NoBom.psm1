@@ -30,6 +30,7 @@ function Test-CommitHasNoBOM {
   [PreCommitRule]::new(
     'Has No BOM',
     'Please remove the BOM(s) and re-add the file(s) for commit',
+    'no-bom',
     $Skip, {
       param([array] $files)
 

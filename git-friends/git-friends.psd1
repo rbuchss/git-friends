@@ -84,8 +84,6 @@ AliasesToExport = @()
 # FileList = @()
 
 NestedModules = @(
-  'src/ProjectType.psm1',
-  'src/ProjectTypes.psm1',
   'src/hooks/pre_commit/Rule.psm1',
   'src/hooks/pre_commit/Rules.psm1'
 )

@@ -13,6 +13,19 @@ class Config {
     $this.Init($options)
   }
 
+  [object] Get([string[]] $keys) {
+    $result = $this.Metadata
+
+    foreach ($key in $keys) {
+      if (-not $result.ContainsKey($key)) {
+        return $null
+      }
+      $result = $result.$key
+    }
+
+    return $result
+  }
+
   hidden Init([hashtable] $options) {
     $file = $options.file
     $group = $options.group

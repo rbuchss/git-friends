@@ -1,27 +1,32 @@
 #!/usr/bin/env pwsh
 
-using module '..\..\ProjectTypes.psm1'
-using module '..\..\ProjectType.psm1'
+using module '..\..\FileFilter.psm1'
+using module '..\..\FileFilterTemplate.psm1'
+using module '..\..\Repo.psm1'
 
 class PreCommitRule {
   [string] $Name
   [string] $Fix
+  [string] $Key
   [bool] $Skip
-  [ScriptBlock] $Test
-  [ProjectType] $ProjectType
+  [ScriptBlock] $Block
+  [Repo] $Repo
+  [FileFilter] $FileFilter
 
-  PreCommitRule([string] $name, [string] $fix, [bool] $skip, [ScriptBlock] $test) {
+  PreCommitRule([string] $name, [string] $fix, [string] $key, [bool] $skip, [ScriptBlock] $block) {
     $this.Name = $name
     $this.Fix = $fix
+    $this.Key = $key
     $this.Skip = $skip
-    $this.Test = $test
-    $this.ProjectType = [ProjectTypes]::Factory()
+    $this.Block = $block
+    $this.Repo = [Repo]::new()
+    $this.FileFilter = $this.CreateFileFilter()
   }
 
   [PreCommitRuleReport] Run() {
     $result = $this.Skip `
       ? [PreCommitRuleResult]::new({ $this.Status = $null }) `
-      : $this.Test.Invoke((,$this.StagedFiles()))
+      : $this.Block.Invoke((,$this.StagedFiles()))
 
     return [PreCommitRuleReport]::new($this.Name, $result, $this.Fix)
   }
@@ -31,7 +36,26 @@ class PreCommitRule {
   }
 
   [string[]] StagedFiles() {
-    return $this.ProjectType.GitListCachedFiles()
+    return $this.Repo.CachedFiles($this.FileFilter)
+  }
+
+  hidden [FileFilter] CreateFileFilter() {
+    $filter = [FileFilter]::new()
+
+    foreach ($template in @($this.Repo.Config.Get(@('git-friends', 'pre-commit', 'filter')),
+          $this.Repo.Config.Get(@('git-friends', 'pre-commit', $this.Key, 'filter')))) {
+      $filter += [FileFilterTemplate]::Factory($template)
+    }
+
+    $include = $this.Repo.Config.Get(@('git-friends', 'pre-commit', 'include')) +
+      $this.Repo.Config.Get(@('git-friends', 'pre-commit', $this.Key, 'include'))
+
+    $exclude = $this.Repo.Config.Get(@('git-friends', 'pre-commit', 'exclude')) +
+      $this.Repo.Config.Get(@('git-friends', 'pre-commit', $this.Key, 'exclude'))
+
+    $filter += [FileFilter]::new($include, $exclude)
+
+    return $filter
   }
 }
 

@@ -11,6 +11,7 @@ Describe 'PreCommitRule' {
     $rule = [PreCommitRule]::new(
       'name',
       'how-to-fix',
+      'key-name',
       $false, { Test-DummyBlock }
     )
   }

@@ -5,6 +5,7 @@ using module '.\TestHelper.psm1'
 Describe 'FileFilter' {
   Context 'is empty' {
     BeforeEach {
+      [SuppressMessage('PSReviewUnusedParameter', 'filter')]
       $filter = [FileFilter]::new()
     }
 
@@ -41,6 +42,8 @@ Describe 'FileFilter' {
     BeforeEach {
       $include = @('foo', 'bar', 'qux')
       $exclude = @('xuq', 'rab', 'oof')
+
+      [SuppressMessage('PSReviewUnusedParameter', 'filter')]
       $filter = [FileFilter]::new($include, $exclude)
     }
 

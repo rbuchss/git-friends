@@ -1,27 +1,29 @@
 {
-  "Types": [
+  "Templates": [
     {
       "Name": "undefined",
       "Parents": [],
-      "Extensions": [
+      "Include": [
         "*"
-      ]
+      ],
+      "Exclude": []
     },
     {
       "Name": "common",
       "Parents": [],
-      "Extensions": [
+      "Include": [
         "*.md",
         ".editorconfig",
         ".gitignore"
-      ]
+      ],
+      "Exclude": []
     },
     {
       "Name": "c#",
       "Parents": [
         "common"
       ],
-      "Extensions": [
+      "Include": [
         "*.cs", "*.csx", "*.vb", "*.vbx",
         "*.sln",
         "*.csproj", "*.vbproj", "*.vcxproj", "*.vcxproj.filters", "*.proj", "*.projitems", "*.shproj",
@@ -29,17 +31,19 @@
         "*.xml", "*.axml", "*.xaml",
         "*.htm", "*.html", "*.js", "*.ts", "*.css", "*.scss", "*.less",
         "*.ps1"
-      ]
+      ],
+      "Exclude": []
     },
     {
       "Name": "xamarin",
       "Parents": [
         "c#"
       ],
-      "Extensions": [
+      "Include": [
         "*.plist",
         "*.storyboard"
-      ]
+      ],
+      "Exclude": []
     }
   ]
 }
