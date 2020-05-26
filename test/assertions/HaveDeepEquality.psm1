@@ -2,7 +2,12 @@
 
 # Hacky way to resuse the pester formatters
 # too lazy to write these myself ;P
-$pesterPath = (Get-Item (Get-Module -ListAvailable Pester).Path).Directory
+$pesterPath = (Get-Item (
+  Get-Module -ListAvailable Pester `
+    | Sort-Object -Property Version -Descending `
+    | Select-Object -First 1
+  ).Path
+).Directory
 Import-Module $pesterPath/Dependencies/Format/Format.psm1
 
 enum TypeOfReport {
