@@ -44,14 +44,16 @@ class PreCommitRule {
 
     foreach ($template in @($this.Repo.Config.Get(@('git-friends', 'pre-commit', 'filter')),
           $this.Repo.Config.Get(@('git-friends', 'pre-commit', $this.Key, 'filter')))) {
-      $filter += [FileFilterTemplate]::Factory($template)
+      if ($null -ne $template) {
+        $filter += [FileFilterTemplate]::Factory($template)
+      }
     }
 
-    $include = $this.Repo.Config.Get(@('git-friends', 'pre-commit', 'include')) +
-      $this.Repo.Config.Get(@('git-friends', 'pre-commit', $this.Key, 'include'))
+    $include = ($this.Repo.Config.Get(@('git-friends', 'pre-commit', 'include')) ?? @()) +
+      ($this.Repo.Config.Get(@('git-friends', 'pre-commit', $this.Key, 'include')) ?? @())
 
-    $exclude = $this.Repo.Config.Get(@('git-friends', 'pre-commit', 'exclude')) +
-      $this.Repo.Config.Get(@('git-friends', 'pre-commit', $this.Key, 'exclude'))
+    $exclude = ($this.Repo.Config.Get(@('git-friends', 'pre-commit', 'exclude')) ?? @()) +
+      ($this.Repo.Config.Get(@('git-friends', 'pre-commit', $this.Key, 'exclude')) ?? @())
 
     $filter += [FileFilter]::new($include, $exclude)
 
