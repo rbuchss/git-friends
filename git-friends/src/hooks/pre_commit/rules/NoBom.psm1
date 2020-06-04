@@ -4,8 +4,8 @@ using namespace System.Diagnostics.CodeAnalysis
 using module '..\Rule.psm1'
 
 function Test-FileContainsBOM {
-  [CmdletBinding()]
   [OutputType([bool])]
+  [CmdletBinding()]
   param (
     [Parameter()]
     [string]

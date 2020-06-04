@@ -67,11 +67,19 @@ class Config {
           $key = $pair.Key
           $value = $pair.Value
 
-          $dictionary[$section][$key] = ($dictionary[$section].ContainsKey($key)) `
-            ? (($value -is [Hashtable]) `
-              ? ($dictionary[$section][$key], $value | Merge-Hashtables)
-              : @($dictionary[$section][$key]) + $value)
-            : $value
+          $dictionary[$section][$key] = if ($dictionary[$section].ContainsKey($key)) {
+            $current = $dictionary[$section][$key]
+
+            if ($current -is [hashtable] -and $value -is [hashtable]) {
+              ($current, $value | Merge-Hashtables)
+            } elseif ($value -is [hashtable]) {
+              @{ '_' = $current } + $value
+            } else {
+              @($current) + $value
+            }
+          } else {
+            $value
+          }
         }
       }
 

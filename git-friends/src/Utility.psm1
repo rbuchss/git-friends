@@ -1,8 +1,8 @@
 #!/usr/bin/env pwsh
 
 function Merge-Hashtables {
+  [OutputType([hashtable])]
   [CmdletBinding()]
-  [OutputType([Hashtable])]
   param (
     [ScriptBlock]
     $Block,

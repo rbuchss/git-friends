@@ -169,7 +169,7 @@ class PreCommitRuleResult {
   }
 
   [Nullable[bool]] Failed() {
-    return $null -eq $this.Status ? $null : ! $this.Passed()
+    return $null -eq $this.Status ? $null : -not $this.Passed()
   }
 
   [bool] Skipped() {
@@ -177,6 +177,6 @@ class PreCommitRuleResult {
   }
 
   [bool] Ran() {
-    return ! $this.Skipped()
+    return -not $this.Skipped()
   }
 }
