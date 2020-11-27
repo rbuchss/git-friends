@@ -12,6 +12,14 @@ function Test-FileContainsBOM {
     $Path
   )
   $fullPath = (Get-Item -Force $Path)
+
+  # Skip symlinked directories that will cause OpenRead
+  # to throw an UnauthorizedAccessException
+  # and cannot contain a BOM anyway
+  if (Test-Path -Path $fullPath -PathType Container) {
+    return $false
+  }
+
   $contents = new-object byte[] 3
   $stream = [System.IO.File]::OpenRead($fullPath.FullName)
   $stream.Read($contents, 0, 3) | Out-Null
