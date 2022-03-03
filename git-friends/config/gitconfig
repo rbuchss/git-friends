@@ -10,6 +10,8 @@
   path = ~/.git-friends/config/styles.config
   path = ~/.gitconfig.os # loads os specific configs
   path = ~/.gitconfig.local # loads local specific configs
+[init]
+  defaultBranch = main
 [filter "lfs"]
   clean = git-lfs clean -- %f
   smudge = git-lfs smudge -- %f
