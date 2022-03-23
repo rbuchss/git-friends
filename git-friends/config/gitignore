@@ -5,3 +5,7 @@ sandcube
 .DS_Store
 Vault
 TODO
+*.iml
+*.idea/*
+out
+*.diff

@@ -19,4 +19,4 @@
   skip = junit.java
   skip = Runit.java
   skip = Runit2.java
-  disable = false
+  disabled = false
