@@ -10,7 +10,7 @@ function git::log::pretty() {
     '%C(nobold) %ad'
     '%C(auto)%d '
     '%s'
-    '%C(bold)%C(cyan) [%cn]'
+    '%C(bold)%C(cyan) [%an]'
   )
 
   [[ ! " $* " =~ $date_regexp ]] \
