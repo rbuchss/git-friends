@@ -1,7 +1,10 @@
 [core]
   excludesfile = ~/.gitignore
-[push]
-  default = tracking # limit no arg push behavior to just the current branch
+[filter "lfs"]
+  clean = git-lfs clean -- %f
+  smudge = git-lfs smudge -- %f
+  process = git-lfs filter-process
+  required = true
 [hub]
   host = github.com
 [include]
@@ -12,11 +15,12 @@
   path = ~/.gitconfig.local # loads local specific configs
 [init]
   defaultBranch = main
-[filter "lfs"]
-  clean = git-lfs clean -- %f
-  smudge = git-lfs smudge -- %f
-  process = git-lfs filter-process
-  required = true
+[pager]
+  branch = false
+[pull]
+  rebase = true
+[push]
+  default = tracking # limit no arg push behavior to just the current branch
 # used to go get private packages
 [url "git@github.com:"]
   insteadOf = https://github.com/
