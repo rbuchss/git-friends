@@ -1,4 +1,5 @@
 .git
+.idea
 tags
 sandcube
 .zession.vim
