@@ -1,6 +1,8 @@
 #!/bin/bash
+# shellcheck source=/dev/null
+source "${BASH_SOURCE[0]%/*}/remote.sh"
 
-function git::log::pretty() {
+function git::log::basic() {
   local format \
     format_options \
     date_regexp=' (--date[[:space:]=]|--relative-date)'
@@ -19,8 +21,33 @@ function git::log::pretty() {
   printf -v format '%s' "${format_options[@]}"
 
   git log \
-    --graph \
     --pretty=format:"${format}" \
     --decorate \
     "$@"
+}
+
+function git::log::pretty() {
+  git::log::basic \
+    --graph \
+    "$@"
+}
+
+function git::log::from_default_branch() {
+  if [[ "$*" =~ \.\. ]]; then
+    git::log::basic \
+      --reverse \
+      "$@"
+    return
+  fi
+
+  local default_branch \
+    commit_range
+
+  default_branch="$(git::remote::default_branch)"
+  commit_range="HEAD...${default_branch}"
+
+  git::log::basic \
+    --reverse \
+    "$@" \
+    "${commit_range}"
 }
