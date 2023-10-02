@@ -34,8 +34,7 @@ function git::log::pretty() {
 
 function git::log::from_default_branch() {
   if [[ "$*" =~ \.\. ]]; then
-    git::log::basic \
-      --reverse \
+    git::log::pretty \
       "$@"
     return
   fi
@@ -46,8 +45,7 @@ function git::log::from_default_branch() {
   default_branch="$(git::remote::default_branch)"
   commit_range="HEAD...${default_branch}"
 
-  git::log::basic \
-    --reverse \
+  git::log::pretty \
     "$@" \
     "${commit_range}"
 }
