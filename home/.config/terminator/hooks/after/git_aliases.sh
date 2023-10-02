@@ -1,0 +1,1 @@
+../../../../../git-friends/config/git_aliases.sh
