@@ -1,4 +1,6 @@
 #!/bin/bash
+# shellcheck source=/dev/null
+source "${BASH_SOURCE[0]%/*}/logger.sh"
 
 function git::utility::ask() {
   local question="$1" \
@@ -66,4 +68,34 @@ function git::utility::is_executable() {
 
 function git::utility::is_not_executable() {
   ! git::utility::is_executable "$@"
+}
+
+function git::utility::get_mainline_ref {
+  local remote="${1:-origin}" \
+    branch_ref \
+    branch_name \
+    branch_refs=() \
+    branch_names=(
+      master
+      main
+      mainline
+    )
+
+  for branch_name in "${branch_names[@]}"; do
+    branch_refs+=("${remote}/${branch_name}")
+  done
+
+  for branch_ref in "${branch_refs[@]}"; do
+    git::logger::debug "Checking if remote git branch: '${branch_ref}' exists"
+
+    if git show-ref --quiet "refs/remotes/${branch_ref}"; then
+      git::logger::info "Found git remote branch: '${branch_ref}' - using as mainline ref"
+
+      echo "${branch_ref%*/}"
+      return 0
+    fi
+  done
+
+  git::logger::warning "Could not find any matching remote git branches: [${branch_refs[*]}] - exiting"
+  return 1
 }
