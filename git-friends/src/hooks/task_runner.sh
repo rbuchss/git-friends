@@ -1,6 +1,7 @@
 #!/bin/bash
 # shellcheck source=/dev/null
 source "${BASH_SOURCE[0]%/*/*}/config.sh"
+source "${BASH_SOURCE[0]%/*/*}/logger.sh"
 source "${BASH_SOURCE[0]%/*/*}/utility.sh"
 
 function git::hooks::task_runner() {
@@ -104,32 +105,31 @@ function git::hooks::task_runner::body() {
   fi
 
   if git::utility::is_not_executable "${block}"; then
-    git::hooks::task_runner::log 'ERROR' \
-      "NO command or function name: '${block}' found" \
+    git::logger::error \
       --caller-level 3 \
+      "NO command or function name: '${block}' found" \
       >> "${logfile}"
     return 1
   fi
 
   if (( "${#tasks[@]}" == 0 )); then
-    git::hooks::task_runner::log 'INFO' \
-      "no tasks to run\n" \
+    git::logger::info \
       --caller-level 3 \
+      "no tasks to run\n" \
       >> "${logfile}"
     return
   fi
 
-  git::hooks::task_runner::log 'INFO' \
-    "queue ${#tasks[@]} tasks:" \
-    "${tasks[@]}" \
+  git::logger::info \
     --caller-level 3 \
+    "queue ${#tasks[*]} tasks: ${tasks[*]}" \
     >> "${logfile}"
 
   for task in "${tasks[@]}"; do
     if git::utility::is_not_executable "${task}"; then
-      git::hooks::task_runner::log 'ERROR' \
-        "NO command or function named: '${task}' found" \
+      git::logger::error \
         --caller-level 3 \
+        "NO command or function named: '${task}' found" \
         >> "${logfile}"
       exit_status=1
       continue
@@ -148,7 +148,8 @@ function git::hooks::task_runner::background_block() {
     level='ERROR'
 
   if git::utility::array_contains "${task}" "${skip[@]}"; then
-    git::hooks::task_runner::log 'WARNING' \
+    git::logger::warning \
+      --caller-level 4 \
       "skipped ${task}" \
       >> "${logfile}"
     return
@@ -159,50 +160,9 @@ function git::hooks::task_runner::background_block() {
       level='INFO'
     fi
 
-    git::hooks::task_runner::log "${level}" \
-      'task:' \
-      "${task}\n${response}\n" \
+    git::logger::log \
+      --level "${level}" \
+      --caller-level 4 \
+      "task: ${task}\n${response}\n" \
   ) >> "${logfile}" 2>&1 &
-}
-
-function git::hooks::task_runner::log() {
-  local level \
-    caller_level=4 \
-    arguments=()
-
-  while (( $# != 0 )); do
-    case "$1" in
-      -l | --level)
-        shift
-        level="$1"
-        ;;
-      -c | --caller-level)
-        shift
-        caller_level="$1"
-        ;;
-      -*)
-        >&2 echo "ERROR: ${FUNCNAME[0]} invalid option: '$1'"
-        return 1
-        ;;
-      *)
-        arguments+=("$1")
-        ;;
-    esac
-    shift
-  done
-
-  if [[ -z "${level}" ]]; then
-    level="${arguments[0]}"
-    unset 'arguments[0]'
-  fi
-
-  local message=("${arguments[@]}")
-
-  printf '%s, [%s #%d] %s -- %s: %b\n' \
-    "${level:0:1}" \
-    "$(date +%Y-%m-%dT%H:%M:%S%z)" \
-    "$$" \
-    "${level}" \
-    "${FUNCNAME[$caller_level]}" \
-    "${message[*]}"
 }
