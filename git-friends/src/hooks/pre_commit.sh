@@ -35,9 +35,9 @@ function git::hooks::pre_commit::block() {
       && flags+=('-n')
   fi
 
-  git::hooks::task_runner::log 'INFO' \
-    'run:' \
-    "${rule} ${flags[*]}\n" \
+  git::logger::info \
+    --caller-level 4 \
+    "run: ${rule} ${flags[*]}\n" \
     >> "${logfile}"
 
   "${rule}" "${flags[@]}"
