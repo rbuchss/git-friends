@@ -82,16 +82,15 @@ function git::utility::get_mainline_ref {
     )
 
   for branch_name in "${branch_names[@]}"; do
-    branch_refs+=("${remote}/${branch_name}")
-  done
+    branch_ref="${remote}/${branch_name}"
+    branch_refs+=("${branch_ref}")
 
-  for branch_ref in "${branch_refs[@]}"; do
     git::logger::debug "Checking if remote git branch: '${branch_ref}' exists"
 
     if git show-ref --quiet "refs/remotes/${branch_ref}"; then
       git::logger::info "Found git remote branch: '${branch_ref}' - using as mainline ref"
 
-      echo "${branch_ref%*/}"
+      echo "${branch_ref}"
       return 0
     fi
   done
