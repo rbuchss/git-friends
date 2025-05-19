@@ -70,7 +70,7 @@ function git::utility::is_not_executable() {
   ! git::utility::is_executable "$@"
 }
 
-function git::utility::get_mainline_ref {
+function git::utility::get_main_ref {
   local remote="${1:-origin}" \
     branch_ref \
     branch_name \
@@ -88,7 +88,7 @@ function git::utility::get_mainline_ref {
     git::logger::debug "Checking if remote git branch: '${branch_ref}' exists"
 
     if git show-ref --quiet "refs/remotes/${branch_ref}"; then
-      git::logger::info "Found git remote branch: '${branch_ref}' - using as mainline ref"
+      git::logger::debug "Found git remote branch: '${branch_ref}' - using as main ref"
 
       echo "${branch_ref}"
       return 0

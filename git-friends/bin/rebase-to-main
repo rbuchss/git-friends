@@ -1,0 +1,5 @@
+#!/bin/bash
+# shellcheck source=/dev/null
+source "${HOME}/.git-friends/src/rebase.sh"
+
+git::rebase::to_main "$@"
