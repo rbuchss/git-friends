@@ -299,7 +299,7 @@ source "$(repo_root)/git-friends/src/config.sh"
     --file "${config}"
   assert_failure
   assert_exit_status 128
-  assert_output "fatal: bad numeric config value 'blarg' for 'git-friends.blarg' in file ${config}: invalid unit"
+  assert_output "fatal: bad boolean config value 'blarg' for 'git-friends.blarg'"
 }
 
 @test "git::config::is_truthy 'git-friends.blarg'" {
@@ -315,7 +315,7 @@ source "$(repo_root)/git-friends/src/config.sh"
     --file "${config}"
   assert_failure
   assert_exit_status 128
-  assert_output "fatal: bad numeric config value 'blarg' for 'git-friends.blarg' in file ${config}: invalid unit"
+  assert_output "fatal: bad boolean config value 'blarg' for 'git-friends.blarg'"
 }
 
 @test "git::config::is_falsey 'git-friends.blarg'" {
