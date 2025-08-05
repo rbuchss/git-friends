@@ -1,5 +1,9 @@
+################################################################################
+# Shared targets and config
+################################################################################
+
 THIS_DIR := $(patsubst %/,%,$(dir $(realpath $(firstword $(MAKEFILE_LIST)))))
-QUIET ?= @
+TEST_DIRS := test/
 
 ifeq ($(OS),Windows_NT)
   SHELL := pwsh.exe
@@ -10,43 +14,59 @@ else
   PATH := $(PATH):$(THIS_DIR)/test/bin
 endif
 
-SHELLCHECK_IGNORE := \
-  *.bats \
-  *.conf \
-  *.config \
-  *.json \
-  *.keep \
-  *.md \
-  *gitconfig \
-  *gitignore \
-  Makefile \
-  home/* \
-  windows-home/* \
-  test/fixtures/*
+LINTED_SOURCE_FILES := \
+  ':(top,attr:category=source language=bash)'
 
-SHELLCHECK_GIT_IGNORE := $(addsuffix ',$(addprefix ':!:,$(SHELLCHECK_IGNORE)))
+LINTED_TEST_FILES := \
+  ':(top,attr:category=test language=bash)' \
+  ':(top,attr:category=test language=bats)'
 
-.PHONY: guards
-guards: guards-bash
+LINTED_FILES := $(LINTED_SOURCE_FILES) $(LINTED_TEST_FILES)
 
-.PHONY: test
-test: test-bash
+TEST_COMMAND_FLAGS := \
+  --recursive
 
-.PHONY: lint
-lint: lint-bash
-
-.PHONY: guards-bash
-guards-bash: test-bash lint-bash
-
-# NOTE: No scoop port of bats so need to wrap in bash call for windows
-.PHONY: test-bash
-test-bash:
-ifeq ($(OS),Windows_NT)
-	bash -c "bats --pretty --recursive test/"
-else
-	bats --pretty --recursive test/
+# NOTE: We cannot use --pretty in github-action runners since they cause the following error:
+#   /github/workspace/vendor/test/bats/bats-core/bin/bats --setup-suite-file ./test/test_suite.bash --pretty --recursive test/
+#   tput: No value for $TERM and no -T specified
+#   /github/workspace/vendor/test/bats/bats-core/lib/bats-core/validator.bash: line 8: printf: write error: Broken pipe
+# This is due to the runner terminal settings or lack thereof - re the $TERM -T part.
+# So we only enable --pretty if the TERM env var is set.
+ifneq ($(TERM),)
+TEST_COMMAND_FLAGS += --pretty
 endif
 
-.PHONY: lint-bash
-lint-bash:
-	shellcheck $(shell git ls-files -- . $(SHELLCHECK_GIT_IGNORE))
+TEST_COMMAND := bats \
+  $(TEST_COMMAND_FLAGS) \
+  $(TEST_DIRS)
+
+.DEFAULT_GOAL := guards
+.PHONY: guards
+guards: test lint
+
+# NOTE: github-action runners use linux/amd64.
+# So the builder image needs to also be build using this platform using buildx.
+# NOTE: No scoop port of bats so need to wrap in bash call for windows
+.PHONY: test
+test:
+ifeq ($(OS),Windows_NT)
+	bash -c "$(TEST_COMMAND)"
+else
+	$(TEST_COMMAND)
+endif
+
+.PHONY: lint
+lint:
+	shellcheck $$(git ls-files -- $(LINTED_FILES))
+
+.PHONY: linted-files
+linted-files:
+	git ls-files -- $(LINTED_FILES)
+
+.PHONY: linted-source-files
+linted-source-files:
+	git ls-files -- $(LINTED_SOURCE_FILES)
+
+.PHONY: linted-test-files
+linted-test-files:
+	git ls-files -- $(LINTED_TEST_FILES)

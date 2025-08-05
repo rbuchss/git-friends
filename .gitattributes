@@ -1,0 +1,10 @@
+home/**                                       category=home
+windows-home/**                               category=home
+git-friends/**                                category=source
+test/**                                       category=test
+vendor/**                                     category=vendor
+git-friends/bin/**                            language=bash
+git-friends/config/os/**/template/hooks/**    language=bash
+*.sh                                          language=bash
+*.bash                                        language=bash
+*.bats                                        language=bats
