@@ -294,7 +294,9 @@ source "$(repo_root)/git-friends/src/config.sh"
 }
 
 @test "git::config::is_true 'git-friends.blarg'" {
-  local config="$(fixture 'gitconfig')"
+  local config
+  config="$(fixture 'gitconfig')"
+
   run git::config::is_true 'git-friends.blarg' \
     --file "${config}"
   assert_failure
@@ -303,14 +305,18 @@ source "$(repo_root)/git-friends/src/config.sh"
 }
 
 @test "git::config::is_truthy 'git-friends.blarg'" {
-  local config="$(fixture 'gitconfig')"
+  local config
+  config="$(fixture 'gitconfig')"
+
   run git::config::is_truthy 'git-friends.blarg' \
     --file "${config}"
   assert_success
 }
 
 @test "git::config::is_false 'git-friends.blarg'" {
-  local config="$(fixture 'gitconfig')"
+  local config
+  config="$(fixture 'gitconfig')"
+
   run git::config::is_false 'git-friends.blarg' \
     --file "${config}"
   assert_failure
@@ -319,7 +325,9 @@ source "$(repo_root)/git-friends/src/config.sh"
 }
 
 @test "git::config::is_falsey 'git-friends.blarg'" {
-  local config="$(fixture 'gitconfig')"
+  local config
+  config="$(fixture 'gitconfig')"
+
   run git::config::is_falsey 'git-friends.blarg' \
     --file "${config}"
   assert_failure
