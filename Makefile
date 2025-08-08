@@ -24,6 +24,7 @@ LINTED_TEST_FILES := \
 LINTED_FILES := $(LINTED_SOURCE_FILES) $(LINTED_TEST_FILES)
 
 TEST_COMMAND_FLAGS := \
+  --setup-suite-file ./test/test_suite.bash \
   --recursive
 
 # NOTE: We cannot use --pretty in github-action runners since they cause the following error:
@@ -36,7 +37,7 @@ ifneq ($(TERM),)
 TEST_COMMAND_FLAGS += --pretty
 endif
 
-TEST_COMMAND := bats \
+TEST_COMMAND := $(THIS_DIR)/vendor/test/bats/bats-core/bin/bats \
   $(TEST_COMMAND_FLAGS) \
   $(TEST_DIRS)
 
