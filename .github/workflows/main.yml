@@ -1,0 +1,32 @@
+name: Run Make
+on:
+  workflow_dispatch:
+    inputs:
+      target:
+        description: Make target to run
+        required: true
+        default: test
+        type: choice
+        options:
+        - test
+        - lint
+        - guards
+      with_coverage:
+        type: boolean
+        default: false
+
+jobs:
+  run_make_job:
+    runs-on: ubuntu-latest
+    name: Manually Run Quality Check Task
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: true
+      - name: Run Make Target
+        uses: ./.github/actions/run-make
+        id: run-make
+        with:
+          target: ${{ inputs.target }}
+          with_coverage: ${{ inputs.with_coverage }}

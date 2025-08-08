@@ -2,7 +2,7 @@
 
 load test_helper
 
-source "$(repo_root)/git-friends/src/utility.sh"
+setup_with_coverage 'git-friends/src/utility.sh'
 
 @test "git::utility::ask 'build snowman?' <<< 'y'" {
   run git::utility::ask 'build snowman?' <<< 'y'

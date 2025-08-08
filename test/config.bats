@@ -2,7 +2,7 @@
 
 load test_helper
 
-source "$(repo_root)/git-friends/src/config.sh"
+setup_with_coverage 'git-friends/src/config.sh'
 
 @test "git::config::exists 'git-friends.missing'" {
   run git::config::exists \
