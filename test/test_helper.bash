@@ -1,12 +1,35 @@
 #!/bin/bash
 
+__setup_with_coverage__() {
+  cat <<HERE
+    setup() {
+      if [[ -n "\${KCOV_BASH_XTRACEFD+x}" ]]; then
+        set -o functrace
+        trap 'echo "kcov@\${BASH_SOURCE}@\${LINENO}@" >&\$KCOV_BASH_XTRACEFD' DEBUG
+      fi
+      source "$1/$2"
+    }
+
+    teardown() {
+      if [[ -n "\${KCOV_BASH_XTRACEFD+x}" ]]; then
+        set +o functrace
+        trap - DEBUG
+      fi
+    }
+HERE
+}
+
+setup_with_coverage() {
+  eval "$(__setup_with_coverage__ "$(repo_root)" "$1")"
+}
+
 # fixtures
-function __test_dir__ {
+__test_dir__() {
   dirname "$(realpath -s "${BASH_SOURCE[0]}")"
 }
 
 # shellcheck disable=SC2120
-function fixture_dir {
+fixture_dir() {
   local dir
 
   dir="$(__test_dir__)/fixtures"
@@ -23,7 +46,7 @@ function fixture_dir {
   echo "${dir}"
 }
 
-function fixture {
+fixture() {
   local file
 
   if [[ "$#" -ne 1 ]]; then

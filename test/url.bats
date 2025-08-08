@@ -2,7 +2,7 @@
 
 load test_helper
 
-source "$(repo_root)/git-friends/src/url.sh"
+setup_with_coverage 'git-friends/src/url.sh'
 
 @test "git::url::parse 'git@github.com:rbuchss/git-friends.git' 1" {
   run git::url::parse 'git@github.com:rbuchss/git-friends.git' 1
