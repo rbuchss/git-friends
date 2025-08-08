@@ -2,7 +2,7 @@
 # shellcheck source=/dev/null
 source "${BASH_SOURCE[0]%/*}/task_runner.sh"
 
-function git::hooks::pre_commit() {
+function git::hooks::pre_commit {
   # Nothing to commit or disabled so exit
   git diff --cached --quiet --exit-code \
     && return
@@ -23,7 +23,7 @@ function git::hooks::pre_commit() {
     "${rules[@]}"
 }
 
-function git::hooks::pre_commit::block() {
+function git::hooks::pre_commit::block {
   local rule="$1" \
     logfile="$2" \
     skip=("${@:3}") \

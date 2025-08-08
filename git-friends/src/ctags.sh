@@ -2,7 +2,7 @@
 # shellcheck source=/dev/null
 source "${BASH_SOURCE[0]%/*}/config.sh"
 
-function git::ctags::generate() {
+function git::ctags::generate {
   local cmd_path \
     tmp_file \
     tags_file \

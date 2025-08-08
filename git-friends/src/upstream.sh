@@ -3,7 +3,7 @@
 source "${BASH_SOURCE[0]%/*}/url.sh"
 source "${BASH_SOURCE[0]%/*}/utility.sh"
 
-function git::upstream::add() {
+function git::upstream::add {
   local user="$1" \
     name="${2:-upstream}" \
     origin_url \

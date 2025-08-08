@@ -3,7 +3,7 @@
 source "${BASH_SOURCE[0]%/*}/logger.sh"
 source "${BASH_SOURCE[0]%/*}/utility.sh"
 
-function git::rebase::to_main() {
+function git::rebase::to_main {
   local remote="${1:-origin}" \
     main_ref
 

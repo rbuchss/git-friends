@@ -2,7 +2,7 @@
 # shellcheck source=/dev/null
 source "${BASH_SOURCE[0]%/*}/utility.sh"
 
-function git::prune::branches() {
+function git::prune::branches {
   local cmd='git::prune::branches::local' \
     force=0 \
     arguments=()
@@ -36,7 +36,7 @@ function git::prune::branches() {
   "${cmd}" "${force}" "${arguments[@]}"
 }
 
-function git::prune::branches::usage() {
+function git::prune::branches::usage {
   cat <<USAGE_TEXT
 Usage: ${FUNCNAME[1]}: [OPTIONS] <target>
   -a, --all     Prune local and remote branches
@@ -52,7 +52,7 @@ Usage: ${FUNCNAME[1]}: [OPTIONS] <target>
 USAGE_TEXT
 }
 
-function git::prune::branches::local() {
+function git::prune::branches::local {
   local force="$1" \
     ref_branch="$2" \
     merged_branches=()
@@ -85,7 +85,7 @@ function git::prune::branches::local() {
   done
 }
 
-function git::prune::branches::remote() {
+function git::prune::branches::remote {
   local force="$1" \
     remote="${2:-origin}" \
     dry_run_response
@@ -109,7 +109,7 @@ function git::prune::branches::remote() {
   fi
 }
 
-function git::prune::branches::all() {
+function git::prune::branches::all {
   local force="$1" \
     remote="$2" \
     ref_branch="$3"

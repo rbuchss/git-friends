@@ -1,6 +1,6 @@
 #!/bin/bash
 
-function git::url::parse() {
+function git::url::parse {
   local regexp='(git\@|https://|http://)([^/:]+)(:|/)([^/]+)/(.+$)'
 
   if [[ "$1" =~ $regexp ]] \
@@ -12,27 +12,27 @@ function git::url::parse() {
   return 1
 }
 
-function git::url::prefix() {
+function git::url::prefix {
   git::url::parse "$1" 1
 }
 
-function git::url::domain() {
+function git::url::domain {
   git::url::parse "$1" 2
 }
 
-function git::url::separator() {
+function git::url::separator {
   git::url::parse "$1" 3
 }
 
-function git::url::user() {
+function git::url::user {
   git::url::parse "$1" 4
 }
 
-function git::url::repo() {
+function git::url::repo {
   git::url::parse "$1" 5
 }
 
-function git::url::protocol() {
+function git::url::protocol {
   local prefix
   prefix="$(git::url::prefix "$1")"
 
@@ -47,7 +47,7 @@ function git::url::protocol() {
   esac
 }
 
-function git::url::change_user() {
+function git::url::change_user {
   local url="$1" \
     prefix \
     domain \
@@ -78,7 +78,7 @@ function git::url::change_user() {
   return 1
 }
 
-function git::url::prefix_for_protocol() {
+function git::url::prefix_for_protocol {
   case "$1" in
     ssh) echo 'git@' ;;
     https) echo 'https://' ;;
@@ -90,7 +90,7 @@ function git::url::prefix_for_protocol() {
   esac
 }
 
-function git::url::separator_for_protocol() {
+function git::url::separator_for_protocol {
   case "$1" in
     ssh) echo ':' ;;
     https) echo '/' ;;
@@ -102,7 +102,7 @@ function git::url::separator_for_protocol() {
   esac
 }
 
-function git::url::change_protocol() {
+function git::url::change_protocol {
   local url="$1" \
     protocol="$2" \
     prefix \

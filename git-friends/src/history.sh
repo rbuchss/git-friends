@@ -1,6 +1,6 @@
 #!/bin/bash
 
-function git::history::recent() {
+function git::history::recent {
   # show local branches
   # (change to "ref/heads"
   # to include both local + remote branches)
@@ -41,7 +41,7 @@ function git::history::recent() {
     | less "${lessopts[@]}"
 }
 
-function git::history::churn() {
+function git::history::churn {
   git log --all -M -C --name-only --format='format:' "$@" \
     | sort \
     | grep -v '^$' \

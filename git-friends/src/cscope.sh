@@ -2,7 +2,7 @@
 # shellcheck source=/dev/null
 source "${BASH_SOURCE[0]%/*}/config.sh"
 
-function git::cscope::generate() {
+function git::cscope::generate {
   local cmd_path \
     tmp_file \
     extra_flags=("$@")
@@ -44,7 +44,7 @@ function git::cscope::generate() {
   return 1
 }
 
-function git::cscope::files() {
+function git::cscope::files {
   # TODO is filtering even required?
   git ls-files -- \
     ':*.py' \
