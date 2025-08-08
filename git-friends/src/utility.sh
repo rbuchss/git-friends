@@ -2,7 +2,7 @@
 # shellcheck source=/dev/null
 source "${BASH_SOURCE[0]%/*}/logger.sh"
 
-function git::utility::ask() {
+function git::utility::ask {
   local question="$1" \
     response_for_all_var_="$2" \
     response_for_all_
@@ -44,7 +44,7 @@ function git::utility::ask() {
   esac
 }
 
-function git::utility::array_contains() {
+function git::utility::array_contains {
   local match="$1" \
     element
   shift
@@ -57,7 +57,7 @@ function git::utility::array_contains() {
   return 1
 }
 
-function git::utility::is_executable() {
+function git::utility::is_executable {
   local task="$1"
 
   if ! declare -F "${task}" > /dev/null 2>&1 \
@@ -66,7 +66,7 @@ function git::utility::is_executable() {
   fi
 }
 
-function git::utility::is_not_executable() {
+function git::utility::is_not_executable {
   ! git::utility::is_executable "$@"
 }
 

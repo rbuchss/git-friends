@@ -2,7 +2,7 @@
 # shellcheck source=/dev/null
 source "${BASH_SOURCE[0]%/*}/utility.sh"
 
-function git::submodule::remove() {
+function git::submodule::remove {
   local submodule_path
   # shellcheck disable=SC2034
   local all_response
@@ -24,7 +24,7 @@ function git::submodule::remove() {
   done
 }
 
-function git::submodule::sync() {
+function git::submodule::sync {
   if (( $# > 0 )); then
     git submodule update --init --recursive -- "$@"
     return
@@ -33,7 +33,7 @@ function git::submodule::sync() {
   git submodule update --init --recursive
 }
 
-function git::submodule::upgrade() {
+function git::submodule::upgrade {
   # NOTE: old way: git submodule foreach git pull origin master
   if (( $# > 0 )); then
     git submodule update --recursive --remote -- "$@"

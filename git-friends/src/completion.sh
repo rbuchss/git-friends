@@ -1,26 +1,26 @@
 #!/bin/bash
 
-function _git_ls() {
+function _git_ls {
   _git_log
 }
 
-function _git_ll() {
+function _git_ll {
   _git_log
 }
 
-function _git_ld() {
+function _git_ld {
   _git_log
 }
 
-function _git_lds() {
+function _git_lds {
   _git_log
 }
 
-function _git_ldi() {
+function _git_ldi {
   _git_log
 }
 
-function _git_prune_branches() {
+function _git_prune_branches {
   local index=1 \
     flag_index=1 \
     mode='local' \

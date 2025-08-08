@@ -1,11 +1,11 @@
 #!/bin/bash
 
-function git::config::group() {
+function git::config::group {
   local group="$1"
   git config --get-regexp "^${group}"
 }
 
-function git::config::aliases() {
+function git::config::aliases {
   local search="$1"
 
   git::config::group 'alias' \
@@ -26,18 +26,18 @@ function git::config::aliases() {
     | column -t -s '#'
 }
 
-function git::config::exists() {
+function git::config::exists {
   local key="$1" \
     flags=("${@:2}")
 
   git config "${flags[@]}" --get "${key}" > /dev/null
 }
 
-function git::config::is_null() {
+function git::config::is_null {
   ! git::config::exists "$@"
 }
 
-function git::config::is_true() {
+function git::config::is_true {
   local value \
     key="$1" \
     flags=("${@:2}")
@@ -49,7 +49,7 @@ function git::config::is_true() {
     && [[ "${value}" == 'true' ]]
 }
 
-function git::config::is_false() {
+function git::config::is_false {
   local value \
     key="$1" \
     flags=("${@:2}")
@@ -61,30 +61,30 @@ function git::config::is_false() {
     && [[ "${value}" == 'false' ]]
 }
 
-function git::config::is_truthy() {
+function git::config::is_truthy {
   git::config::exists "$@" \
     && ! git::config::is_false "$@"
 }
 
-function git::config::is_falsey() {
+function git::config::is_falsey {
   ! git::config::is_truthy "$@"
 }
 
-function git::config::get() {
+function git::config::get {
   local key="$1" \
     flags=("${@:2}")
 
   git config "${flags[@]}" --get "${key}"
 }
 
-function git::config::get_all() {
+function git::config::get_all {
   local key="$1" \
     flags=("${@:2}")
 
   git config "${flags[@]}" --get-all "${key}"
 }
 
-function git::dir() {
+function git::dir {
   if (( $# == 0 )); then
     git rev-parse --git-dir
     return

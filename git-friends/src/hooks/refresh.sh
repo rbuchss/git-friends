@@ -1,6 +1,6 @@
 #!/bin/bash
 
-function git::hooks::refresh() {
+function git::hooks::refresh {
   local hooks=(.git/hooks/*)
 
   if (( "${#hooks[@]}" != 0 )); then

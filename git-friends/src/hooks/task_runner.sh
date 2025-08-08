@@ -4,7 +4,7 @@ source "${BASH_SOURCE[0]%/*/*}/config.sh"
 source "${BASH_SOURCE[0]%/*/*}/logger.sh"
 source "${BASH_SOURCE[0]%/*/*}/utility.sh"
 
-function git::hooks::task_runner() {
+function git::hooks::task_runner {
   local name \
     block='git::hooks::task_runner::background_block' \
     arguments=()
@@ -48,7 +48,7 @@ function git::hooks::task_runner() {
     "${tasks[@]}"
 }
 
-function git::hooks::task_runner::usage() {
+function git::hooks::task_runner::usage {
   cat <<USAGE_TEXT
 Usage: ${FUNCNAME[1]} [OPTIONS] [<name>] <tasks>
 
@@ -74,7 +74,7 @@ Usage: ${FUNCNAME[1]} [OPTIONS] [<name>] <tasks>
 USAGE_TEXT
 }
 
-function git::hooks::task_runner::body() {
+function git::hooks::task_runner::body {
   local hook_name="$1" \
     config_section="git-friends.$1" \
     block="$2" \
@@ -141,7 +141,7 @@ function git::hooks::task_runner::body() {
   return "${exit_status}"
 }
 
-function git::hooks::task_runner::background_block() {
+function git::hooks::task_runner::background_block {
   local task="$1" \
     logfile="$2" \
     skip=("${@:3}") \

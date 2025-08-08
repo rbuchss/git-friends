@@ -4,7 +4,7 @@ source "${BASH_SOURCE[0]%/*}/config.sh"
 source "${BASH_SOURCE[0]%/*}/url.sh"
 source "${BASH_SOURCE[0]%/*}/utility.sh"
 
-function git::protocol::set() {
+function git::protocol::set {
   local protocol="$1" \
     name="${2:-origin}" \
     url \
