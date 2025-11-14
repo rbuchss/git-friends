@@ -1,0 +1,5 @@
+#!/bin/bash
+# shellcheck source=/dev/null
+source "${HOME}/.git-friends/src/remote.sh"
+
+git::remote::check_status "$@"
