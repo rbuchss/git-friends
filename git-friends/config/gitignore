@@ -7,3 +7,6 @@ sandcube
 .DS_Store
 Vault
 TODO
+
+# ignore repo root level claude configs
+/.claude
