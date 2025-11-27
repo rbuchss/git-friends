@@ -3,7 +3,9 @@
 source "${BASH_SOURCE[0]%/*}/logger.sh"
 
 function git::format::newline {
-  local mode="${1:-staged}"
+  local \
+    mode="${1:-staged}"
+    commit_ref="${2:-}"
 
   case "${mode}" in
     all | tracked)
@@ -15,8 +17,15 @@ function git::format::newline {
     df | changed)
       git::format::newline::changed
       ;;
+    ref)
+      if [[ -z "${commit_ref}" ]]; then
+        git::logger::error "ref mode requires a commit reference (e.g., HEAD^, HEAD~2)"
+        return 1
+      fi
+      git::format::newline::ref "${commit_ref}"
+      ;;
     *)
-      git::logger::error "Invalid mode: '${mode}'. Choices [all(tracked), dc(staged), df(changed)]"
+      git::logger::error "Invalid mode: '${mode}'. Choices [all(tracked), dc(staged), df(changed), ref]"
       return 1
       ;;
   esac
@@ -38,6 +47,14 @@ function git::format::newline::changed {
   git::format::__newline_from_command__ \
     'changed' \
     git diff HEAD --name-only --diff-filter=ACM
+}
+
+function git::format::newline::ref {
+  local commit_ref="$1"
+
+  git::format::__newline_from_command__ \
+    "changed against ${commit_ref}" \
+    git diff "${commit_ref}" --name-only --diff-filter=ACM
 }
 
 function git::format::newline::process {
