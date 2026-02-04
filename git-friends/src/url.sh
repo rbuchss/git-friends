@@ -1,12 +1,28 @@
 #!/bin/bash
 
-function git::url::parse {
-  local regexp='(git\@|https://|http://)([^/:]+)(:|/)([^/]+)/(.+$)'
+function git::url::is_valid {
+  local url="$1"
 
-  if [[ "$1" =~ $regexp ]] \
-    && [[ -n "${BASH_REMATCH[$2]}" ]]; then
-      echo "${BASH_REMATCH[$2]}"
-      return
+  git::url::parse "${url}" 1 5 > /dev/null 2>&1
+}
+
+function git::url::parse {
+  local \
+    url="$1" \
+    start_index="$2" \
+    end_index="${3:-$2}" \
+    regexp='(git\@|https://|http://)([^/:]+)(:|/)([^/]+)/(.+)$' \
+    match_index
+
+  if [[ "${url}" =~ $regexp ]]; then
+    for (( match_index = start_index; match_index <= end_index; match_index++ )); do
+      if [[ -z "${BASH_REMATCH[${match_index}]}" ]]; then
+        return 1
+      fi
+      echo "${BASH_REMATCH[${match_index}]}"
+    done
+
+    return 0
   fi
 
   return 1
@@ -30,6 +46,12 @@ function git::url::user {
 
 function git::url::repo {
   git::url::parse "$1" 5
+}
+
+function git::url::repo_name {
+  local repo
+  repo="$(git::url::repo "$1")" || return 1
+  echo "${repo%.git}"
 }
 
 function git::url::protocol {
