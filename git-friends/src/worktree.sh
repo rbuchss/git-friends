@@ -120,6 +120,35 @@ function git::worktree::clone {
   git::logger::info "Worktree setup complete: '${directory}/${main_branch}'"
 }
 
+# Clone repository as bare worktree and cd into the main worktree.
+# Usage: git::worktree::clone::cd <repository> [directory]
+function git::worktree::clone::cd {
+  local \
+    repository="$1" \
+    directory="$2" \
+    main_ref \
+    main_branch
+
+  if ! git::worktree::clone "$@"; then
+    return 1
+  fi
+
+  # Re-derive directory and main_branch for cd
+  if [[ -z "${directory}" ]]; then
+    directory="$(git::url::repo_name "${repository}")"
+  fi
+
+  if ! main_ref="$(git::utility::get_main_ref origin "${directory}/__git__")"; then
+    git::logger::error 'Could not determine main worktree path'
+    return 1
+  fi
+
+  main_branch="${main_ref##*/}"
+
+  git::logger::info "Changing directory to: '${directory}/${main_branch}'"
+  cd "${directory}/${main_branch}" || return 1
+}
+
 # Create or attach a feature worktree.
 # Routes to git::worktree::add::existing or git::worktree::add::new based on -b flag.
 # Other args are passed through transparently.
