@@ -4,6 +4,54 @@ source "${BASH_SOURCE[0]%/*}/logger.sh"
 source "${BASH_SOURCE[0]%/*}/url.sh"
 source "${BASH_SOURCE[0]%/*}/utility.sh"
 
+# Get path to file storing previous worktree branch.
+# Uses shared git dir so it's accessible from all worktrees.
+function git::worktree::previous_file {
+  local git_common_dir
+  git_common_dir="$(git rev-parse --git-common-dir 2>/dev/null)" || return 1
+  echo "${git_common_dir}/.git-friends-previous-worktree"
+}
+
+# Save current branch as previous worktree.
+# Called before cd'ing to a new worktree.
+function git::worktree::save_previous {
+  local \
+    current_branch \
+    previous_file
+
+  current_branch="$(git branch --show-current 2>/dev/null)" || return 1
+  previous_file="$(git::worktree::previous_file)" || return 1
+
+  echo "${current_branch}" > "${previous_file}"
+}
+
+# Get the previous worktree branch.
+# Returns 1 if no previous branch is recorded.
+function git::worktree::get_previous {
+  local previous_file
+
+  previous_file="$(git::worktree::previous_file)" || return 1
+
+  if [[ ! -f "${previous_file}" ]]; then
+    return 1
+  fi
+
+  cat "${previous_file}"
+}
+
+# Resolve branch argument, handling '-' as previous branch.
+# Usage: git::worktree::resolve_branch <branch>
+# Outputs resolved branch name.
+function git::worktree::resolve_branch {
+  local branch="$1"
+
+  if [[ "${branch}" == '-' ]]; then
+    branch="$(git::worktree::get_previous)" || return 1
+  fi
+
+  echo "${branch}"
+}
+
 function git::worktree::clone {
   local \
     repository="$1" \
@@ -229,20 +277,31 @@ function git::worktree::checkout {
 }
 
 # Checkout existing branch worktree and cd into it.
+# Supports '-' to checkout the previous worktree (like git checkout -).
 # Fails if branch doesn't exist.
 # Usage: git::worktree::checkout::existing <branch>
 function git::worktree::checkout::existing {
   local branch="$1"
-  local worktree_dir="../${branch}"
 
   if [[ -z "${branch}" ]]; then
     git::logger::error 'usage: git::worktree::checkout::existing <branch>'
     return 1
   fi
 
+  # Resolve '-' to previous branch
+  if ! branch="$(git::worktree::resolve_branch "${branch}")"; then
+    git::logger::error 'No previous worktree recorded'
+    return 1
+  fi
+
+  local worktree_dir="../${branch}"
+
   if ! git::worktree::add::existing "${branch}"; then
     return 1
   fi
+
+  # Save current branch before changing directory
+  git::worktree::save_previous
 
   git::logger::info "Changing directory to: '${worktree_dir}'"
   cd "${worktree_dir}" || return 1
@@ -252,16 +311,20 @@ function git::worktree::checkout::existing {
 # Usage: git::worktree::checkout::new <branch> [start-point]
 function git::worktree::checkout::new {
   local branch="$1"
-  local worktree_dir="../${branch}"
 
   if [[ -z "${branch}" ]]; then
     git::logger::error 'usage: git::worktree::checkout::new <branch> [start-point]'
     return 1
   fi
 
+  local worktree_dir="../${branch}"
+
   if ! git::worktree::add::new "$@"; then
     return 1
   fi
+
+  # Save current branch before changing directory
+  git::worktree::save_previous
 
   git::logger::info "Changing directory to: '${worktree_dir}'"
   cd "${worktree_dir}" || return 1

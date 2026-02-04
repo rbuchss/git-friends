@@ -116,7 +116,8 @@ function _gwco {
 
   case "${cur}" in
     -*)
-      COMPREPLY=($(compgen -W '-b --branch' -- "${cur}"))
+      # Include '-' for previous worktree, plus flags
+      COMPREPLY=($(compgen -W '- -b --branch' -- "${cur}"))
       ;;
     *)
       # Complete with branch names (local and remote tracking)
