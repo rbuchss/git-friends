@@ -1,5 +1,6 @@
 #!/bin/bash
 # shellcheck source=/dev/null
+source "${BASH_SOURCE[0]%/*}/logger.sh"
 source "${BASH_SOURCE[0]%/*}/utility.sh"
 
 function git::prune::branches {
@@ -22,7 +23,7 @@ function git::prune::branches {
         cmd='git::prune::branches::remote'
         ;;
       -*)
-        >&2 echo "ERROR: ${FUNCNAME[0]} invalid option: '$1'"
+        git::logger::error "invalid option: '$1'"
         git::prune::branches::usage >&2
         return 1
         ;;
@@ -63,7 +64,7 @@ function git::prune::branches::local {
     && ref_branch="$(git branch --show-current)"
 
   if ! git show-ref --verify --quiet "refs/heads/${ref_branch}"; then
-    >&2 echo "ERROR: ${FUNCNAME[0]}: reference branch '${ref_branch}' does not exist"
+    git::logger::error "reference branch '${ref_branch}' does not exist"
     return 1
   fi
 
@@ -74,7 +75,7 @@ function git::prune::branches::local {
 
   (( "${#merged_branches[@]}" == 0 )) && return
 
-  echo "${FUNCNAME[0]} found ${#merged_branches[@]} branches merged into ${ref_branch}:"
+  git::logger::info "found ${#merged_branches[@]} branches merged into '${ref_branch}':"
   printf ' - %s\n' "${merged_branches[@]}"
 
   for branch in "${merged_branches[@]}"; do
@@ -91,7 +92,7 @@ function git::prune::branches::remote {
     dry_run_response
 
   if ! dry_run_response="$(git remote prune -n "${remote}")"; then
-    >&2 echo "ERROR: remote '${remote}' is not valid"
+    git::logger::error "remote '${remote}' is not valid"
     return 1
   fi
 
@@ -115,9 +116,9 @@ function git::prune::branches::all {
     ref_branch="$3"
 
   if (( $# == 2 )); then
-    >&2 echo 'ERROR: invalid number of arguments'
-    >&2 echo "Usage: ${FUNCNAME[0]} force [remote] [branch]"
-    >&2 echo ' - optional remote and branch must be specified together'
+    git::logger::error 'invalid number of arguments'
+    git::logger::error "Usage: ${FUNCNAME[0]} force [remote] [branch]"
+    git::logger::error ' - optional remote and branch must be specified together'
     return 1
   fi
 

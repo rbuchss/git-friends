@@ -1,6 +1,7 @@
 #!/bin/bash
 # shellcheck source=/dev/null
 source "${BASH_SOURCE[0]%/*}/config.sh"
+source "${BASH_SOURCE[0]%/*}/logger.sh"
 source "${BASH_SOURCE[0]%/*}/url.sh"
 source "${BASH_SOURCE[0]%/*}/utility.sh"
 
@@ -11,7 +12,7 @@ function git::protocol::set {
     new_url
 
   if ! url="$(git::config::get "remote.${name}.url")"; then
-    >&2 echo "ERROR: remote '${name}' not found"
+    git::logger::error "remote '${name}' not found"
     return 1
   fi
 

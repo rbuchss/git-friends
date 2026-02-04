@@ -1,5 +1,6 @@
 #!/bin/bash
 # shellcheck source=/dev/null
+source "${BASH_SOURCE[0]%/*}/logger.sh"
 source "${BASH_SOURCE[0]%/*}/utility.sh"
 
 function git::submodule::remove {
@@ -9,7 +10,7 @@ function git::submodule::remove {
 
   for submodule_path in "$@"; do
     if [[ ! -d "${submodule_path}" ]]; then
-      >&2 echo "ERROR: path to submodule: '${submodule_path}' not found"
+      git::logger::error "path to submodule: '${submodule_path}' not found"
       return 1
     fi
 

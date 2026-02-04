@@ -11,11 +11,11 @@ function git::hooks::pre_commit {
   rules=("$(git::dir)"/hooks/pre-commit-test-*)
 
   if (( ${#rules[@]} > 0 )); then
-    echo 'No pre-commit rules found. Skipping tests.'
+    git::logger::info 'No pre-commit rules found. Skipping tests.'
     return 0
   fi
 
-  echo 'Running pre-commit tests:'
+  git::logger::info 'Running pre-commit tests:'
 
   git::hooks::task_runner \
     --name 'pre-commit' \

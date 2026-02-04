@@ -1,6 +1,7 @@
 #!/bin/bash
 # shellcheck source=/dev/null
 source "${BASH_SOURCE[0]%/*}/config.sh"
+source "${BASH_SOURCE[0]%/*}/logger.sh"
 
 function git::ctags::generate {
   local cmd_path \
@@ -9,7 +10,7 @@ function git::ctags::generate {
     extra_flags=("$@")
 
   if ! cmd_path="$(command -v ctags 2>/dev/null)"; then
-    >&2 echo "ERROR: ${FUNCNAME[0]}: command 'ctags' could not be found"
+    git::logger::error "command 'ctags' could not be found"
     return 1
   fi
 
@@ -18,7 +19,7 @@ function git::ctags::generate {
   fi
 
   if ! tmp_file="$(git::dir "git-friends/tags.$$")"; then
-    >&2 echo "ERROR: ${FUNCNAME[0]}: git-dir could not be found"
+    git::logger::error 'git-dir could not be found'
     return 1
   fi
 
@@ -26,11 +27,11 @@ function git::ctags::generate {
 
   if [[ ! -d "${tmp_file%/*}" ]] \
     && ! mkdir -p "${tmp_file%/*}"; then
-      >&2 echo "ERROR: ${FUNCNAME[0]}: cannot make ctags directory: '${tmp_file%/*}'"
+      git::logger::error "cannot make ctags directory: '${tmp_file%/*}'"
       return 1
   fi
 
-  echo "Using: ${cmd_path}"
+  git::logger::info "Using: '${cmd_path}'"
 
   if git ls-files \
     | ctags -L - \
@@ -45,11 +46,11 @@ function git::ctags::generate {
     --verbose \
     "${extra_flags[@]}"; then
       mv -v "${tmp_file}" "${tags_file}"
-      echo "${FUNCNAME[0]}: Success"
+      git::logger::info 'Success'
       return
   fi
 
-  >&2 echo "ERROR: ${FUNCNAME[0]}: 'git ls-files' or 'ctags' had errors; aborting"
+  git::logger::error "'git ls-files' or 'ctags' had errors; aborting"
   rm -f "${tmp_file}"
   return 1
 }

@@ -1,5 +1,6 @@
 #!/bin/bash
 # shellcheck source=/dev/null
+source "${BASH_SOURCE[0]%/*}/logger.sh"
 source "${BASH_SOURCE[0]%/*}/url.sh"
 source "${BASH_SOURCE[0]%/*}/utility.sh"
 
@@ -14,7 +15,7 @@ function git::upstream::add {
   fi
 
   if [[ -z "${user}" ]]; then
-    >&2 echo 'ERROR: no upstream user/organization name provided'
+    git::logger::error 'no upstream user/organization name provided'
     return 1
   fi
 
