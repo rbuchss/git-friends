@@ -91,3 +91,42 @@ function _git_prune_branches {
       ;;
   esac
 }
+
+# Completions for worktree aliases
+function _git_wt {
+  _git_worktree
+}
+
+function _git_wa {
+  # shellcheck disable=SC2154
+  case "${cur}" in
+    -*)
+      __gitcomp '-b --branch'
+      ;;
+    *)
+      __git_complete_refs
+      ;;
+  esac
+}
+
+# Completion for gwco bash alias (git::worktree::checkout)
+# Completes branch names and -b/--branch flags
+function _gwco {
+  local cur="${COMP_WORDS[COMP_CWORD]}"
+
+  case "${cur}" in
+    -*)
+      COMPREPLY=($(compgen -W '-b --branch' -- "${cur}"))
+      ;;
+    *)
+      # Complete with branch names (local and remote tracking)
+      if type __git_complete_refs &> /dev/null; then
+        __git_complete_refs
+      elif type __git_heads &> /dev/null; then
+        __gitcomp_direct "$(__git_heads "" "${cur}" " ")"
+      fi
+      ;;
+  esac
+}
+
+complete -F _gwco gwco

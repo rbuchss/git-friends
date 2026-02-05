@@ -3,7 +3,8 @@
 source "${BASH_SOURCE[0]%/*}/logger.sh"
 
 function git::utility::ask {
-  local question="$1" \
+  local \
+    question="$1" \
     response_for_all_var_="$2" \
     response_for_all_
 
@@ -45,8 +46,10 @@ function git::utility::ask {
 }
 
 function git::utility::array_contains {
-  local match="$1" \
+  local \
+    match="$1" \
     element
+
   shift
 
   for element; do
@@ -71,7 +74,13 @@ function git::utility::is_not_executable {
 }
 
 function git::utility::get_main_ref {
-  local remote="${1:-origin}" \
+  local \
+    remote="${1:-origin}" \
+    path="$2" \
+    git_cmd=(git) \
+    is_bare \
+    ref_prefix \
+    branch_ref_prefix \
     branch_ref \
     branch_name \
     branch_refs=() \
@@ -81,20 +90,34 @@ function git::utility::get_main_ref {
       mainline
     )
 
+  if [[ -n "${path}" ]]; then
+    git_cmd=(git -C "${path}")
+  fi
+
+  is_bare="$("${git_cmd[@]}" rev-parse --is-bare-repository 2>/dev/null)"
+
+  if [[ "${is_bare}" == 'true' ]]; then
+    ref_prefix='refs/heads'
+    branch_ref_prefix=''
+  else
+    ref_prefix="refs/remotes/${remote}"
+    branch_ref_prefix="${remote}/"
+  fi
+
   for branch_name in "${branch_names[@]}"; do
-    branch_ref="${remote}/${branch_name}"
+    branch_ref="${branch_ref_prefix}${branch_name}"
     branch_refs+=("${branch_ref}")
 
-    git::logger::debug "Checking if remote git branch: '${branch_ref}' exists"
+    git::logger::debug "Checking if git branch: '${branch_ref}' exists"
 
-    if git show-ref --quiet "refs/remotes/${branch_ref}"; then
-      git::logger::debug "Found git remote branch: '${branch_ref}' - using as main ref"
+    if "${git_cmd[@]}" show-ref --quiet "${ref_prefix}/${branch_name}"; then
+      git::logger::debug "Found git branch: '${branch_ref}' - using as main ref"
 
       echo "${branch_ref}"
       return 0
     fi
   done
 
-  git::logger::warning "Could not find any matching remote git branches: [${branch_refs[*]}] - exiting"
+  git::logger::warning "Could not find any matching git branches: [${branch_refs[*]}] - exiting"
   return 1
 }

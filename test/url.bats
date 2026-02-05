@@ -86,6 +86,85 @@ setup_with_coverage 'git-friends/src/url.sh'
   assert_failure
 }
 
+@test "git::url::parse 'git@github.com:rbuchss/git-friends.git' 1 5" {
+  run git::url::parse 'git@github.com:rbuchss/git-friends.git' 1 5
+
+  assert_success
+  assert_output "git@
+github.com
+:
+rbuchss
+git-friends.git"
+}
+
+@test "git::url::parse 'https://github.com/rbuchss/git-friends.git' 1 5" {
+  run git::url::parse 'https://github.com/rbuchss/git-friends.git' 1 5
+
+  assert_success
+  assert_output "https://
+github.com
+/
+rbuchss
+git-friends.git"
+}
+
+@test "git::url::parse 'git@github.com:rbuchss/git-friends.git' 2 4" {
+  run git::url::parse 'git@github.com:rbuchss/git-friends.git' 2 4
+
+  assert_success
+  assert_output "github.com
+:
+rbuchss"
+}
+
+@test "git::url::parse 'git@github.com:rbuchss/git-friends.git' 1 6" {
+  run git::url::parse 'git@github.com:rbuchss/git-friends.git' 1 6
+
+  assert_failure
+}
+
+@test "git::url::is_valid 'git@github.com:rbuchss/git-friends.git'" {
+  run git::url::is_valid 'git@github.com:rbuchss/git-friends.git'
+
+  assert_success
+}
+
+@test "git::url::is_valid 'https://github.com/rbuchss/git-friends.git'" {
+  run git::url::is_valid 'https://github.com/rbuchss/git-friends.git'
+
+  assert_success
+}
+
+@test "git::url::is_valid 'http://github.com/rbuchss/git-friends.git'" {
+  run git::url::is_valid 'http://github.com/rbuchss/git-friends.git'
+
+  assert_success
+}
+
+@test "git::url::is_valid 'not-valid://github.com/rbuchss/git-friends.git'" {
+  run git::url::is_valid 'not-valid://github.com/rbuchss/git-friends.git'
+
+  assert_failure
+}
+
+@test "git::url::is_valid 'https://github.com/rbuchss'" {
+  run git::url::is_valid 'https://github.com/rbuchss'
+
+  assert_failure
+}
+
+@test "git::url::is_valid 'not-a-url'" {
+  run git::url::is_valid 'not-a-url'
+
+  assert_failure
+}
+
+@test "git::url::is_valid ''" {
+  run git::url::is_valid ''
+
+  assert_failure
+}
+
 @test "git::url::prefix 'git@github.com:rbuchss/git-friends.git'" {
   run git::url::prefix 'git@github.com:rbuchss/git-friends.git'
 
@@ -154,6 +233,27 @@ setup_with_coverage 'git-friends/src/url.sh'
 
   assert_success
   assert_output 'git-friends.git'
+}
+
+@test "git::url::repo_name 'git@github.com:rbuchss/git-friends.git'" {
+  run git::url::repo_name 'git@github.com:rbuchss/git-friends.git'
+
+  assert_success
+  assert_output 'git-friends'
+}
+
+@test "git::url::repo_name 'https://github.com/rbuchss/git-friends.git'" {
+  run git::url::repo_name 'https://github.com/rbuchss/git-friends.git'
+
+  assert_success
+  assert_output 'git-friends'
+}
+
+@test "git::url::repo_name 'https://github.com/rbuchss/git-friends'" {
+  run git::url::repo_name 'https://github.com/rbuchss/git-friends'
+
+  assert_success
+  assert_output 'git-friends'
 }
 
 @test "git::url::protocol 'git@github.com:rbuchss/git-friends.git'" {
