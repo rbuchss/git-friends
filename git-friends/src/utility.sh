@@ -91,9 +91,7 @@ function git::utility::get_main_ref {
       mainline
     )
 
-  if [[ -n "${path}" ]]; then
-    git_cmd=(git -C "${path}")
-  fi
+  [[ -n "${path}" ]] && git_cmd+=(-C "${path}")
 
   is_bare="$("${git_cmd[@]}" rev-parse --is-bare-repository 2>/dev/null)"
   git::logger::debug "is_bare (initial): '${is_bare}'"
