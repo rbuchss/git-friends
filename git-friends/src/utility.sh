@@ -79,6 +79,7 @@ function git::utility::get_main_ref {
     path="$2" \
     git_cmd=(git) \
     is_bare \
+    git_common_dir \
     ref_prefix \
     branch_ref_prefix \
     branch_ref \
@@ -95,6 +96,18 @@ function git::utility::get_main_ref {
   fi
 
   is_bare="$("${git_cmd[@]}" rev-parse --is-bare-repository 2>/dev/null)"
+  git::logger::debug "is_bare (initial): '${is_bare}'"
+
+  # Also check if we're in a worktree linked to a bare repo
+  if [[ "${is_bare}" != 'true' ]]; then
+    git_common_dir="$("${git_cmd[@]}" rev-parse --git-common-dir 2>/dev/null)"
+    git::logger::debug "git_common_dir: '${git_common_dir}'"
+
+    if [[ -n "${git_common_dir}" ]]; then
+      is_bare="$(git --git-dir="${git_common_dir}" rev-parse --is-bare-repository 2>/dev/null)"
+      git::logger::debug "is_bare (from common dir): '${is_bare}'"
+    fi
+  fi
 
   if [[ "${is_bare}" == 'true' ]]; then
     ref_prefix='refs/heads'

@@ -4,7 +4,8 @@ source "${BASH_SOURCE[0]%/*}/logger.sh"
 source "${BASH_SOURCE[0]%/*}/utility.sh"
 
 function git::rebase::to_main {
-  local remote="${1:-origin}" \
+  local \
+    remote="${1:-origin}" \
     main_ref
 
   if ! main_ref="$(git::utility::get_main_ref "${remote}")"; then
