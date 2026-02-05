@@ -24,7 +24,7 @@ function git::hooks::task_runner {
         block="$1"
         ;;
       -*)
-        >&2 echo "ERROR: ${FUNCNAME[0]} invalid option: '$1'"
+        git::logger::error "invalid option: '$1'"
         git::hooks::task_runner::usage >&2
         return 1
         ;;
@@ -99,7 +99,7 @@ function git::hooks::task_runner::body {
     && logfile="$(git::dir "git-friends/logs/${hook_name}.log")"; then
       if [[ ! -d "${logfile%/*}" ]] \
         && ! mkdir -p "${logfile%/*}"; then
-          >&2 echo "ERROR: ${FUNCNAME[0]}: cannot make log directory: '${logfile%/*}'"
+          git::logger::error "cannot make log directory: '${logfile%/*}'"
           return 1
       fi
   fi

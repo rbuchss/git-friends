@@ -1,4 +1,6 @@
 #!/bin/bash
+# shellcheck source=/dev/null
+source "${BASH_SOURCE[0]%/*}/logger.sh"
 
 function git::cd::root_dir {
   local root_dir
@@ -7,7 +9,7 @@ function git::cd::root_dir {
     return 1
   fi
 
-  echo "cd to git root dir: ${root_dir}"
+  git::logger::info "Changing directory to root: '${root_dir}'"
 
   cd "${root_dir}" || return 1
- }
+}
