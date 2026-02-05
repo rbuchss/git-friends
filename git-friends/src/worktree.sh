@@ -311,7 +311,7 @@ function git::worktree::add::new {
   fi
 
   git::logger::info "Creating new branch '${branch}' from '${start_point}'"
-  git worktree add --branch "${branch}" "${worktree_dir}" "${start_point}" "$@"
+  git worktree add -b "${branch}" "${worktree_dir}" "${start_point}" "$@"
 }
 
 # Create or attach a feature worktree and cd into it.
