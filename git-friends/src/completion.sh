@@ -109,9 +109,9 @@ function _git_wa {
   esac
 }
 
-# Completion for gwco bash alias (git::worktree::checkout)
+# Completion for g-wco bash alias (git::worktree::checkout)
 # Completes branch names and -b/--branch flags
-function _gwco {
+function _g_wco {
   local cur="${COMP_WORDS[COMP_CWORD]}"
 
   case "${cur}" in
@@ -130,4 +130,4 @@ function _gwco {
   esac
 }
 
-complete -F _gwco gwco
+complete -F _g_wco g-wco
