@@ -71,7 +71,7 @@ test-with-coverage:
 		--exclude-pattern=/test/,/coverage/,/report/ \
 		--bash-method=DEBUG \
 		--bash-parser="$(BASH_PATH)" \
-		--bash-parse-files-in-dir=. \
+		--bash-parse-files-in-dir=./git-friends/src/ \
 		--configure=command-name="$(TEST_COMMAND)" \
 		coverage \
 		-- \

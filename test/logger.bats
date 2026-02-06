@@ -2617,3 +2617,374 @@ LOG_MESSAGES=(
   assert_equal "${_status}" 0
   assert_equal "${result}" '__override__GIT_FRIENDS_LOG_SILENCE'
 }
+
+################################################################################
+# git::logger::__export__ / git::logger::__recall__
+#
+# These tests use bash -c to run in a fresh exec'd process (not a fork) because:
+#   1. logger.sh declares readonly variables (e.g. GIT_FRIENDS_LOG_SEVERITY_*)
+#      at source time (line 6-13)
+#   2. setup_with_coverage sources logger.sh at file scope, so these readonly
+#      vars exist in the parent bats process
+#   3. Bats isolates each @test via fork() (subshell), which preserves readonly
+#      attributes — you cannot unset or re-declare them
+#   4. Testing __export__/__recall__ requires re-sourcing logger.sh from a clean
+#      state, but re-sourcing in a forked subshell hits "readonly variable" errors
+#   5. bash -c starts a new exec'd process with no inherited readonly attributes,
+#      allowing a clean re-source
+#
+# Note: __export__ is already covered by kcov (it runs during setup_with_coverage
+# when logger.sh is sourced). __recall__ lines will appear uncovered since kcov
+# cannot trace into bash -c child processes.
+################################################################################
+
+# bats test_tags=git::logger::__export__
+@test "git::logger::__export__ exports functions and variables to child shells" {
+  local src_file
+  src_file="$(repo_root)/git-friends/src/logger.sh"
+
+  # Run in a fresh bash process (see block comment above).
+  # Unset the source guard so logger.sh fully loads (including __export__).
+  run bash -c "
+    unset GIT_FRIENDS_MODULE_LOGGER_LOADED
+    source '${src_file}'
+
+    # Verify key functions are exported
+    type git::logger::trace > /dev/null 2>&1 \
+      && type git::logger::debug > /dev/null 2>&1 \
+      && type git::logger::info > /dev/null 2>&1 \
+      && type git::logger::warning > /dev/null 2>&1 \
+      && type git::logger::error > /dev/null 2>&1 \
+      && type git::logger::fatal > /dev/null 2>&1 \
+      && type git::logger::log > /dev/null 2>&1 \
+      && type git::logger::stacktrace > /dev/null 2>&1 \
+      && type git::logger::caller_formatter > /dev/null 2>&1 \
+      || { echo 'functions not exported'; exit 1; }
+
+    # Verify severity variables are exported
+    [[ \"\${GIT_FRIENDS_LOG_SEVERITY_TRACE}\" == '0' ]] \
+      && [[ \"\${GIT_FRIENDS_LOG_SEVERITY_DEBUG}\" == '1' ]] \
+      && [[ \"\${GIT_FRIENDS_LOG_SEVERITY_INFO}\" == '2' ]] \
+      && [[ \"\${GIT_FRIENDS_LOG_SEVERITY_WARNING}\" == '3' ]] \
+      && [[ \"\${GIT_FRIENDS_LOG_SEVERITY_ERROR}\" == '4' ]] \
+      && [[ \"\${GIT_FRIENDS_LOG_SEVERITY_FATAL}\" == '5' ]] \
+      && [[ \"\${GIT_FRIENDS_LOG_INVALID_STATUS}\" == '255' ]] \
+      || { echo 'severity variables not exported'; exit 1; }
+  "
+  assert_success
+}
+
+# bats test_tags=git::logger::__recall__
+@test "git::logger::__recall__ removes exports but keeps functions locally" {
+  local src_file
+  src_file="$(repo_root)/git-friends/src/logger.sh"
+
+  # Run in a fresh bash process (see block comment above __export__ test).
+  run bash -c "
+    unset GIT_FRIENDS_MODULE_LOGGER_LOADED
+    source '${src_file}'
+    git::logger::__recall__
+
+    # Functions should still be defined locally
+    type git::logger::trace > /dev/null 2>&1 \
+      || { echo 'function not available locally'; exit 1; }
+
+    # But functions should NOT be exported to child shells
+    if bash -c 'type git::logger::trace > /dev/null 2>&1'; then
+      echo 'function still exported to child'
+      exit 1
+    fi
+
+    # Severity variables should NOT be exported to child shells
+    if bash -c '[[ -n \"\${GIT_FRIENDS_LOG_SEVERITY_TRACE}\" ]]'; then
+      echo 'variable still exported to child'
+      exit 1
+    fi
+  "
+  assert_success
+}
+
+################################################################################
+# git::logger::caller_formatter
+################################################################################
+
+# bats test_tags=git::logger::caller_formatter
+@test "git::logger::caller_formatter formats full caller info" {
+  run git::logger::caller_formatter '42 my_function /path/to/file.sh'
+  assert_success
+  assert_output --partial 'my_function'
+  assert_output --partial '/path/to/file.sh'
+}
+
+# bats test_tags=git::logger::caller_formatter
+@test "git::logger::caller_formatter with output_var" {
+  local \
+    result \
+    _status=0
+
+  git::logger::caller_formatter '42 my_function /path/to/file.sh' result \
+    || _status=$?
+
+  assert_equal "${_status}" 0
+  [[ "${result}" == *'my_function'* ]]
+  [[ "${result}" == *'/path/to/file.sh'* ]]
+}
+
+# bats test_tags=git::logger::caller_formatter
+@test "git::logger::caller_formatter handles missing function" {
+  run git::logger::caller_formatter '42'
+  assert_success
+  assert_output --partial '(top level)'
+}
+
+# bats test_tags=git::logger::caller_formatter
+@test "git::logger::caller_formatter handles missing file" {
+  run git::logger::caller_formatter '42 some_func'
+  assert_success
+  assert_output --partial 'some_func'
+  assert_output --partial '(no file)'
+}
+
+################################################################################
+# git::logger::stacktrace
+################################################################################
+
+# bats test_tags=git::logger::stacktrace
+@test "git::logger::stacktrace outputs trace from nested call" {
+  __inner() { git::logger::stacktrace; }
+
+  run __inner
+  assert_success
+  assert_output --partial 'Traceback'
+}
+
+# bats test_tags=git::logger::stacktrace
+@test "git::logger::stacktrace with output_var" {
+  __inner() {
+    local result
+    git::logger::stacktrace 0 result
+    echo "${result}"
+  }
+
+  run __inner
+  assert_success
+  assert_output --partial 'Traceback'
+}
+
+# bats test_tags=git::logger::stacktrace
+@test "git::logger::stacktrace outputs no traceback for deep level" {
+  run git::logger::stacktrace 999
+  assert_success
+  assert_output --partial 'No Traceback'
+}
+
+################################################################################
+# section: git::logger::log (short flags)
+################################################################################
+
+# bats test_tags=git::logger,git::logger::log,output_stderr
+@test "git::logger::log -l info" {
+  local _message
+
+  run --separate-stderr \
+    git::logger::log \
+      -l 'info' \
+      "${LOG_MESSAGES[@]}"
+
+  assert_success
+  refute_output
+  assert_stderr --regexp '^I, '
+  assert_stderr --regexp "${ISO_8601_TIMESTAMP_PATTERN}"
+  assert_stderr --regexp '#[0-9]+'
+  assert_stderr --regexp '    INFO -- '
+
+  for _message in "${LOG_MESSAGES[@]}"; do
+    assert_stderr --regexp "${_message}"
+  done
+}
+
+# bats test_tags=git::logger,git::logger::log,output_stderr
+@test "git::logger::log -l warning" {
+  local _message
+
+  run --separate-stderr \
+    git::logger::log \
+      -l 'warning' \
+      "${LOG_MESSAGES[@]}"
+
+  assert_success
+  refute_output
+  assert_stderr --regexp '^W, '
+  assert_stderr --regexp 'WARNING -- '
+
+  for _message in "${LOG_MESSAGES[@]}"; do
+    assert_stderr --regexp "${_message}"
+  done
+}
+
+# bats test_tags=git::logger,git::logger::log,output_stderr
+@test "git::logger::log -l fatal" {
+  local _message
+
+  run --separate-stderr \
+    git::logger::log \
+      -l 'fatal' \
+      "${LOG_MESSAGES[@]}"
+
+  assert_success
+  refute_output
+  assert_stderr --regexp '^F, '
+  assert_stderr --regexp '   FATAL -- '
+  assert_stderr --regexp '-> Traceback \(most recent call last\):'
+
+  for _message in "${LOG_MESSAGES[@]}"; do
+    assert_stderr --regexp "${_message}"
+  done
+}
+
+# bats test_tags=git::logger,git::logger::log,output_stderr
+@test "git::logger::log -c 1" {
+  local _message
+
+  run --separate-stderr \
+    git::logger::log \
+      -c 1 \
+      "${LOG_MESSAGES[@]}"
+
+  assert_success
+  refute_output
+  assert_stderr --regexp '^I, '
+  assert_stderr --regexp '   INFO -- '
+  assert_stderr --regexp ' run: '
+
+  for _message in "${LOG_MESSAGES[@]}"; do
+    assert_stderr --regexp "${_message}"
+  done
+}
+
+# bats test_tags=git::logger,git::logger::log,output_stdout
+@test "git::logger::log -o /dev/stdout" {
+  local _message
+
+  run --separate-stderr \
+    git::logger::log \
+      -o /dev/stdout \
+      "${LOG_MESSAGES[@]}"
+
+  assert_success
+  refute_stderr
+  assert_output --regexp '^I, '
+  assert_output --regexp "${ISO_8601_TIMESTAMP_PATTERN}"
+  assert_output --regexp '#[0-9]+'
+  assert_output --regexp '    INFO -- '
+
+  for _message in "${LOG_MESSAGES[@]}"; do
+    assert_output --regexp "${_message}"
+  done
+}
+
+# bats test_tags=git::logger,git::logger::log,output_null
+@test "git::logger::log -o /dev/null" {
+  run --separate-stderr \
+    git::logger::log \
+      -o /dev/null \
+      "${LOG_MESSAGES[@]}"
+
+  assert_success
+  refute_stderr
+  refute_output
+}
+
+# bats test_tags=git::logger,git::logger::log,output_stderr
+@test "git::logger::log -h" {
+  run --separate-stderr \
+    git::logger::log \
+      -h \
+      "${LOG_MESSAGES[@]}"
+
+  assert_failure "${GIT_FRIENDS_LOG_INVALID_STATUS}"
+  refute_output
+  assert_stderr --regexp '^Usage: git::logger::log'
+}
+
+# bats test_tags=git::logger,git::logger::log,output_stderr
+@test "git::logger::log combined short flags -l and -c" {
+  local _message
+
+  run --separate-stderr \
+    git::logger::log \
+      -l 'error' \
+      -c 1 \
+      "${LOG_MESSAGES[@]}"
+
+  assert_success
+  refute_output
+  assert_stderr --regexp '^E, '
+  assert_stderr --regexp '   ERROR -- '
+  assert_stderr --regexp ' run: '
+
+  for _message in "${LOG_MESSAGES[@]}"; do
+    assert_stderr --regexp "${_message}"
+  done
+}
+
+# bats test_tags=git::logger,git::logger::log,output_file
+@test "git::logger::log -o tempfile" {
+  local \
+    _message \
+    _file \
+    _file_content
+
+  _file="$(mktemp "${BATS_TEST_TMPDIR}/out.XXXXXX")"
+
+  run --separate-stderr \
+    git::logger::log \
+      -o "${_file}" \
+      "${LOG_MESSAGES[@]}"
+
+  assert_success
+  refute_stderr
+  refute_output
+
+  _file_content="$(cat "${_file}")"
+
+  assert_regex "${_file_content}" '^I, '
+  assert_regex "${_file_content}" "${ISO_8601_TIMESTAMP_PATTERN}"
+  assert_regex "${_file_content}" '#[0-9]+'
+  assert_regex "${_file_content}" '    INFO -- '
+
+  for _message in "${LOG_MESSAGES[@]}"; do
+    assert_regex "${_file_content}" "${_message}"
+  done
+}
+
+################################################################################
+# section: git::logger::datetime (no date command)
+################################################################################
+
+# bats test_tags=git::logger,git::logger::datetime,output_stdout
+@test "git::logger::datetime no date command found" {
+  local src_file
+  src_file="$(repo_root)/git-friends/src/logger.sh"
+
+  # Run in a fresh bash process with PATH set to a nonexistent directory and
+  # /bin/date renamed away by shadowing 'command' so that 'command -v' always
+  # fails for the date commands.
+  run bash -c "
+    unset GIT_FRIENDS_MODULE_LOGGER_LOADED
+    source '${src_file}'
+
+    # Override 'command' builtin to make -v always fail for date lookups
+    command() {
+      if [[ \"\$1\" == '-v' ]]; then
+        return 1
+      fi
+      builtin command \"\$@\"
+    }
+
+    git::logger::datetime
+  "
+
+  assert_success
+  assert_output ' NO-DATE-COMMAND-FOUND! '
+}
