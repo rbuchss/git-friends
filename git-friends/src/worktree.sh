@@ -4,6 +4,19 @@ source "${BASH_SOURCE[0]%/*}/logger.sh"
 source "${BASH_SOURCE[0]%/*}/url.sh"
 source "${BASH_SOURCE[0]%/*}/utility.sh"
 
+# Get the default remote, respecting checkout.defaultRemote config.
+# Falls back to 'origin' if not set.
+# Usage: git::worktree::default_remote [path]
+function git::worktree::default_remote {
+  local \
+    path="$1" \
+    git_cmd=(git)
+
+  [[ -n "${path}" ]] && git_cmd+=(-C "${path}")
+
+  "${git_cmd[@]}" config checkout.defaultRemote 2>/dev/null || echo 'origin'
+}
+
 # Get path to file storing previous worktree branch.
 # Uses shared git dir so it's accessible from all worktrees.
 function git::worktree::previous_file {
@@ -52,10 +65,15 @@ function git::worktree::resolve_branch {
   echo "${branch}"
 }
 
+# Clone repository as a bare worktree structure.
+# Creates: <directory>/__git__/.git (bare repo) and <directory>/<main-branch> (worktree)
+# Sets up remote tracking and branch upstream for git rebase/pull to work.
+# Usage: git::worktree::clone <repository> [directory]
 function git::worktree::clone {
   local \
     repository="$1" \
     directory="$2" \
+    default_remote \
     main_ref \
     main_branch
 
@@ -100,8 +118,16 @@ function git::worktree::clone {
 
   git::logger::info "Cloned bare repository to: '${directory}/__git__/.git'"
 
+  # Configure remote tracking branches (bare clone doesn't set this up by default)
+  default_remote="$(git::worktree::default_remote "${directory}/__git__")"
+
+  git::logger::info "Configuring remote tracking for '${default_remote}'"
+
+  git -C "${directory}/__git__" config "remote.${default_remote}.fetch" "+refs/heads/*:refs/remotes/${default_remote}/*"
+  git -C "${directory}/__git__" fetch "${default_remote}"
+
   # Derive the main ref from the cloned repository
-  if ! main_ref="$(git::utility::get_main_ref origin "${directory}/__git__")"; then
+  if ! main_ref="$(git::utility::get_main_ref "${default_remote}" "${directory}/__git__")"; then
     git::logger::error "Could not find main ref for repository: '${repository}' - exiting"
     return 1
   fi
@@ -117,6 +143,9 @@ function git::worktree::clone {
     return 1
   fi
 
+  # Set up branch tracking so git rebase/pull work without arguments
+  git -C "${directory}/${main_branch}" branch --set-upstream-to="${default_remote}/${main_branch}" "${main_branch}"
+
   git::logger::info "Worktree setup complete: '${directory}/${main_branch}'"
 }
 
@@ -126,6 +155,7 @@ function git::worktree::clone::cd {
   local \
     repository="$1" \
     directory="$2" \
+    default_remote \
     main_ref \
     main_branch
 
@@ -138,7 +168,8 @@ function git::worktree::clone::cd {
     directory="$(git::url::repo_name "${repository}")"
   fi
 
-  if ! main_ref="$(git::utility::get_main_ref origin "${directory}/__git__")"; then
+  default_remote="$(git::worktree::default_remote "${directory}/__git__")"
+  if ! main_ref="$(git::utility::get_main_ref "${default_remote}" "${directory}/__git__")"; then
     git::logger::error 'Could not determine main worktree path'
     return 1
   fi
@@ -204,6 +235,7 @@ function git::worktree::add::setup {
 function git::worktree::add::existing {
   local \
     branch="$1" \
+    default_remote \
     setup_result \
     worktree_dir \
     worktree_absolute_path
@@ -229,6 +261,12 @@ function git::worktree::add::existing {
   if ! git worktree add "${worktree_dir}" "${branch}" "$@"; then
     git::logger::error "Branch '${branch}' not found - use -b/--branch to create a new branch"
     return 1
+  fi
+
+  # Set up branch tracking if remote branch exists
+  default_remote="$(git::worktree::default_remote)"
+  if git show-ref --quiet "refs/remotes/${default_remote}/${branch}"; then
+    git -C "${worktree_dir}" branch --set-upstream-to="${default_remote}/${branch}" "${branch}"
   fi
 }
 
@@ -262,7 +300,7 @@ function git::worktree::add::new {
   fi
 
   if [[ -z "${start_point}" ]]; then
-    default_remote="$(git config checkout.defaultRemote || echo 'origin')"
+    default_remote="$(git::worktree::default_remote)"
 
     if ! start_point="$(git::utility::get_main_ref "${default_remote}")"; then
       git::logger::error "Could not determine main ref for remote: '${default_remote}' - exiting"
