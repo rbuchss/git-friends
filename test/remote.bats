@@ -371,8 +371,6 @@ __create_cloned_repo() {
 # bats test_tags=git::remote::check_status
 @test "git::remote::check_status returns failure with error message when not in git repo" {
   cd "${BATS_TEST_TMPDIR}"
-  # Guard: skip if BATS_TEST_TMPDIR is itself inside a git repo (e.g. Docker)
-  git rev-parse --git-dir > /dev/null 2>&1 && skip "BATS_TEST_TMPDIR is inside a git repo"
 
   run --separate-stderr git::remote::check_status
   assert_failure
@@ -421,7 +419,6 @@ __create_cloned_repo() {
 # bats test_tags=git::remote::validate_repository
 @test "git::remote::validate_repository logs error when not in git repo" {
   cd "${BATS_TEST_TMPDIR}"
-  git rev-parse --git-dir > /dev/null 2>&1 && skip "BATS_TEST_TMPDIR is inside a git repo"
 
   run --separate-stderr git::remote::validate_repository
   assert_failure
