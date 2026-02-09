@@ -1,8 +1,11 @@
 #!/bin/bash
 
 function git::config::group {
-  local group="$1"
-  git config --get-regexp "^${group}"
+  local \
+    group="$1" \
+    flags=("${@:2}")
+
+  git config "${flags[@]}" --get-regexp "^${group}"
 }
 
 function git::config::aliases {

@@ -57,6 +57,6 @@ CMD exec make guards
 
 FROM git-friends-tester-base AS git-friends-tester-github-actions
 
-COPY . .
+COPY . ./cyberdyne/
 
 ENTRYPOINT ["./.github/actions/run-make/entrypoint.sh"]
