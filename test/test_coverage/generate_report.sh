@@ -12,8 +12,6 @@ FAIL_SYMBOL=🔴
 SCRIPT_PATH="${BASH_SOURCE[0]:-$0}"
 SCRIPT_DIR="${SCRIPT_PATH%/*}"
 
-COVERAGE_FILE=coverage/bats/coverage.json
-
 if ! command -v jq > /dev/null 2>&1; then
   >&2 echo 'ERROR: jq not installed - skipping coverage report generation'
   exit 1
@@ -21,6 +19,28 @@ fi
 
 function git::test::coverage::repo_root {
   git rev-parse --show-toplevel
+}
+
+# Resolve coverage JSON path, handling broken symlinks from container runs.
+# kcov creates coverage/bats -> /workspace/coverage/bats.HASH (absolute container
+# path). On the host this symlink is broken, so we fall back to the glob pattern.
+function git::test::coverage::resolve_coverage_file {
+  local repo_root="${1:?}"
+  local coverage_file="${repo_root}/coverage/bats/coverage.json"
+
+  if [[ -f "${coverage_file}" ]]; then
+    echo "${coverage_file}"
+    return 0
+  fi
+
+  # Symlink broken (absolute container path) — fall back to glob
+  local -a matches=("${repo_root}"/coverage/bats.*/coverage.json)
+  if [[ -f "${matches[0]}" ]]; then
+    echo "${matches[0]}"
+    return 0
+  fi
+
+  return 1
 }
 
 function git::test::coverage::get_overall_status {
@@ -175,12 +195,49 @@ EOF
 
 }
 
+function git::test::coverage::summary {
+  local coverage_report_input="${1:-}"
+
+  if [[ -z "${coverage_report_input}" ]]; then
+    coverage_report_input="$(git::test::coverage::resolve_coverage_file "$(git::test::coverage::repo_root)")"
+  fi
+
+  if [[ -z "${coverage_report_input}" ]]; then
+    >&2 echo "ERROR: coverage.json not found. Run 'make compose-test-with-coverage' first."
+    return 1
+  fi
+
+  jq -r \
+    -f "${SCRIPT_DIR}/get_summary.jq" \
+    < "${coverage_report_input}"
+}
+
+function git::test::coverage::all_files {
+  local coverage_report_input="${1:-}" repo_root
+
+  repo_root="$(git::test::coverage::repo_root)"
+
+  if [[ -z "${coverage_report_input}" ]]; then
+    coverage_report_input="$(git::test::coverage::resolve_coverage_file "${repo_root}")"
+  fi
+
+  if [[ -z "${coverage_report_input}" ]]; then
+    >&2 echo "ERROR: coverage.json not found. Run 'make compose-test-with-coverage' first."
+    return 1
+  fi
+
+  jq -r \
+    --arg base_path "${repo_root}" \
+    -f "${SCRIPT_DIR}/get_all_files_report.jq" \
+    < "${coverage_report_input}"
+}
+
 function git::test::coverage::generate_pull_request_comment {
   local \
     base_sha="${1:?}" \
     head_sha="${2:?}" \
     coverage_report_output="${3:-/dev/stdout}" \
-    coverage_report_input="${4:-${COVERAGE_FILE}}" \
+    coverage_report_input="${4:-}" \
     coverage_report_temp_output \
     current_status \
     overall_report \
@@ -197,7 +254,14 @@ function git::test::coverage::generate_pull_request_comment {
     return 1
   fi
 
-  coverage_report_input="$(git::test::coverage::repo_root)/${coverage_report_input}"
+  if [[ -z "${coverage_report_input}" ]]; then
+    coverage_report_input="$(git::test::coverage::resolve_coverage_file "$(git::test::coverage::repo_root)")"
+  fi
+
+  if [[ -z "${coverage_report_input}" ]]; then
+    >&2 echo "ERROR: coverage.json not found. Run 'make compose-test-with-coverage' first."
+    return 1
+  fi
   current_status="$(git::test::coverage::get_overall_status "${coverage_report_input}" "${THRESHOLD_ALL}")"
   overall_report="$(git::test::coverage::get_overall_report "${coverage_report_input}" "${THRESHOLD_ALL}")"
 
@@ -257,4 +321,22 @@ EOF
   cat "${coverage_report_temp_output}" > "${coverage_report_output}"
 }
 
-git::test::coverage::generate_pull_request_comment "$@"
+subcommand="${1:?Usage: $0 <summary|files|pull-request> [args...]}"
+shift
+
+case "${subcommand}" in
+  summary)
+    git::test::coverage::summary "$@"
+    ;;
+  files)
+    git::test::coverage::all_files "$@"
+    ;;
+  pull-request)
+    git::test::coverage::generate_pull_request_comment "$@"
+    ;;
+  *)
+    >&2 echo "Unknown subcommand: ${subcommand}"
+    >&2 echo "Usage: $0 <summary|files|pull-request> [args...]"
+    exit 1
+    ;;
+esac

@@ -1,0 +1,13 @@
+services:
+  tester:
+    image: rbuchss/git-friends-tester-builder
+    user: root
+    working_dir: /workspace
+    volumes:
+      - .:/workspace
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges
+    environment:
+      TERM: ${TERM:-}
