@@ -311,7 +311,20 @@ function git::worktree::add::new {
   fi
 
   git::logger::info "Creating new branch '${branch}' from '${start_point}'"
-  git worktree add -b "${branch}" "${worktree_dir}" "${start_point}" "$@"
+
+  # NOTE: --no-track is needed here because we explicitly set a remote-tracking ref
+  # (e.g. origin/main) as the start-point.
+  #
+  # Git's branch.autoSetupMerge causes new branches to inherit upstream tracking
+  # when branching from a remote ref — without --no-track the new branch would
+  # track origin/main, causing pushes to target main instead of creating a
+  # same-named remote branch.
+  #
+  # This doesn't happen with a plain `git checkout -b <branch>` because omitting
+  # the start-point branches from HEAD (a local ref), which doesn't trigger
+  # automatic tracking.
+  #
+  git worktree add --no-track -b "${branch}" "${worktree_dir}" "${start_point}" "$@"
 }
 
 # Create or attach a feature worktree and cd into it.
