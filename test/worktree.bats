@@ -577,14 +577,9 @@ __create_bare_worktree_structure() {
 
   cd "${BATS_TEST_TMPDIR}"
 
-  # Stub URL functions to work with local path
-  git::url::is_valid() { return 0; }
-  git::url::repo_name() { echo 'derived-repo'; }
-  export -f git::url::is_valid git::url::repo_name
-
-  run git::worktree::clone "${source_dir}"
+  run git::worktree::clone "file://${source_dir}"
   assert_success
-  assert [ -d "${BATS_TEST_TMPDIR}/derived-repo/__git__/.git" ]
+  assert [ -d "${BATS_TEST_TMPDIR}/wt-source/__git__/.git" ]
 }
 
 ################################################################################
@@ -602,12 +597,7 @@ __create_bare_worktree_structure() {
 
   cd "${BATS_TEST_TMPDIR}"
 
-  # Stub URL functions to work with local path
-  git::url::is_valid() { return 0; }
-  git::url::repo_name() { echo 'clonecd-test'; }
-  export -f git::url::is_valid git::url::repo_name
-
-  run git::worktree::clone::cd "${source_dir}"
+  run git::worktree::clone::cd "file://${source_dir}"
   assert_success
 }
 

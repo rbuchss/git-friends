@@ -1,5 +1,7 @@
 #!/usr/bin/env bats
 
+bats_require_minimum_version 1.5.0
+
 load test_helper
 
 setup_with_coverage 'git-friends/src/utility.sh'
@@ -592,4 +594,158 @@ __create_bare_with_worktree() {
 
   run git::utility::is_worktree "${repo_dir}"
   assert_failure
+}
+
+################################################################################
+# git::utility::expand_indices
+################################################################################
+
+# bats test_tags=git::utility::expand_indices
+@test "git::utility::expand_indices single index" {
+  run git::utility::expand_indices 0 10 5
+
+  assert_success
+  assert_output '5'
+}
+
+# bats test_tags=git::utility::expand_indices
+@test "git::utility::expand_indices multiple indices" {
+  run git::utility::expand_indices 0 10 2 5 8
+
+  assert_success
+  assert_output "2
+5
+8"
+}
+
+# bats test_tags=git::utility::expand_indices
+@test "git::utility::expand_indices range" {
+  run git::utility::expand_indices 0 10 3:7
+
+  assert_success
+  assert_output "3
+4
+5
+6"
+}
+
+# bats test_tags=git::utility::expand_indices
+@test "git::utility::expand_indices mixed range and index" {
+  run git::utility::expand_indices 0 10 1:4 9
+
+  assert_success
+  assert_output "1
+2
+3
+9"
+}
+
+# bats test_tags=git::utility::expand_indices
+@test "git::utility::expand_indices open-end range" {
+  run git::utility::expand_indices 3 6 3:
+
+  assert_success
+  assert_output "3
+4
+5
+6"
+}
+
+# bats test_tags=git::utility::expand_indices
+@test "git::utility::expand_indices open-start range" {
+  run git::utility::expand_indices 3 6 :5
+
+  assert_success
+  assert_output "3
+4"
+}
+
+# bats test_tags=git::utility::expand_indices
+@test "git::utility::expand_indices fully open range" {
+  run git::utility::expand_indices 2 4 :
+
+  assert_success
+  assert_output "2
+3
+4"
+}
+
+# bats test_tags=git::utility::expand_indices
+@test "git::utility::expand_indices no args outputs nothing" {
+  run git::utility::expand_indices 1 5
+
+  assert_success
+  assert_output ''
+}
+
+# bats test_tags=git::utility::expand_indices
+@test "git::utility::expand_indices index below min fails" {
+  run --separate-stderr git::utility::expand_indices 2 8 1
+
+  assert_failure
+  assert_stderr --partial 'out of range'
+}
+
+# bats test_tags=git::utility::expand_indices
+@test "git::utility::expand_indices index above max fails" {
+  run --separate-stderr git::utility::expand_indices 2 8 9
+
+  assert_failure
+  assert_stderr --partial 'out of range'
+}
+
+# bats test_tags=git::utility::expand_indices
+@test "git::utility::expand_indices range below min fails" {
+  run --separate-stderr git::utility::expand_indices 2 8 1:5
+
+  assert_failure
+  assert_stderr --partial 'out of bounds'
+}
+
+# bats test_tags=git::utility::expand_indices
+@test "git::utility::expand_indices range above max fails" {
+  run --separate-stderr git::utility::expand_indices 2 8 3:10
+
+  assert_failure
+  assert_stderr --partial 'out of bounds'
+}
+
+# bats test_tags=git::utility::expand_indices
+@test "git::utility::expand_indices non-numeric index fails" {
+  run --separate-stderr git::utility::expand_indices 1 5 foo
+
+  assert_failure
+  assert_stderr --partial 'not a valid index'
+}
+
+# bats test_tags=git::utility::expand_indices
+@test "git::utility::expand_indices inverted range fails" {
+  run --separate-stderr git::utility::expand_indices 1 5 4:2
+
+  assert_failure
+  assert_stderr --partial 'empty or inverted'
+}
+
+# bats test_tags=git::utility::expand_indices
+@test "git::utility::expand_indices empty range fails" {
+  run --separate-stderr git::utility::expand_indices 1 5 3:3
+
+  assert_failure
+  assert_stderr --partial 'empty or inverted'
+}
+
+# bats test_tags=git::utility::expand_indices
+@test "git::utility::expand_indices non-numeric range start fails" {
+  run --separate-stderr git::utility::expand_indices 1 5 x:3
+
+  assert_failure
+  assert_stderr --partial 'invalid range'
+}
+
+# bats test_tags=git::utility::expand_indices
+@test "git::utility::expand_indices non-numeric range stop fails" {
+  run --separate-stderr git::utility::expand_indices 1 5 2:y
+
+  assert_failure
+  assert_stderr --partial 'invalid range'
 }
