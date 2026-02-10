@@ -5,7 +5,7 @@ source "${BASH_SOURCE[0]%/*}/logger.sh"
 function git::format::newline {
   local \
     mode="${1:-staged}"
-    commit_ref="${2:-}"
+  commit_ref="${2:-}"
 
   case "${mode}" in
     all | tracked)
@@ -62,7 +62,7 @@ function git::format::newline::process {
     file \
     status=0
 
-  if (( $# == 0 )); then
+  if (($# == 0)); then
     git::logger::error 'No files specified'
     return 1
   fi
@@ -108,7 +108,7 @@ function git::format::newline::process {
       git::logger::info "Adding trailing newline to: '${file}'"
 
       # Add a newline to the end of the file
-      echo >> "${file}"
+      echo >>"${file}"
     else
       git::logger::debug "File already has trailing newline: '${file}'"
     fi
@@ -127,7 +127,7 @@ function git::format::__is_in_submodule__ {
     # Check if file path starts with submodule path
     if [[ "${file}" == "${submodule_path}"/* ]] \
       || [[ "${file}" == "${submodule_path}" ]]; then
-        return 0
+      return 0
     fi
   done < <(
     git config \
@@ -148,7 +148,7 @@ function git::format::__newline_from_command__ {
 
   shift
 
-  if ! git rev-parse --git-dir > /dev/null 2>&1; then
+  if ! git rev-parse --git-dir >/dev/null 2>&1; then
     git::logger::error -c 2 'Not in a git repository'
     return 1
   fi
@@ -161,7 +161,7 @@ function git::format::__newline_from_command__ {
 
   file_count="${#files[@]}"
 
-  if (( file_count == 0 )); then
+  if ((file_count == 0)); then
     git::logger::warning -c 2 "No ${file_type} files found"
     return 0
   fi

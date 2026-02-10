@@ -30,63 +30,61 @@ function _git_prune_branches {
   local flags="${modes} --force"
 
   # shellcheck disable=SC2154
-  while (( index < cword )); do
+  while ((index < cword)); do
     # shellcheck disable=SC2154
     case "${words[index]}" in
       -a | --all)
         mode='all'
-        (( flag_index++ ))
+        ((flag_index++))
         ;;
       -r | --remote)
         mode='remote'
-        (( flag_index++ ))
+        ((flag_index++))
         ;;
       -l | --local)
         mode='local'
-        (( flag_index++ ))
+        ((flag_index++))
         ;;
       -f | --force)
-        (( flag_index++ ))
+        ((flag_index++))
         ;;
-      *)
-        ;;
+      *) ;;
     esac
-    (( index++ ))
+    ((index++))
   done
 
   # shellcheck disable=SC2154
   case "${cur}" in
     --*)
-        if found="$(__git_find_on_cmdline "${flags}")" \
-          && [[ -z "${found}" ]]; then
-            __gitcomp "${flags}"
-        elif found="$(__git_find_on_cmdline "${modes}")" \
-          && [[ -z "${found}" ]]; then
-            __gitcomp "${modes}"
-        elif found="$(__git_find_on_cmdline '--force')" \
-          && [[ -z "${found}" ]]; then
-            __gitcomp '--force'
-        fi
+      if found="$(__git_find_on_cmdline "${flags}")" \
+        && [[ -z "${found}" ]]; then
+        __gitcomp "${flags}"
+      elif found="$(__git_find_on_cmdline "${modes}")" \
+        && [[ -z "${found}" ]]; then
+        __gitcomp "${modes}"
+      elif found="$(__git_find_on_cmdline '--force')" \
+        && [[ -z "${found}" ]]; then
+        __gitcomp '--force'
+      fi
       ;;
     *)
       case "${mode}" in
         all)
-          case "$(( index - flag_index ))" in
+          case "$((index - flag_index))" in
             2) __gitcomp_direct "$(__git_heads "" "$cur" " ")" ;;
             1) __gitcomp_nl "$(__git_remotes)" ;;
             *) ;;
           esac
           ;;
         remote)
-          (( index - flag_index == 1 )) \
+          ((index - flag_index == 1)) \
             && __gitcomp_nl "$(__git_remotes)"
           ;;
         local)
-          (( index - flag_index == 1 )) \
+          ((index - flag_index == 1)) \
             && __gitcomp_direct "$(__git_heads "" "$cur" " ")"
           ;;
-        *)
-          ;;
+        *) ;;
       esac
       ;;
   esac
@@ -123,9 +121,9 @@ function _g_wco {
       ;;
     *)
       # Complete with branch names (local and remote tracking)
-      if type __git_complete_refs &> /dev/null; then
+      if type __git_complete_refs &>/dev/null; then
         __git_complete_refs
-      elif type __git_heads &> /dev/null; then
+      elif type __git_heads &>/dev/null; then
         __gitcomp_direct "$(__git_heads "" "${cur}" " ")"
       fi
       ;;

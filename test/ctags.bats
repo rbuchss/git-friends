@@ -27,7 +27,7 @@ setup_with_coverage 'git-friends/src/ctags.sh'
   local work_dir="${BATS_TEST_TMPDIR}/not-a-repo"
 
   mkdir -p "${mock_dir}" "${work_dir}"
-  cat > "${mock_dir}/ctags" <<'MOCK'
+  cat >"${mock_dir}/ctags" <<'MOCK'
 #!/bin/bash
 exit 0
 MOCK
@@ -61,7 +61,7 @@ MOCK
     commit -m 'initial'
 
   # Mock ctags: parse the -f flag to find output file and create it
-  cat > "${mock_dir}/ctags" <<'MOCK'
+  cat >"${mock_dir}/ctags" <<'MOCK'
 #!/bin/bash
 cat > /dev/null  # consume stdin
 outfile=""
@@ -105,10 +105,10 @@ MOCK
     commit -m 'initial'
 
   # Create .ctagsignore so the code path is triggered
-  echo 'node_modules' > "${repo_dir}/.ctagsignore"
+  echo 'node_modules' >"${repo_dir}/.ctagsignore"
 
   # Mock ctags: verify --exclude=@.ctagsignore is in the args
-  cat > "${mock_dir}/ctags" <<'MOCK'
+  cat >"${mock_dir}/ctags" <<'MOCK'
 #!/bin/bash
 cat > /dev/null  # consume stdin
 found_ignore=0
@@ -165,7 +165,7 @@ MOCK
     commit -m 'initial'
 
   # Mock ctags that always fails
-  cat > "${mock_dir}/ctags" <<'MOCK'
+  cat >"${mock_dir}/ctags" <<'MOCK'
 #!/bin/bash
 cat > /dev/null  # consume stdin
 exit 1
@@ -199,7 +199,7 @@ MOCK
     commit -m 'initial'
 
   # Mock ctags: verify custom flag is present
-  cat > "${mock_dir}/ctags" <<'MOCK'
+  cat >"${mock_dir}/ctags" <<'MOCK'
 #!/bin/bash
 cat > /dev/null  # consume stdin
 found_custom=0

@@ -137,7 +137,10 @@ bats_require_minimum_version 1.5.0
   git init "${repo_dir}"
   cd "${repo_dir}"
 
-  __custom_block() { local task="$1"; "${task}"; }
+  __custom_block() {
+    local task="$1"
+    "${task}"
+  }
   export -f __custom_block
 
   __my_task() { echo "ran"; }
@@ -426,7 +429,10 @@ bats_require_minimum_version 1.5.0
 @test "git::hooks::task_runner::background_block logs ERROR for failed task" {
   local logfile="${BATS_TEST_TMPDIR}/bg_block_fail.log"
 
-  __fail_task() { echo "fail output"; return 1; }
+  __fail_task() {
+    echo "fail output"
+    return 1
+  }
   export -f __fail_task
 
   git::hooks::task_runner::background_block \

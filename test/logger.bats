@@ -25,7 +25,7 @@ LOG_MESSAGES=(
 @test "git::logger::trace" {
   run --separate-stderr \
     git::logger::trace \
-      "${LOG_MESSAGES[@]}"
+    "${LOG_MESSAGES[@]}"
 
   assert_success
   refute_output
@@ -40,7 +40,7 @@ LOG_MESSAGES=(
 
   run --separate-stderr \
     git::logger::trace \
-      "${LOG_MESSAGES[@]}"
+    "${LOG_MESSAGES[@]}"
 
   GIT_FRIENDS_LOG_LEVEL="${original_log_level}"
 
@@ -65,7 +65,7 @@ LOG_MESSAGES=(
 
   run --separate-stderr \
     git::logger::trace \
-      "${LOG_MESSAGES[@]}"
+    "${LOG_MESSAGES[@]}"
 
   GIT_FRIENDS_LOG_LEVEL="${original_log_level}"
 
@@ -82,7 +82,7 @@ LOG_MESSAGES=(
 
   run --separate-stderr \
     git::logger::trace \
-      "${LOG_MESSAGES[@]}"
+    "${LOG_MESSAGES[@]}"
 
   GIT_FRIENDS_LOG_SILENCE="${original_log_silence}"
 
@@ -99,7 +99,7 @@ LOG_MESSAGES=(
 @test "git::logger::debug" {
   run --separate-stderr \
     git::logger::debug \
-      "${LOG_MESSAGES[@]}"
+    "${LOG_MESSAGES[@]}"
 
   assert_success
   refute_output
@@ -114,7 +114,7 @@ LOG_MESSAGES=(
 
   run --separate-stderr \
     git::logger::debug \
-      "${LOG_MESSAGES[@]}"
+    "${LOG_MESSAGES[@]}"
 
   GIT_FRIENDS_LOG_LEVEL="${original_log_level}"
 
@@ -139,7 +139,7 @@ LOG_MESSAGES=(
 
   run --separate-stderr \
     git::logger::debug \
-      "${LOG_MESSAGES[@]}"
+    "${LOG_MESSAGES[@]}"
 
   GIT_FRIENDS_LOG_LEVEL="${original_log_level}"
 
@@ -156,7 +156,7 @@ LOG_MESSAGES=(
 
   run --separate-stderr \
     git::logger::debug \
-      "${LOG_MESSAGES[@]}"
+    "${LOG_MESSAGES[@]}"
 
   GIT_FRIENDS_LOG_SILENCE="${original_log_silence}"
 
@@ -175,7 +175,7 @@ LOG_MESSAGES=(
 
   run --separate-stderr \
     git::logger::info \
-      "${LOG_MESSAGES[@]}"
+    "${LOG_MESSAGES[@]}"
 
   assert_success
   refute_output
@@ -198,7 +198,7 @@ LOG_MESSAGES=(
 
   run --separate-stderr \
     git::logger::info \
-      "${LOG_MESSAGES[@]}"
+    "${LOG_MESSAGES[@]}"
 
   GIT_FRIENDS_LOG_LEVEL="${original_log_level}"
 
@@ -223,7 +223,7 @@ LOG_MESSAGES=(
 
   run --separate-stderr \
     git::logger::info \
-      "${LOG_MESSAGES[@]}"
+    "${LOG_MESSAGES[@]}"
 
   GIT_FRIENDS_LOG_LEVEL="${original_log_level}"
 
@@ -240,7 +240,7 @@ LOG_MESSAGES=(
 
   run --separate-stderr \
     git::logger::info \
-      "${LOG_MESSAGES[@]}"
+    "${LOG_MESSAGES[@]}"
 
   GIT_FRIENDS_LOG_SILENCE="${original_log_silence}"
 
@@ -259,7 +259,7 @@ LOG_MESSAGES=(
 
   run --separate-stderr \
     git::logger::warning \
-      "${LOG_MESSAGES[@]}"
+    "${LOG_MESSAGES[@]}"
 
   assert_success
   refute_output
@@ -282,7 +282,7 @@ LOG_MESSAGES=(
 
   run --separate-stderr \
     git::logger::warning \
-      "${LOG_MESSAGES[@]}"
+    "${LOG_MESSAGES[@]}"
 
   GIT_FRIENDS_LOG_LEVEL="${original_log_level}"
 
@@ -307,7 +307,7 @@ LOG_MESSAGES=(
 
   run --separate-stderr \
     git::logger::warning \
-      "${LOG_MESSAGES[@]}"
+    "${LOG_MESSAGES[@]}"
 
   GIT_FRIENDS_LOG_LEVEL="${original_log_level}"
 
@@ -324,7 +324,7 @@ LOG_MESSAGES=(
 
   run --separate-stderr \
     git::logger::warning \
-      "${LOG_MESSAGES[@]}"
+    "${LOG_MESSAGES[@]}"
 
   GIT_FRIENDS_LOG_SILENCE="${original_log_silence}"
 
@@ -343,7 +343,7 @@ LOG_MESSAGES=(
 
   run --separate-stderr \
     git::logger::error \
-      "${LOG_MESSAGES[@]}"
+    "${LOG_MESSAGES[@]}"
 
   assert_success
   refute_output
@@ -366,7 +366,7 @@ LOG_MESSAGES=(
 
   run --separate-stderr \
     git::logger::error \
-      "${LOG_MESSAGES[@]}"
+    "${LOG_MESSAGES[@]}"
 
   GIT_FRIENDS_LOG_LEVEL="${original_log_level}"
 
@@ -391,7 +391,7 @@ LOG_MESSAGES=(
 
   run --separate-stderr \
     git::logger::error \
-      "${LOG_MESSAGES[@]}"
+    "${LOG_MESSAGES[@]}"
 
   GIT_FRIENDS_LOG_LEVEL="${original_log_level}"
 
@@ -408,7 +408,7 @@ LOG_MESSAGES=(
 
   run --separate-stderr \
     git::logger::error \
-      "${LOG_MESSAGES[@]}"
+    "${LOG_MESSAGES[@]}"
 
   GIT_FRIENDS_LOG_SILENCE="${original_log_silence}"
 
@@ -427,7 +427,7 @@ LOG_MESSAGES=(
 
   run --separate-stderr \
     git::logger::fatal \
-      "${LOG_MESSAGES[@]}"
+    "${LOG_MESSAGES[@]}"
 
   assert_success
   refute_output
@@ -452,7 +452,7 @@ LOG_MESSAGES=(
 
   run --separate-stderr \
     git::logger::fatal \
-      "${LOG_MESSAGES[@]}"
+    "${LOG_MESSAGES[@]}"
 
   GIT_FRIENDS_LOG_LEVEL="${original_log_level}"
 
@@ -477,7 +477,7 @@ LOG_MESSAGES=(
 
   run --separate-stderr \
     git::logger::fatal \
-      "${LOG_MESSAGES[@]}"
+    "${LOG_MESSAGES[@]}"
 
   GIT_FRIENDS_LOG_SILENCE="${original_log_silence}"
 
@@ -514,8 +514,8 @@ LOG_MESSAGES=(
 @test "git::logger::log --level trace" {
   run --separate-stderr \
     git::logger::log \
-      --level 'trace' \
-      "${LOG_MESSAGES[@]}"
+    --level 'trace' \
+    "${LOG_MESSAGES[@]}"
 
   assert_success
   refute_output
@@ -530,8 +530,8 @@ LOG_MESSAGES=(
 
   run --separate-stderr \
     git::logger::log \
-      --level 'trace' \
-      "${LOG_MESSAGES[@]}"
+    --level 'trace' \
+    "${LOG_MESSAGES[@]}"
 
   GIT_FRIENDS_LOG_LEVEL="${original_log_level}"
 
@@ -556,8 +556,8 @@ LOG_MESSAGES=(
 
   run --separate-stderr \
     git::logger::log \
-      --level 'trace' \
-      "${LOG_MESSAGES[@]}"
+    --level 'trace' \
+    "${LOG_MESSAGES[@]}"
 
   GIT_FRIENDS_LOG_LEVEL="${original_log_level}"
 
@@ -574,8 +574,8 @@ LOG_MESSAGES=(
 
   run --separate-stderr \
     git::logger::log \
-      --level 'trace' \
-      "${LOG_MESSAGES[@]}"
+    --level 'trace' \
+    "${LOG_MESSAGES[@]}"
 
   GIT_FRIENDS_LOG_SILENCE="${original_log_silence}"
 
@@ -588,8 +588,8 @@ LOG_MESSAGES=(
 @test "git::logger::log --level debug" {
   run --separate-stderr \
     git::logger::log \
-      --level 'debug' \
-      "${LOG_MESSAGES[@]}"
+    --level 'debug' \
+    "${LOG_MESSAGES[@]}"
 
   assert_success
   refute_output
@@ -604,8 +604,8 @@ LOG_MESSAGES=(
 
   run --separate-stderr \
     git::logger::log \
-      --level 'debug' \
-      "${LOG_MESSAGES[@]}"
+    --level 'debug' \
+    "${LOG_MESSAGES[@]}"
 
   GIT_FRIENDS_LOG_LEVEL="${original_log_level}"
 
@@ -630,8 +630,8 @@ LOG_MESSAGES=(
 
   run --separate-stderr \
     git::logger::log \
-      --level 'debug' \
-      "${LOG_MESSAGES[@]}"
+    --level 'debug' \
+    "${LOG_MESSAGES[@]}"
 
   GIT_FRIENDS_LOG_LEVEL="${original_log_level}"
 
@@ -648,8 +648,8 @@ LOG_MESSAGES=(
 
   run --separate-stderr \
     git::logger::log \
-      --level 'debug' \
-      "${LOG_MESSAGES[@]}"
+    --level 'debug' \
+    "${LOG_MESSAGES[@]}"
 
   GIT_FRIENDS_LOG_SILENCE="${original_log_silence}"
 
@@ -664,8 +664,8 @@ LOG_MESSAGES=(
 
   run --separate-stderr \
     git::logger::log \
-      --level 'info' \
-      "${LOG_MESSAGES[@]}"
+    --level 'info' \
+    "${LOG_MESSAGES[@]}"
 
   assert_success
   refute_output
@@ -688,8 +688,8 @@ LOG_MESSAGES=(
 
   run --separate-stderr \
     git::logger::log \
-      --level 'info' \
-      "${LOG_MESSAGES[@]}"
+    --level 'info' \
+    "${LOG_MESSAGES[@]}"
 
   GIT_FRIENDS_LOG_LEVEL="${original_log_level}"
 
@@ -714,8 +714,8 @@ LOG_MESSAGES=(
 
   run --separate-stderr \
     git::logger::log \
-      --level 'info' \
-      "${LOG_MESSAGES[@]}"
+    --level 'info' \
+    "${LOG_MESSAGES[@]}"
 
   GIT_FRIENDS_LOG_LEVEL="${original_log_level}"
 
@@ -732,8 +732,8 @@ LOG_MESSAGES=(
 
   run --separate-stderr \
     git::logger::log \
-      --level 'info' \
-      "${LOG_MESSAGES[@]}"
+    --level 'info' \
+    "${LOG_MESSAGES[@]}"
 
   GIT_FRIENDS_LOG_SILENCE="${original_log_silence}"
 
@@ -748,8 +748,8 @@ LOG_MESSAGES=(
 
   run --separate-stderr \
     git::logger::log \
-      --level 'warning' \
-      "${LOG_MESSAGES[@]}"
+    --level 'warning' \
+    "${LOG_MESSAGES[@]}"
 
   assert_success
   refute_output
@@ -772,8 +772,8 @@ LOG_MESSAGES=(
 
   run --separate-stderr \
     git::logger::log \
-      --level 'warning' \
-      "${LOG_MESSAGES[@]}"
+    --level 'warning' \
+    "${LOG_MESSAGES[@]}"
 
   GIT_FRIENDS_LOG_LEVEL="${original_log_level}"
 
@@ -798,8 +798,8 @@ LOG_MESSAGES=(
 
   run --separate-stderr \
     git::logger::log \
-      --level 'warning' \
-      "${LOG_MESSAGES[@]}"
+    --level 'warning' \
+    "${LOG_MESSAGES[@]}"
 
   GIT_FRIENDS_LOG_LEVEL="${original_log_level}"
 
@@ -816,8 +816,8 @@ LOG_MESSAGES=(
 
   run --separate-stderr \
     git::logger::log \
-      --level 'warning' \
-      "${LOG_MESSAGES[@]}"
+    --level 'warning' \
+    "${LOG_MESSAGES[@]}"
 
   GIT_FRIENDS_LOG_SILENCE="${original_log_silence}"
 
@@ -832,8 +832,8 @@ LOG_MESSAGES=(
 
   run --separate-stderr \
     git::logger::log \
-      --level 'error' \
-      "${LOG_MESSAGES[@]}"
+    --level 'error' \
+    "${LOG_MESSAGES[@]}"
 
   assert_success
   refute_output
@@ -856,8 +856,8 @@ LOG_MESSAGES=(
 
   run --separate-stderr \
     git::logger::log \
-      --level 'error' \
-      "${LOG_MESSAGES[@]}"
+    --level 'error' \
+    "${LOG_MESSAGES[@]}"
 
   GIT_FRIENDS_LOG_LEVEL="${original_log_level}"
 
@@ -882,8 +882,8 @@ LOG_MESSAGES=(
 
   run --separate-stderr \
     git::logger::log \
-      --level 'error' \
-      "${LOG_MESSAGES[@]}"
+    --level 'error' \
+    "${LOG_MESSAGES[@]}"
 
   GIT_FRIENDS_LOG_LEVEL="${original_log_level}"
 
@@ -900,8 +900,8 @@ LOG_MESSAGES=(
 
   run --separate-stderr \
     git::logger::log \
-      --level 'error' \
-      "${LOG_MESSAGES[@]}"
+    --level 'error' \
+    "${LOG_MESSAGES[@]}"
 
   GIT_FRIENDS_LOG_SILENCE="${original_log_silence}"
 
@@ -916,8 +916,8 @@ LOG_MESSAGES=(
 
   run --separate-stderr \
     git::logger::log \
-      --level 'fatal' \
-      "${LOG_MESSAGES[@]}"
+    --level 'fatal' \
+    "${LOG_MESSAGES[@]}"
 
   assert_success
   refute_output
@@ -942,8 +942,8 @@ LOG_MESSAGES=(
 
   run --separate-stderr \
     git::logger::log \
-      --level 'fatal' \
-      "${LOG_MESSAGES[@]}"
+    --level 'fatal' \
+    "${LOG_MESSAGES[@]}"
 
   GIT_FRIENDS_LOG_LEVEL="${original_log_level}"
 
@@ -968,8 +968,8 @@ LOG_MESSAGES=(
 
   run --separate-stderr \
     git::logger::log \
-      --level 'fatal' \
-      "${LOG_MESSAGES[@]}"
+    --level 'fatal' \
+    "${LOG_MESSAGES[@]}"
 
   GIT_FRIENDS_LOG_SILENCE="${original_log_silence}"
 
@@ -1124,9 +1124,9 @@ LOG_MESSAGES=(
 
   run --separate-stderr \
     git::logger::log \
-      -- \
-      --not-included-flag \
-      "${LOG_MESSAGES[@]}"
+    -- \
+    --not-included-flag \
+    "${LOG_MESSAGES[@]}"
 
   assert_success
   refute_output
@@ -2788,8 +2788,8 @@ LOG_MESSAGES=(
 
   run --separate-stderr \
     git::logger::log \
-      -l 'info' \
-      "${LOG_MESSAGES[@]}"
+    -l 'info' \
+    "${LOG_MESSAGES[@]}"
 
   assert_success
   refute_output
@@ -2809,8 +2809,8 @@ LOG_MESSAGES=(
 
   run --separate-stderr \
     git::logger::log \
-      -l 'warning' \
-      "${LOG_MESSAGES[@]}"
+    -l 'warning' \
+    "${LOG_MESSAGES[@]}"
 
   assert_success
   refute_output
@@ -2828,8 +2828,8 @@ LOG_MESSAGES=(
 
   run --separate-stderr \
     git::logger::log \
-      -l 'fatal' \
-      "${LOG_MESSAGES[@]}"
+    -l 'fatal' \
+    "${LOG_MESSAGES[@]}"
 
   assert_success
   refute_output
@@ -2848,8 +2848,8 @@ LOG_MESSAGES=(
 
   run --separate-stderr \
     git::logger::log \
-      -c 1 \
-      "${LOG_MESSAGES[@]}"
+    -c 1 \
+    "${LOG_MESSAGES[@]}"
 
   assert_success
   refute_output
@@ -2868,8 +2868,8 @@ LOG_MESSAGES=(
 
   run --separate-stderr \
     git::logger::log \
-      -o /dev/stdout \
-      "${LOG_MESSAGES[@]}"
+    -o /dev/stdout \
+    "${LOG_MESSAGES[@]}"
 
   assert_success
   refute_stderr
@@ -2887,8 +2887,8 @@ LOG_MESSAGES=(
 @test "git::logger::log -o /dev/null" {
   run --separate-stderr \
     git::logger::log \
-      -o /dev/null \
-      "${LOG_MESSAGES[@]}"
+    -o /dev/null \
+    "${LOG_MESSAGES[@]}"
 
   assert_success
   refute_stderr
@@ -2899,8 +2899,8 @@ LOG_MESSAGES=(
 @test "git::logger::log -h" {
   run --separate-stderr \
     git::logger::log \
-      -h \
-      "${LOG_MESSAGES[@]}"
+    -h \
+    "${LOG_MESSAGES[@]}"
 
   assert_failure "${GIT_FRIENDS_LOG_INVALID_STATUS}"
   refute_output
@@ -2913,9 +2913,9 @@ LOG_MESSAGES=(
 
   run --separate-stderr \
     git::logger::log \
-      -l 'error' \
-      -c 1 \
-      "${LOG_MESSAGES[@]}"
+    -l 'error' \
+    -c 1 \
+    "${LOG_MESSAGES[@]}"
 
   assert_success
   refute_output
@@ -2939,8 +2939,8 @@ LOG_MESSAGES=(
 
   run --separate-stderr \
     git::logger::log \
-      -o "${_file}" \
-      "${LOG_MESSAGES[@]}"
+    -o "${_file}" \
+    "${LOG_MESSAGES[@]}"
 
   assert_success
   refute_stderr

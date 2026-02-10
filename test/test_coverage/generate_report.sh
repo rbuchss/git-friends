@@ -12,7 +12,7 @@ FAIL_SYMBOL=🔴
 SCRIPT_PATH="${BASH_SOURCE[0]:-$0}"
 SCRIPT_DIR="${SCRIPT_PATH%/*}"
 
-if ! command -v jq > /dev/null 2>&1; then
+if ! command -v jq >/dev/null 2>&1; then
   >&2 echo 'ERROR: jq not installed - skipping coverage report generation'
   exit 1
 fi
@@ -53,7 +53,7 @@ function git::test::coverage::get_overall_status {
     --arg pass_symbol "${STATUS_OK_SYMBOL}" \
     --arg fail_symbol "${STATUS_NOT_OK_SYMBOL}" \
     -f "${SCRIPT_DIR}/get_overall_status.jq" \
-    < "${coverage_report_input}"
+    <"${coverage_report_input}"
 }
 
 function git::test::coverage::get_overall_report {
@@ -71,7 +71,7 @@ EOF
     --arg pass_symbol "${PASS_SYMBOL}" \
     --arg fail_symbol "${FAIL_SYMBOL}" \
     -f "${SCRIPT_DIR}/get_overall_report.jq" \
-    < "${coverage_report_input}"
+    <"${coverage_report_input}"
 }
 
 function git::test::coverage::get_files_report {
@@ -103,8 +103,8 @@ function git::test::coverage::get_files_report {
     --arg pass_symbol "${PASS_SYMBOL}" \
     --arg fail_symbol "${FAIL_SYMBOL}" \
     -f "${SCRIPT_DIR}/get_files_report.jq" \
-    < "${coverage_report_input}" \
-    > "${coverage_report_output}"
+    <"${coverage_report_input}" \
+    >"${coverage_report_output}"
 
   if [[ -s "${coverage_report_output}" ]]; then
     cat <<EOF
@@ -209,7 +209,7 @@ function git::test::coverage::summary {
 
   jq -r \
     -f "${SCRIPT_DIR}/get_summary.jq" \
-    < "${coverage_report_input}"
+    <"${coverage_report_input}"
 }
 
 function git::test::coverage::all_files {
@@ -229,7 +229,7 @@ function git::test::coverage::all_files {
   jq -r \
     --arg base_path "${repo_root}" \
     -f "${SCRIPT_DIR}/get_all_files_report.jq" \
-    < "${coverage_report_input}"
+    <"${coverage_report_input}"
 }
 
 function git::test::coverage::generate_pull_request_comment {
@@ -244,12 +244,12 @@ function git::test::coverage::generate_pull_request_comment {
     new_files_report \
     modified_files_report
 
-  if ! git rev-parse --verify "${base_sha}" > /dev/null 2>&1; then
+  if ! git rev-parse --verify "${base_sha}" >/dev/null 2>&1; then
     >&2 echo "ERROR: invalid base ref: '${base_sha}'"
     return 1
   fi
 
-  if ! git rev-parse --verify "${head_sha}" > /dev/null 2>&1; then
+  if ! git rev-parse --verify "${head_sha}" >/dev/null 2>&1; then
     >&2 echo "ERROR: invalid head ref: '${head_sha}'"
     return 1
   fi
@@ -265,21 +265,21 @@ function git::test::coverage::generate_pull_request_comment {
   current_status="$(git::test::coverage::get_overall_status "${coverage_report_input}" "${THRESHOLD_ALL}")"
   overall_report="$(git::test::coverage::get_overall_report "${coverage_report_input}" "${THRESHOLD_ALL}")"
 
-  new_files_report="$( \
+  new_files_report="$(
     git::test::coverage::get_new_files_report \
       "${base_sha}" \
       "${head_sha}" \
       "${coverage_report_input}" \
-      "${THRESHOLD_NEW}" \
-    )"
+      "${THRESHOLD_NEW}"
+  )"
 
-  modified_files_report="$( \
+  modified_files_report="$(
     git::test::coverage::get_modified_files_report \
       "${base_sha}" \
       "${head_sha}" \
       "${coverage_report_input}" \
-      "${THRESHOLD_MODIFIED}" \
-    )"
+      "${THRESHOLD_MODIFIED}"
+  )"
 
   coverage_report_temp_output="$(mktemp /tmp/git-friends-coverage-report.XXXXXXXXXX)"
 
@@ -290,7 +290,7 @@ function git::test::coverage::generate_pull_request_comment {
     "${overall_report}" \
     "${new_files_report}" \
     "${modified_files_report}" \
-    > "${coverage_report_temp_output}"
+    >"${coverage_report_temp_output}"
 
   if [[ "${coverage_report_output}" == 'GITHUB_OUTPUT' ]]; then
     echo "Using GITHUB_OUTPUT: ${GITHUB_OUTPUT}"
@@ -309,7 +309,7 @@ function git::test::coverage::generate_pull_request_comment {
 
     # We use awk to convert linebreaks into \n literals to pass downstream
     # otherwise we run into quoting issues with github-script bodies.
-    cat >> "${GITHUB_OUTPUT}" <<EOF
+    cat >>"${GITHUB_OUTPUT}" <<EOF
 coverage_report<<${github_delimiter}
 $(awk -v ORS='\\n' '1' "${coverage_report_temp_output}")
 ${github_delimiter}
@@ -318,7 +318,7 @@ EOF
     return
   fi
 
-  cat "${coverage_report_temp_output}" > "${coverage_report_output}"
+  cat "${coverage_report_temp_output}" >"${coverage_report_output}"
 }
 
 subcommand="${1:?Usage: $0 <summary|files|pull-request> [args...]}"

@@ -34,7 +34,7 @@ setup_with_coverage 'git-friends/src/hooks/pre_commit.sh'
   cd "${repo_dir}"
 
   # Stage a file so git diff --cached is non-empty
-  printf 'test content\n' > 'testfile.txt'
+  printf 'test content\n' >'testfile.txt'
   git add 'testfile.txt'
 
   run git::hooks::pre_commit
@@ -53,9 +53,9 @@ setup_with_coverage 'git-friends/src/hooks/pre_commit.sh'
   cd "${repo_dir}"
 
   # Create a rule script and stage a file
-  printf '#!/bin/bash\nexit 0\n' > '.git/hooks/pre-commit-test-lint'
+  printf '#!/bin/bash\nexit 0\n' >'.git/hooks/pre-commit-test-lint'
   chmod +x '.git/hooks/pre-commit-test-lint'
-  printf 'test content\n' > 'testfile.txt'
+  printf 'test content\n' >'testfile.txt'
   git add 'testfile.txt'
 
   run git::hooks::pre_commit
@@ -72,7 +72,7 @@ setup_with_coverage 'git-friends/src/hooks/pre_commit.sh'
     logfile="${BATS_TEST_TMPDIR}/test.log" \
     rule="${BATS_TEST_TMPDIR}/pre-commit-test-lint"
 
-  printf '#!/bin/bash\necho "lint passed"\n' > "${rule}"
+  printf '#!/bin/bash\necho "lint passed"\n' >"${rule}"
   chmod +x "${rule}"
 
   run git::hooks::pre_commit::block \
@@ -88,7 +88,7 @@ setup_with_coverage 'git-friends/src/hooks/pre_commit.sh'
     logfile="${BATS_TEST_TMPDIR}/test.log" \
     rule="${BATS_TEST_TMPDIR}/pre-commit-test-lint"
 
-  printf '#!/bin/bash\necho "flags: $*"\n' > "${rule}"
+  printf '#!/bin/bash\necho "flags: $*"\n' >"${rule}"
   chmod +x "${rule}"
 
   run git::hooks::pre_commit::block \
@@ -105,7 +105,7 @@ setup_with_coverage 'git-friends/src/hooks/pre_commit.sh'
     logfile="${BATS_TEST_TMPDIR}/test.log" \
     rule="${BATS_TEST_TMPDIR}/pre-commit-test-lint"
 
-  printf '#!/bin/bash\necho "ran without flags"\n' > "${rule}"
+  printf '#!/bin/bash\necho "ran without flags"\n' >"${rule}"
   chmod +x "${rule}"
 
   run git::hooks::pre_commit::block \
@@ -122,7 +122,7 @@ setup_with_coverage 'git-friends/src/hooks/pre_commit.sh'
     logfile="${BATS_TEST_TMPDIR}/test.log" \
     rule="${BATS_TEST_TMPDIR}/pre-commit-test-check"
 
-  printf '#!/bin/bash\nexit 1\n' > "${rule}"
+  printf '#!/bin/bash\nexit 1\n' >"${rule}"
   chmod +x "${rule}"
 
   run git::hooks::pre_commit::block \
@@ -137,7 +137,7 @@ setup_with_coverage 'git-friends/src/hooks/pre_commit.sh'
     logfile="${BATS_TEST_TMPDIR}/test.log" \
     rule="${BATS_TEST_TMPDIR}/pre-commit-test-mycheck.sh"
 
-  printf '#!/bin/bash\necho "flags: $*"\n' > "${rule}"
+  printf '#!/bin/bash\necho "flags: $*"\n' >"${rule}"
   chmod +x "${rule}"
 
   run git::hooks::pre_commit::block \
@@ -154,7 +154,7 @@ setup_with_coverage 'git-friends/src/hooks/pre_commit.sh'
     logfile="${BATS_TEST_TMPDIR}/test.log" \
     rule="${BATS_TEST_TMPDIR}/pre-commit-test-unit"
 
-  printf '#!/bin/bash\necho "unit tests passed"\n' > "${rule}"
+  printf '#!/bin/bash\necho "unit tests passed"\n' >"${rule}"
   chmod +x "${rule}"
 
   run git::hooks::pre_commit::block \

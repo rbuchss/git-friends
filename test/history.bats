@@ -15,12 +15,12 @@ setup_with_coverage 'git-friends/src/history.sh'
   git init "${repo_dir}"
   cd "${repo_dir}"
 
-  printf 'content\n' > 'file.txt'
+  printf 'content\n' >'file.txt'
   git add 'file.txt'
   git -c user.name=test -c user.email=test \
     commit -m 'add file'
 
-  printf 'modified\n' > 'file.txt'
+  printf 'modified\n' >'file.txt'
   git add 'file.txt'
   git -c user.name=test -c user.email=test \
     commit -m 'modify file'
@@ -53,12 +53,12 @@ setup_with_coverage 'git-friends/src/history.sh'
   git init "${repo_dir}"
   cd "${repo_dir}"
 
-  printf 'content\n' > 'file.txt'
+  printf 'content\n' >'file.txt'
   git add 'file.txt'
   git -c user.name=test -c user.email=test \
     commit -m 'add file'
 
-  printf 'more\n' > 'other.txt'
+  printf 'more\n' >'other.txt'
   git add 'other.txt'
   git -c user.name=test -c user.email=test \
     commit -m 'add other'
@@ -81,7 +81,7 @@ setup_with_coverage 'git-friends/src/history.sh'
   git init -b main "${repo_dir}"
   cd "${repo_dir}"
 
-  printf 'content\n' > 'file.txt'
+  printf 'content\n' >'file.txt'
   git add 'file.txt'
   git -c user.name=test -c user.email=test \
     commit -m 'initial commit'
@@ -99,19 +99,19 @@ setup_with_coverage 'git-friends/src/history.sh'
   git init -b main "${repo_dir}"
   cd "${repo_dir}"
 
-  printf 'content\n' > 'file.txt'
+  printf 'content\n' >'file.txt'
   git add 'file.txt'
   git -c user.name=test -c user.email=test \
     commit -m 'initial commit'
 
   git checkout -b 'feature-a'
-  printf 'a\n' > 'a.txt'
+  printf 'a\n' >'a.txt'
   git add 'a.txt'
   git -c user.name=test -c user.email=test \
     commit -m 'feature a commit'
 
   git checkout -b 'feature-b'
-  printf 'b\n' > 'b.txt'
+  printf 'b\n' >'b.txt'
   git add 'b.txt'
   git -c user.name=test -c user.email=test \
     commit -m 'feature b commit'
@@ -119,4 +119,3 @@ setup_with_coverage 'git-friends/src/history.sh'
   run git::history::recent 1
   assert_success
 }
-

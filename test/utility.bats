@@ -58,55 +58,55 @@ __create_bare_with_worktree() {
 ################################################################################
 
 @test "git::utility::ask 'build snowman?' <<< 'y'" {
-  run git::utility::ask 'build snowman?' <<< 'y'
+  run git::utility::ask 'build snowman?' <<<'y'
 
   assert_success
 }
 
 @test "git::utility::ask 'build snowman?' <<< 'Y'" {
-  run git::utility::ask 'build snowman?' <<< 'Y'
+  run git::utility::ask 'build snowman?' <<<'Y'
 
   assert_success
 }
 
 @test "git::utility::ask 'build snowman?' <<< 'Yes'" {
-  run git::utility::ask 'build snowman?' <<< 'Yes'
+  run git::utility::ask 'build snowman?' <<<'Yes'
 
   assert_success
 }
 
 @test "git::utility::ask 'build snowman?' <<< 'yes'" {
-  run git::utility::ask 'build snowman?' <<< 'yes'
+  run git::utility::ask 'build snowman?' <<<'yes'
 
   assert_success
 }
 
 @test "git::utility::ask 'build snowman?' <<< 'n'" {
-  run git::utility::ask 'build snowman?' <<< 'n'
+  run git::utility::ask 'build snowman?' <<<'n'
 
   assert_failure
 }
 
 @test "git::utility::ask 'build snowman?' <<< 'N'" {
-  run git::utility::ask 'build snowman?' <<< 'N'
+  run git::utility::ask 'build snowman?' <<<'N'
 
   assert_failure
 }
 
 @test "git::utility::ask 'build snowman?' <<< 'No'" {
-  run git::utility::ask 'build snowman?' <<< 'No'
+  run git::utility::ask 'build snowman?' <<<'No'
 
   assert_failure
 }
 
 @test "git::utility::ask 'build snowman?' <<< 'no'" {
-  run git::utility::ask 'build snowman?' <<< 'no'
+  run git::utility::ask 'build snowman?' <<<'no'
 
   assert_failure
 }
 
 @test "git::utility::ask 'build snowman?' <<< 'unknown'" {
-  run git::utility::ask 'build snowman?' <<< 'unknown'
+  run git::utility::ask 'build snowman?' <<<'unknown'
 
   assert_failure
 }
@@ -116,7 +116,7 @@ __create_bare_with_worktree() {
     all_response \
     _status=0
 
-  git::utility::ask 'build snowman?' all_response <<< 'y' \
+  git::utility::ask 'build snowman?' all_response <<<'y' \
     || _status="$?"
 
   assert_equal "${_status}" 0
@@ -128,7 +128,7 @@ __create_bare_with_worktree() {
     all_response \
     _status=0
 
-  git::utility::ask 'build snowman?' all_response <<< 'yes' \
+  git::utility::ask 'build snowman?' all_response <<<'yes' \
     || _status="$?"
 
   assert_equal "${_status}" 0
@@ -140,7 +140,7 @@ __create_bare_with_worktree() {
     all_response \
     _status=0
 
-  git::utility::ask 'build snowman?' all_response <<< 'n' \
+  git::utility::ask 'build snowman?' all_response <<<'n' \
     || _status="$?"
 
   assert_equal "${_status}" 1
@@ -152,7 +152,7 @@ __create_bare_with_worktree() {
     all_response \
     _status=0
 
-  git::utility::ask 'build snowman?' all_response <<< 'no' \
+  git::utility::ask 'build snowman?' all_response <<<'no' \
     || _status="$?"
 
   assert_equal "${_status}" 1
@@ -164,7 +164,7 @@ __create_bare_with_worktree() {
     all_response \
     _status=0
 
-  git::utility::ask 'build snowman?' all_response <<< 'yarp' \
+  git::utility::ask 'build snowman?' all_response <<<'yarp' \
     || _status="$?"
 
   assert_equal "${_status}" 1
@@ -176,7 +176,7 @@ __create_bare_with_worktree() {
     all_response \
     _status=0
 
-  git::utility::ask 'build snowman?' all_response <<< 'a' \
+  git::utility::ask 'build snowman?' all_response <<<'a' \
     || _status="$?"
 
   assert_equal "${_status}" 0
@@ -194,7 +194,7 @@ __create_bare_with_worktree() {
     all_response \
     _status=0
 
-  git::utility::ask 'build snowman?' all_response <<< 'all'\
+  git::utility::ask 'build snowman?' all_response <<<'all' \
     || _status="$?"
 
   assert_equal "${_status}" 0
@@ -212,7 +212,7 @@ __create_bare_with_worktree() {
     all_response \
     _status=0
 
-  git::utility::ask 'build snowman?' all_response <<< 'z' \
+  git::utility::ask 'build snowman?' all_response <<<'z' \
     || _status="$?"
 
   assert_equal "${_status}" 1
@@ -230,7 +230,7 @@ __create_bare_with_worktree() {
     all_response \
     _status=0
 
-  git::utility::ask 'build snowman?' all_response <<< 'none' \
+  git::utility::ask 'build snowman?' all_response <<<'none' \
     || _status="$?"
 
   assert_equal "${_status}" 1

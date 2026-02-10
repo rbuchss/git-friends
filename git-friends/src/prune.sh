@@ -8,7 +8,7 @@ function git::prune::branches {
     force=0 \
     arguments=()
 
-  while (( $# != 0 )); do
+  while (($# != 0)); do
     case "$1" in
       -a | --all)
         cmd='git::prune::branches::all'
@@ -73,15 +73,15 @@ function git::prune::branches::local {
   done < <(git branch --merged "${ref_branch}" \
     | grep -E -v "^(\*\s+.+|\s+(master|${ref_branch}))$")
 
-  (( "${#merged_branches[@]}" == 0 )) && return
+  (("${#merged_branches[@]}" == 0)) && return
 
   git::logger::info "found ${#merged_branches[@]} branches merged into '${ref_branch}':"
   printf ' - %s\n' "${merged_branches[@]}"
 
   for branch in "${merged_branches[@]}"; do
-    if (( force == 1 )) \
+    if ((force == 1)) \
       || git::utility::ask "remove: '${branch}'" all_response; then
-        git branch -d "${branch}"
+      git branch -d "${branch}"
     fi
   done
 }
@@ -104,9 +104,9 @@ function git::prune::branches::remote {
     "${remote}" \
     "${dry_run_response}"
 
-  if (( force == 1 )) \
+  if ((force == 1)) \
     || git::utility::ask "confirm prune remote: '${remote}'"; then
-      git remote prune "${remote}"
+    git remote prune "${remote}"
   fi
 }
 
@@ -115,7 +115,7 @@ function git::prune::branches::all {
     remote="$2" \
     ref_branch="$3"
 
-  if (( $# == 2 )); then
+  if (($# == 2)); then
     git::logger::error 'invalid number of arguments'
     git::logger::error "Usage: ${FUNCNAME[0]} force [remote] [branch]"
     git::logger::error ' - optional remote and branch must be specified together'

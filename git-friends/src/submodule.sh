@@ -26,7 +26,7 @@ function git::submodule::remove {
 }
 
 function git::submodule::sync {
-  if (( $# > 0 )); then
+  if (($# > 0)); then
     git submodule update --init --recursive -- "$@"
     return
   fi
@@ -36,7 +36,7 @@ function git::submodule::sync {
 
 function git::submodule::upgrade {
   # NOTE: old way: git submodule foreach git pull origin master
-  if (( $# > 0 )); then
+  if (($# > 0)); then
     git submodule update --recursive --remote -- "$@"
     return
   fi

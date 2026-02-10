@@ -16,10 +16,10 @@ function git::utility::ask {
   if [[ -n "${response_for_all_var_}" ]]; then
     echo -n "${question} [yes/no/all/none (y/n/a/z)] ? "
 
-    read -r response_for_all_ <<< "${!response_for_all_var_}"
+    read -r response_for_all_ <<<"${!response_for_all_var_}"
 
     if [[ -n "${response_for_all_}" ]]; then
-      (( response_for_all_ == 0 )) \
+      ((response_for_all_ == 0)) \
         && echo 'all' \
         || echo 'none'
       return "${response_for_all_}"
@@ -28,14 +28,14 @@ function git::utility::ask {
     read -r response
 
     case "${response}" in
-      [yY]|[yY][eE][sS]) return 0 ;;
-      [nN]|[nN][oO]) return 1 ;;
-      [aA]|[aA][lL][lL])
-        read -r "$2" <<< 0
+      [yY] | [yY][eE][sS]) return 0 ;;
+      [nN] | [nN][oO]) return 1 ;;
+      [aA] | [aA][lL][lL])
+        read -r "$2" <<<0
         return 0
         ;;
-      [zZ]|[nN][oO][nN][eE])
-        read -r "$2" <<< 1
+      [zZ] | [nN][oO][nN][eE])
+        read -r "$2" <<<1
         return 1
         ;;
       *) return 1 ;;
@@ -45,7 +45,7 @@ function git::utility::ask {
   read -r -p "${question} [yes/no (y/n)] ? " response
 
   case "${response}" in
-    [yY]|[yY][eE][sS]) return 0 ;;
+    [yY] | [yY][eE][sS]) return 0 ;;
     *) return 1 ;;
   esac
 }
@@ -79,7 +79,7 @@ function git::utility::expand_indices {
   local \
     min="$1" \
     max="$2" \
-    max_stop=$(( $2 + 1 ))
+    max_stop=$(($2 + 1))
 
   shift 2
 
@@ -92,36 +92,39 @@ function git::utility::expand_indices {
       start="${start:-${min}}"
       stop="${stop:-${max_stop}}"
 
-      case "${start}" in *[!0-9]*|'')
+      case "${start}" in *[!0-9]* | '')
         git::logger::error "invalid range '${arg}'"
-        return 1 ;;
+        return 1
+        ;;
       esac
 
-      case "${stop}" in *[!0-9]*|'')
+      case "${stop}" in *[!0-9]* | '')
         git::logger::error "invalid range '${arg}'"
-        return 1 ;;
+        return 1
+        ;;
       esac
 
-      if (( start < min || stop > max_stop )); then
+      if ((start < min || stop > max_stop)); then
         git::logger::error "range '${arg}' is out of bounds (${min}-${max})"
         return 1
       fi
 
-      if (( start >= stop )); then
+      if ((start >= stop)); then
         git::logger::error "range '${arg}' is empty or inverted"
         return 1
       fi
 
-      for (( index = start; index < stop; index++ )); do
+      for ((index = start; index < stop; index++)); do
         echo "${index}"
       done
     else
-      case "${arg}" in *[!0-9]*|'')
+      case "${arg}" in *[!0-9]* | '')
         git::logger::error "'${arg}' is not a valid index"
-        return 1 ;;
+        return 1
+        ;;
       esac
 
-      if (( arg < min || arg > max )); then
+      if ((arg < min || arg > max)); then
         git::logger::error "index ${arg} is out of range (${min}-${max})"
         return 1
       fi
@@ -137,9 +140,9 @@ function git::utility::expand_indices {
 function git::utility::is_executable {
   local task="$1"
 
-  if ! declare -F "${task}" > /dev/null 2>&1 \
-    && ! command -v "${task}" > /dev/null 2>&1; then
-      return 1
+  if ! declare -F "${task}" >/dev/null 2>&1 \
+    && ! command -v "${task}" >/dev/null 2>&1; then
+    return 1
   fi
 }
 
@@ -157,7 +160,7 @@ function git::utility::main_branch_names {
   local __git_utility_main_branch_names_output="$1"
 
   IFS=' ' read -ra "${__git_utility_main_branch_names_output?}" \
-    <<< "${GIT_FRIENDS_MAIN_BRANCH_NAMES:-master main mainline}"
+    <<<"${GIT_FRIENDS_MAIN_BRANCH_NAMES:-master main mainline}"
 }
 
 # Find the main branch ref for a repository.

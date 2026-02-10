@@ -20,8 +20,8 @@ function git::cscope::generate {
 
   if [[ ! -d "${tmp_file%/*}" ]] \
     && ! mkdir -p "${tmp_file%/*}"; then
-      git::logger::error "cannot make cscope directory: '${tmp_file%/*}'"
-      return 1
+    git::logger::error "cannot make cscope directory: '${tmp_file%/*}'"
+    return 1
   fi
 
   git::logger::info "Using: '${cmd_path}'"
@@ -30,14 +30,14 @@ function git::cscope::generate {
   # -q: create inverted index
   if git::cscope::files \
     | cscope -i - \
-    -f "${tmp_file}" \
-    -b -q -v \
-    "${extra_flags[@]}"; then
-      for file in "${tmp_file}"*; do
-        mv -v "${file}" "${file//.$$/}"
-      done
-      git::logger::info 'Success'
-      return
+      -f "${tmp_file}" \
+      -b -q -v \
+      "${extra_flags[@]}"; then
+    for file in "${tmp_file}"*; do
+      mv -v "${file}" "${file//.$$/}"
+    done
+    git::logger::info 'Success'
+    return
   fi
 
   git::logger::error "'git ls-files' or 'cscope' had errors; aborting"

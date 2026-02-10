@@ -27,7 +27,7 @@ setup_with_coverage 'git-friends/src/hooks/refresh.sh'
   cd "${repo_dir}"
 
   # Create a custom hook
-  printf '#!/bin/sh\necho test\n' > '.git/hooks/custom-hook'
+  printf '#!/bin/sh\necho test\n' >'.git/hooks/custom-hook'
   chmod +x '.git/hooks/custom-hook'
 
   run git::hooks::refresh

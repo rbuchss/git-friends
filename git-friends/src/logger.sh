@@ -1,7 +1,8 @@
 #!/bin/bash
 
 # Bash source guard - prevents sourcing this file multiple times
-[[ -n "${GIT_FRIENDS_MODULE_LOGGER_LOADED}" ]] && return; export GIT_FRIENDS_MODULE_LOGGER_LOADED=1
+[[ -n "${GIT_FRIENDS_MODULE_LOGGER_LOADED}" ]] && return
+export GIT_FRIENDS_MODULE_LOGGER_LOADED=1
 
 readonly GIT_FRIENDS_LOG_SEVERITY_TRACE=0
 readonly GIT_FRIENDS_LOG_SEVERITY_DEBUG=1
@@ -68,7 +69,7 @@ function git::logger::log {
   git::logger::level_default event_level
   git::logger::output_default output
 
-  while (( $# != 0 )); do
+  while (($# != 0)); do
     case "$1" in
       -h | --help)
         >&2 git::logger::log::usage
@@ -120,7 +121,7 @@ function git::logger::log {
     return "${GIT_FRIENDS_LOG_INVALID_STATUS}"
   fi
 
-  (( event_severity < logger_severity )) && return
+  ((event_severity < logger_severity)) && return
 
   local \
     datetime \
@@ -128,7 +129,7 @@ function git::logger::log {
     caller_info
 
   datetime="$(git::logger::datetime)"
-  progname="${FUNCNAME[${caller_level}+1]}"
+  progname="${FUNCNAME[${caller_level} + 1]}"
 
   case "${event_severity}" in
     "${GIT_FRIENDS_LOG_SEVERITY_TRACE}") event_level='TRACE' ;;
@@ -151,7 +152,7 @@ function git::logger::log {
       "${progname}" \
       "${message}" \
       "${caller_info}" \
-      >> "${output}"
+      >>"${output}"
   done
 }
 
@@ -182,14 +183,14 @@ function git::logger::datetime {
     )
 
   for date_command in "${date_commands[@]}"; do
-    if command -v "${date_command}" > /dev/null 2>&1; then
+    if command -v "${date_command}" >/dev/null 2>&1; then
       found_command=1
       "${date_command}" '+%Y-%m-%dT%H:%M:%S%z'
       break
     fi
   done
 
-  if (( found_command == 0 )); then
+  if ((found_command == 0)); then
     echo ' NO-DATE-COMMAND-FOUND! '
   fi
 }
@@ -382,7 +383,7 @@ function git::logger::is_silenced {
 
   case "${___silence___logger__is_silenced}" in
     0) ;;
-    [Tt][Rr][Uu][Ee]|[Yy][Ee][Ss]|[1-9]|[1-9][0-9]*)
+    [Tt][Rr][Uu][Ee] | [Yy][Ee][Ss] | [1-9] | [1-9][0-9]*)
       ___silence___logger__is_silenced=1
       ;;
     *)
@@ -390,7 +391,7 @@ function git::logger::is_silenced {
       ;;
   esac
 
-  (( ___silence___logger__is_silenced == 1 ))
+  ((___silence___logger__is_silenced == 1))
 }
 
 function git::logger::silence {
@@ -445,7 +446,7 @@ function git::logger::stacktrace {
     ___stack___logger__stacktrace=()
 
   # Add extra +1 to account for this function
-  (( ___caller_level___logger__stacktrace++ ))
+  ((___caller_level___logger__stacktrace++))
 
   while true; do
     if ! ___caller_info___logger__stacktrace="$(caller "${___caller_level___logger__stacktrace}")"; then
@@ -458,10 +459,10 @@ function git::logger::stacktrace {
 
     ___stack___logger__stacktrace+=("${___frame___logger__stacktrace}")
 
-    (( ___caller_level___logger__stacktrace++ ))
+    ((___caller_level___logger__stacktrace++))
   done
 
-  if (( ${#___stack___logger__stacktrace[@]} > 0 )); then
+  if ((${#___stack___logger__stacktrace[@]} > 0)); then
     printf \
       -v ___message___logger__stacktrace \
       '%s\n' \
@@ -499,7 +500,7 @@ function git::logger::caller_formatter {
     ___line___logger__caller_formatter \
     ___func___logger__caller_formatter \
     ___file___logger__caller_formatter \
-    <<< "${___caller_info___logger__caller_formatter}"
+    <<<"${___caller_info___logger__caller_formatter}"
 
   if [[ -z "${___func___logger__caller_formatter}" ]]; then
     ___func___logger__caller_formatter='(top level)'
@@ -528,13 +529,13 @@ function git::logger::caller_formatter {
   # Here to keep things simple we just check if the version is greater than
   # 3 vs 3.2.57.
   #
-  if (( ${BASH_VERSINFO[0]:-0} > 3 )) \
-    && (( ${___line___logger__caller_formatter:-0} > 0 )); then
-      printf \
-        -v ___message___logger__caller_formatter \
-        '%s:%s' \
-        "${___message___logger__caller_formatter}" \
-        "${___line___logger__caller_formatter}"
+  if ((${BASH_VERSINFO[0]:-0} > 3)) \
+    && ((${___line___logger__caller_formatter:-0} > 0)); then
+    printf \
+      -v ___message___logger__caller_formatter \
+      '%s:%s' \
+      "${___message___logger__caller_formatter}" \
+      "${___line___logger__caller_formatter}"
   fi
 
   if [[ -n "${___output_var___logger__caller_formatter}" ]]; then
