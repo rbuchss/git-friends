@@ -16,8 +16,18 @@ FROM ${BUILDER_IMAGE_NAME} AS git-friends-tester-base
 
 # We need to export any ARG's we want in each stage to make them available
 ARG IMAGE_BASH_PATH
+ARG USER
+ARG GROUP
 
 ENV BASH_PATH=${IMAGE_BASH_PATH}
+
+RUN addgroup ${GROUP}
+RUN adduser \
+  --disabled-password \
+  --gecos "" \
+  --shell ${BASH_PATH} \
+  --ingroup ${GROUP} \
+  ${USER}
 
 ################################################################################
 # Local docker version
@@ -31,15 +41,6 @@ ARG GROUP
 ARG WORKDIR
 
 WORKDIR ${WORKDIR}
-
-RUN addgroup ${GROUP}
-
-RUN adduser \
-  --disabled-password \
-  --gecos "" \
-  --shell ${BASH_PATH} \
-  --ingroup ${GROUP} \
-  ${USER}
 
 RUN chown --recursive ${USER}:${GROUP} ${WORKDIR}
 
@@ -57,6 +58,9 @@ CMD exec make guards
 
 FROM git-friends-tester-base AS git-friends-tester-github-actions
 
-COPY . ./cyberdyne/
+ARG USER
+ARG GROUP
+
+COPY --chown=${USER}:${GROUP} . ./cyberdyne/
 
 ENTRYPOINT ["./.github/actions/run-make/entrypoint.sh"]

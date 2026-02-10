@@ -1,10 +1,11 @@
 services:
   tester:
-    image: rbuchss/git-friends-tester-builder
-    user: root
-    working_dir: /workspace
+    build:
+      context: .
+      target: git-friends-tester-local
+    working_dir: /cyberdyne
     volumes:
-      - .:/workspace
+      - .:/cyberdyne
     cap_drop:
       - ALL
     security_opt:

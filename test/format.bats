@@ -324,8 +324,6 @@ __create_repo_with_files() {
 
 # bats test_tags=git::format::newline::process
 @test "git::format::newline::process fails for unreadable file" {
-  [[ "$(id -u)" -eq 0 ]] && skip "test requires non-root user"
-
   local repo_dir
 
   __create_repo_with_files
@@ -342,8 +340,6 @@ __create_repo_with_files() {
 
 # bats test_tags=git::format::newline::process
 @test "git::format::newline::process fails for unwritable file" {
-  [[ "$(id -u)" -eq 0 ]] && skip "test requires non-root user"
-
   local repo_dir
 
   __create_repo_with_files
