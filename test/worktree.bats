@@ -170,9 +170,15 @@ __create_bare_worktree_structure() {
 
 # bats test_tags=git::worktree::clone
 @test "git::worktree::clone creates bare worktree structure" {
+  local source_dir="${BATS_TEST_TMPDIR}/clone-source"
   local target_dir="${BATS_TEST_TMPDIR}/target"
 
-  run git::worktree::clone 'https://github.com/rbuchss/git-friends.git' "${target_dir}"
+  git init "${source_dir}"
+  git -C "${source_dir}" \
+    -c user.name=test -c user.email=test \
+    commit --allow-empty -m 'initial'
+
+  run git::worktree::clone "file://${source_dir}" "${target_dir}"
   assert_success
 
   # Verify bare repo exists
@@ -186,11 +192,17 @@ __create_bare_worktree_structure() {
 
 # bats test_tags=git::worktree::clone
 @test "git::worktree::clone fails when structure already exists" {
+  local source_dir="${BATS_TEST_TMPDIR}/clone-source"
   local target_dir="${BATS_TEST_TMPDIR}/target"
+
+  git init "${source_dir}"
+  git -C "${source_dir}" \
+    -c user.name=test -c user.email=test \
+    commit --allow-empty -m 'initial'
 
   mkdir -p "${target_dir}/__git__"
 
-  run git::worktree::clone 'https://github.com/rbuchss/git-friends.git' "${target_dir}"
+  run git::worktree::clone "file://${source_dir}" "${target_dir}"
   assert_failure
 }
 
@@ -407,13 +419,19 @@ __create_bare_worktree_structure() {
 
 # bats test_tags=git::worktree::clone
 @test "git::worktree::clone fails when base directory cannot be created" {
+  local source_dir="${BATS_TEST_TMPDIR}/clone-source"
   local readonly_parent="${BATS_TEST_TMPDIR}/readonly"
   local target_dir="${readonly_parent}/nested/target"
+
+  git init "${source_dir}"
+  git -C "${source_dir}" \
+    -c user.name=test -c user.email=test \
+    commit --allow-empty -m 'initial'
 
   # Create a file where the directory path needs to go
   touch "${readonly_parent}"
 
-  run git::worktree::clone 'https://github.com/rbuchss/git-friends.git' "${target_dir}"
+  run git::worktree::clone "file://${source_dir}" "${target_dir}"
   assert_failure
 }
 
@@ -479,28 +497,20 @@ __create_bare_worktree_structure() {
 }
 
 # bats test_tags=git::worktree::clone
-@test "git::worktree::clone derives directory from URL when not provided" {
-  cd "${BATS_TEST_TMPDIR}"
-
-  # Use a syntactically valid URL that will fail at bare clone.
-  # The key assertion is that it gets past the directory derivation logic
-  # (lines 90-94) and attempts to create a directory named after the repo.
-  run git::worktree::clone 'https://invalid.example.com/my-test-repo.git'
-  assert_failure
-
-  # Verify the directory was derived from the URL (repo name without .git suffix)
-  assert_output --partial 'my-test-repo'
-}
-
-# bats test_tags=git::worktree::clone
 @test "git::worktree::clone fails when __git__ mkdir fails" {
+  local source_dir="${BATS_TEST_TMPDIR}/clone-source"
   local target_dir="${BATS_TEST_TMPDIR}/target"
+
+  git init "${source_dir}"
+  git -C "${source_dir}" \
+    -c user.name=test -c user.email=test \
+    commit --allow-empty -m 'initial'
 
   # Create base dir but put a file where __git__ dir needs to go
   mkdir -p "${target_dir}"
   touch "${target_dir}/__git__"
 
-  run git::worktree::clone 'https://github.com/rbuchss/git-friends.git' "${target_dir}"
+  run git::worktree::clone "file://${source_dir}" "${target_dir}"
   assert_failure
 }
 
@@ -508,8 +518,8 @@ __create_bare_worktree_structure() {
 @test "git::worktree::clone fails when bare clone fails" {
   local target_dir="${BATS_TEST_TMPDIR}/clone-fail-target"
 
-  # Use a syntactically valid URL that will fail at git clone --bare
-  run git::worktree::clone 'https://invalid.example.com/no-such-repo.git' "${target_dir}"
+  # file:// URL passes is_valid but points to nonexistent repo — fails at git clone --bare
+  run git::worktree::clone "file:///tmp/nonexistent-repo-$$" "${target_dir}"
   assert_failure
 }
 
@@ -683,4 +693,24 @@ __create_bare_worktree_structure() {
 
   run git::worktree::checkout::new 'fail-branch'
   assert_failure
+}
+
+################################################################################
+# git::worktree::clone (integration — network required)
+################################################################################
+
+# bats test_tags=git::worktree::clone,integration,network
+@test "git::worktree::clone end-to-end with network repository" {
+  local target_dir="${BATS_TEST_TMPDIR}/integration-target"
+
+  run git::worktree::clone 'https://github.com/rbuchss/git-friends.git' "${target_dir}"
+  assert_success
+
+  # Verify bare repo exists
+  assert [ -d "${target_dir}/__git__/.git" ]
+
+  # Verify worktree was created for main branch
+  local branch
+  branch="$(git --git-dir="${target_dir}/__git__/.git" symbolic-ref --short HEAD)"
+  assert [ -d "${target_dir}/${branch}" ]
 }

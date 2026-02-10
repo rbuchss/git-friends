@@ -32,11 +32,21 @@ setup_with_coverage 'git-friends/src/clone.sh'
 
 # bats test_tags=git::clone::cd
 @test "git::clone::cd derives directory from url when not provided" {
-  cd "${BATS_TEST_TMPDIR}"
+  local source_dir="${BATS_TEST_TMPDIR}/sources/my-project"
+  local work_dir="${BATS_TEST_TMPDIR}/work"
 
-  git::clone::cd 'https://github.com/rbuchss/git-friends.git'
+  mkdir -p "${BATS_TEST_TMPDIR}/sources" "${work_dir}"
 
-  assert_equal "${PWD}" "${BATS_TEST_TMPDIR}/git-friends"
+  git init "${source_dir}"
+  git -C "${source_dir}" \
+    -c user.name=test -c user.email=test \
+    commit --allow-empty -m 'initial'
+
+  cd "${work_dir}"
+
+  git::clone::cd "file://${source_dir}"
+
+  assert_equal "${PWD}" "${work_dir}/my-project"
 }
 
 # bats test_tags=git::clone::cd
