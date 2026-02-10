@@ -117,7 +117,9 @@ function _g_wco {
   case "${cur}" in
     -*)
       # Include '-' for previous worktree, plus flags
-      COMPREPLY=($(compgen -W '- -b --branch' -- "${cur}"))
+      while IFS='' read -r line; do
+        COMPREPLY+=("${line}")
+      done < <(compgen -W '- -b --branch' -- "${cur}")
       ;;
     *)
       # Complete with branch names (local and remote tracking)
