@@ -75,11 +75,10 @@ setup_with_coverage 'git-friends/src/history.sh'
 
 # bats test_tags=git::history::recent
 @test "git::history::recent outputs branch information" {
-  command -v column > /dev/null 2>&1 || skip 'column not available'
-
   local repo_dir="${BATS_TEST_TMPDIR}/repo"
 
-  git init "${repo_dir}"
+  # Use -b main: Docker git lacks init.defaultBranch and defaults to 'master'
+  git init -b main "${repo_dir}"
   cd "${repo_dir}"
 
   printf 'content\n' > 'file.txt'
@@ -94,11 +93,10 @@ setup_with_coverage 'git-friends/src/history.sh'
 
 # bats test_tags=git::history::recent
 @test "git::history::recent with count limits output" {
-  command -v column > /dev/null 2>&1 || skip 'column not available'
-
   local repo_dir="${BATS_TEST_TMPDIR}/repo"
 
-  git init "${repo_dir}"
+  # Use -b main: Docker git lacks init.defaultBranch and defaults to 'master'
+  git init -b main "${repo_dir}"
   cd "${repo_dir}"
 
   printf 'content\n' > 'file.txt'
@@ -122,52 +120,3 @@ setup_with_coverage 'git-friends/src/history.sh'
   assert_success
 }
 
-################################################################################
-# git::history::recent (mock column/less)
-################################################################################
-
-# bats test_tags=git::history::recent
-@test "git::history::recent runs with mock column and less" {
-  local repo_dir="${BATS_TEST_TMPDIR}/repo"
-  local mock_dir="${BATS_TEST_TMPDIR}/bin"
-
-  git init "${repo_dir}"
-  cd "${repo_dir}"
-  git -c user.name=test -c user.email=test \
-    commit --allow-empty -m 'initial commit'
-
-  # Create mock column and less that just pass through
-  mkdir -p "${mock_dir}"
-  printf '#!/bin/bash\ncat\n' > "${mock_dir}/column"
-  printf '#!/bin/bash\ncat\n' > "${mock_dir}/less"
-  chmod +x "${mock_dir}/column" "${mock_dir}/less"
-
-  PATH="${mock_dir}:${PATH}" run git::history::recent
-  assert_success
-  assert_output --partial 'initial commit'
-}
-
-# bats test_tags=git::history::recent
-@test "git::history::recent with count limits branches shown" {
-  local repo_dir="${BATS_TEST_TMPDIR}/repo"
-  local mock_dir="${BATS_TEST_TMPDIR}/bin"
-
-  git init "${repo_dir}"
-  cd "${repo_dir}"
-  git -c user.name=test -c user.email=test \
-    commit --allow-empty -m 'initial'
-  git checkout -b feature-a
-  git -c user.name=test -c user.email=test \
-    commit --allow-empty -m 'feature a'
-  git checkout -b feature-b
-  git -c user.name=test -c user.email=test \
-    commit --allow-empty -m 'feature b'
-
-  mkdir -p "${mock_dir}"
-  printf '#!/bin/bash\ncat\n' > "${mock_dir}/column"
-  printf '#!/bin/bash\ncat\n' > "${mock_dir}/less"
-  chmod +x "${mock_dir}/column" "${mock_dir}/less"
-
-  PATH="${mock_dir}:${PATH}" run git::history::recent 1
-  assert_success
-}

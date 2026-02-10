@@ -561,8 +561,6 @@ TEXT
 
 # bats test_tags=git::config::aliases
 @test "git::config::aliases lists all aliases when no search term given" {
-  command -v column > /dev/null 2>&1 || skip 'column command not available'
-
   local repo_dir="${BATS_TEST_TMPDIR}/repo"
 
   git init "${repo_dir}"
@@ -581,8 +579,6 @@ TEXT
 
 # bats test_tags=git::config::aliases
 @test "git::config::aliases filters by search term in alias name" {
-  command -v column > /dev/null 2>&1 || skip 'column command not available'
-
   local repo_dir="${BATS_TEST_TMPDIR}/repo"
 
   git init "${repo_dir}"
@@ -599,8 +595,6 @@ TEXT
 
 # bats test_tags=git::config::aliases
 @test "git::config::aliases filters by search term in command value" {
-  command -v column > /dev/null 2>&1 || skip 'column command not available'
-
   local repo_dir="${BATS_TEST_TMPDIR}/repo"
 
   git init "${repo_dir}"
@@ -763,46 +757,3 @@ TEXT
   assert_line --partial 'flaggroup.item'
 }
 
-################################################################################
-# git::config::aliases (mock column)
-################################################################################
-
-# bats test_tags=git::config::aliases
-@test "git::config::aliases runs with mock column" {
-  local repo_dir="${BATS_TEST_TMPDIR}/repo"
-  local mock_dir="${BATS_TEST_TMPDIR}/bin"
-
-  git init "${repo_dir}"
-  git -C "${repo_dir}" config alias.co 'checkout'
-  git -C "${repo_dir}" config alias.br 'branch'
-  cd "${repo_dir}"
-
-  mkdir -p "${mock_dir}"
-  printf '#!/bin/bash\ncat\n' > "${mock_dir}/column"
-  chmod +x "${mock_dir}/column"
-
-  PATH="${mock_dir}:${PATH}" run git::config::aliases
-  assert_success
-  assert_output --partial 'ALIAS'
-  assert_output --partial 'co'
-  assert_output --partial 'br'
-}
-
-# bats test_tags=git::config::aliases
-@test "git::config::aliases filters by search with mock column" {
-  local repo_dir="${BATS_TEST_TMPDIR}/repo"
-  local mock_dir="${BATS_TEST_TMPDIR}/bin"
-
-  git init "${repo_dir}"
-  git -C "${repo_dir}" config alias.co 'checkout'
-  git -C "${repo_dir}" config alias.br 'branch'
-  cd "${repo_dir}"
-
-  mkdir -p "${mock_dir}"
-  printf '#!/bin/bash\ncat\n' > "${mock_dir}/column"
-  chmod +x "${mock_dir}/column"
-
-  PATH="${mock_dir}:${PATH}" run git::config::aliases 'co'
-  assert_success
-  assert_output --partial 'co'
-}
