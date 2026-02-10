@@ -67,6 +67,70 @@ function git::utility::array_contains {
   return 1
 }
 
+# Expand index arguments (integers and Python-style ranges) into individual indices.
+# Outputs expanded indices to stdout, one per line.
+# Range syntax uses exclusive stop (like Python slices):
+#   2:5  → 2, 3, 4
+#   1:   → 1 through max (open end defaults to max+1)
+#   :3   → min through 2 (open start defaults to min)
+#   :    → min through max (both open)
+# Usage: git::utility::expand_indices <min> <max> [args...]
+function git::utility::expand_indices {
+  local \
+    min="$1" \
+    max="$2" \
+    max_stop=$(( $2 + 1 ))
+
+  shift 2
+
+  local arg start stop index
+
+  for arg in "$@"; do
+    if [[ "${arg}" == *:* ]]; then
+      start="${arg%%:*}"
+      stop="${arg##*:}"
+      start="${start:-${min}}"
+      stop="${stop:-${max_stop}}"
+
+      case "${start}" in *[!0-9]*|'')
+        git::logger::error "invalid range '${arg}'"
+        return 1 ;;
+      esac
+
+      case "${stop}" in *[!0-9]*|'')
+        git::logger::error "invalid range '${arg}'"
+        return 1 ;;
+      esac
+
+      if (( start < min || stop > max_stop )); then
+        git::logger::error "range '${arg}' is out of bounds (${min}-${max})"
+        return 1
+      fi
+
+      if (( start >= stop )); then
+        git::logger::error "range '${arg}' is empty or inverted"
+        return 1
+      fi
+
+      for (( index = start; index < stop; index++ )); do
+        echo "${index}"
+      done
+    else
+      case "${arg}" in *[!0-9]*|'')
+        git::logger::error "'${arg}' is not a valid index"
+        return 1 ;;
+      esac
+
+      if (( arg < min || arg > max )); then
+        git::logger::error "index ${arg} is out of range (${min}-${max})"
+        return 1
+      fi
+
+      echo "${arg}"
+    fi
+  done
+}
+
 # Check if a function or command is executable.
 # Returns success if the name is a declared function or found on PATH.
 # Usage: git::utility::is_executable <name>

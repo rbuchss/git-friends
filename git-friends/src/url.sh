@@ -1,31 +1,81 @@
 #!/bin/bash
+# shellcheck source=/dev/null
+source "${BASH_SOURCE[0]%/*}/utility.sh"
 
 function git::url::is_valid {
   local url="$1"
 
-  git::url::parse "${url}" 1 5 > /dev/null 2>&1
+  if [[ "${url}" =~ ^file:// ]]; then
+    # file:// needs prefix, domain, separator, and repo (no user/org concept)
+    git::url::parse "${url}" 1:4 5 > /dev/null 2>&1
+  else
+    git::url::parse "${url}" 1: > /dev/null 2>&1
+  fi
 }
 
+# Parses a URL and returns the specified capture groups.
+# Each argument after the URL is a group index (1-5) or a Python-style
+# range (start:stop, exclusive stop). Open-ended ranges are supported:
+#   1:4  → groups 1, 2, 3
+#   2:   → groups 2, 3, 4, 5
+#   :3   → groups 1, 2
+#   :    → groups 1, 2, 3, 4, 5
+# Returns 1 if the URL doesn't match or any requested group is empty.
+#
+# Capture groups (normalized across all URL types):
+#   1: prefix    (git@, https://, http://, file://, ssh://, git://)
+#   2: domain    (github.com, localhost for file://)
+#   3: separator (: or /)
+#   4: user/path (user/org for remote, parent path for file://)
+#   5: repo      (repository name including .git suffix)
+#
+# ssh:// and git:// URLs may include userinfo and port components
+# which are parsed but not mapped to capture groups.
 function git::url::parse {
   local \
     url="$1" \
-    start_index="$2" \
-    end_index="${3:-$2}" \
-    regexp='(git\@|https://|http://)([^/:]+)(:|/)([^/]+)/(.+)$' \
-    match_index
+    remote_regexp='^(git\@|https://|http://)([^/:]+)(:|/)([^/]+)/(.+)$' \
+    ssh_regexp='^(ssh://[^@]+@|ssh://)([^/:]+)[^/]*(/)([^/]+)/(.+)$' \
+    git_regexp='^(git://)([^/:]+)[^/]*(/)([^/]+)/(.+)$' \
+    file_regexp='^(file://)([^/]*)(/)(.*/)?([^/]+)$'
 
-  if [[ "${url}" =~ $regexp ]]; then
-    for (( match_index = start_index; match_index <= end_index; match_index++ )); do
-      if [[ -z "${BASH_REMATCH[${match_index}]}" ]]; then
-        return 1
-      fi
-      echo "${BASH_REMATCH[${match_index}]}"
-    done
+  shift
 
-    return 0
+  local -a indices=()
+
+  if (( $# > 0 )); then
+    local expanded line
+
+    expanded="$(git::utility::expand_indices 1 5 "$@")" || return 1
+
+    while IFS= read -r line; do
+      indices+=("${line}")
+    done <<< "${expanded}"
   fi
 
-  return 1
+  local -a matches=()
+
+  if [[ "${url}" =~ $remote_regexp ]] \
+    || [[ "${url}" =~ $ssh_regexp ]] \
+    || [[ "${url}" =~ $git_regexp ]]; then
+      matches=("${BASH_REMATCH[@]}")
+  elif [[ "${url}" =~ $file_regexp ]]; then
+    matches=("${BASH_REMATCH[@]}")
+    # RFC 8089: empty host implies localhost
+    matches[2]="${matches[2]:-localhost}"
+  else
+    return 1
+  fi
+
+  local index
+  for index in "${indices[@]}"; do
+    if [[ -z "${matches[${index}]}" ]]; then
+      return 1
+    fi
+    echo "${matches[${index}]}"
+  done
+
+  return 0
 }
 
 function git::url::prefix {
@@ -59,18 +109,21 @@ function git::url::protocol {
   prefix="$(git::url::prefix "$1")"
 
   case "${prefix}" in
-    git@) echo 'ssh' ;;
+    git@|ssh://*) echo 'ssh' ;;
     https://) echo 'https' ;;
     http://) echo 'http' ;;
+    file://) echo 'file' ;;
+    git://) echo 'git' ;;
     *)
-      >&2 echo "ERROR: url: '${prefix}' is not valid"
+      git::logger::error "'${prefix}' is not valid"
       return 1
       ;;
   esac
 }
 
 function git::url::change_user {
-  local url="$1" \
+  local \
+    url="$1" \
     prefix \
     domain \
     separator \
@@ -79,8 +132,13 @@ function git::url::change_user {
 
   if [[ -z "${url}" ]] \
     || [[ -z "${user}" ]]; then
-    >&2 echo 'ERROR: invalid arguments'
-    >&2 echo "Usage: ${FUNCNAME[0]} url user"
+    git::logger::error 'invalid arguments'
+    git::logger::error "Usage: ${FUNCNAME[0]} url user"
+    return 1
+  fi
+
+  if [[ "${url}" =~ ^file:// ]]; then
+    git::logger::error 'change_user is not supported for file:// URLs'
     return 1
   fi
 
@@ -105,8 +163,10 @@ function git::url::prefix_for_protocol {
     ssh) echo 'git@' ;;
     https) echo 'https://' ;;
     http) echo 'http://' ;;
+    file) echo 'file://' ;;
+    git) echo 'git://' ;;
     *)
-      >&2 echo "ERROR: protocol: '$1' is not valid"
+      git::logger::error "protocol '$1' is not valid"
       return 1
       ;;
   esac
@@ -115,17 +175,17 @@ function git::url::prefix_for_protocol {
 function git::url::separator_for_protocol {
   case "$1" in
     ssh) echo ':' ;;
-    https) echo '/' ;;
-    http) echo '/' ;;
+    https|http|file|git) echo '/' ;;
     *)
-      >&2 echo "ERROR: protocol: '$1' is not valid"
+      git::logger::error "protocol '$1' is not valid"
       return 1
       ;;
   esac
 }
 
 function git::url::change_protocol {
-  local url="$1" \
+  local \
+    url="$1" \
     protocol="$2" \
     prefix \
     domain \
@@ -135,8 +195,18 @@ function git::url::change_protocol {
 
   if [[ -z "${url}" ]] \
     || [[ -z "${protocol}" ]]; then
-    >&2 echo 'ERROR: invalid arguments'
-    >&2 echo "Usage: ${FUNCNAME[0]} url protocol"
+    git::logger::error 'invalid arguments'
+    git::logger::error "Usage: ${FUNCNAME[0]} url protocol"
+    return 1
+  fi
+
+  if [[ "${url}" =~ ^file:// ]]; then
+    git::logger::error 'change_protocol is not supported for file:// URLs'
+    return 1
+  fi
+
+  if [[ "${protocol}" == 'file' ]]; then
+    git::logger::error 'cannot convert to file:// protocol'
     return 1
   fi
 
