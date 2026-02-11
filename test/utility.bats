@@ -393,7 +393,6 @@ __create_bare_with_worktree() {
   git::utility::main_branch_names result
   assert_equal "${result[0]}" 'first'
 
-  # shellcheck disable=SC2034
   GIT_FRIENDS_MAIN_BRANCH_NAMES='second third'
   git::utility::main_branch_names result
   assert_equal "${#result[@]}" 2

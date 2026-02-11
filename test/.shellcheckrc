@@ -1,0 +1,30 @@
+# shellcheck configuration for BATS test files
+#
+# BATS runs each @test in its own subshell by design, making several
+# shellcheck warnings false positives in this context.
+
+# SC2030: Modification of VAR is local (to subshell caused by @bats test)
+# SC2031: VAR was modified in a subshell. That change might be lost.
+# These are intentional — each @test is isolated by design.
+disable=SC2030
+disable=SC2031
+
+# SC2317: Command appears to be unreachable.
+# SC2329: This function is never invoked.
+# Stub and mock function bodies are invoked indirectly by the code under test.
+disable=SC2317
+disable=SC2329
+
+# SC2034: VAR appears unused.
+# Variables like words, cword, cur are consumed by the BATS framework
+# or by the functions under test via dynamic scoping.
+disable=SC2034
+
+# SC2218: This function is only defined later.
+# Test stubs (e.g. git() overrides) cause shellcheck to misinterpret
+# earlier uses of the same command name as forward references.
+disable=SC2218
+
+# SC2314: In Bats, ! will not fail the test if it is not the last command.
+# Our uses of ! are always the last command in the test.
+disable=SC2314
