@@ -7,9 +7,9 @@ function git::url::is_valid {
 
   if [[ "${url}" =~ ^file:// ]]; then
     # file:// needs prefix, domain, separator, and repo (no user/org concept)
-    git::url::parse "${url}" 1:4 5 > /dev/null 2>&1
+    git::url::parse "${url}" 1:4 5 >/dev/null 2>&1
   else
-    git::url::parse "${url}" 1: > /dev/null 2>&1
+    git::url::parse "${url}" 1: >/dev/null 2>&1
   fi
 }
 
@@ -43,14 +43,14 @@ function git::url::parse {
 
   local -a indices=()
 
-  if (( $# > 0 )); then
+  if (($# > 0)); then
     local expanded line
 
     expanded="$(git::utility::expand_indices 1 5 "$@")" || return 1
 
     while IFS= read -r line; do
       indices+=("${line}")
-    done <<< "${expanded}"
+    done <<<"${expanded}"
   fi
 
   local -a matches=()
@@ -58,7 +58,7 @@ function git::url::parse {
   if [[ "${url}" =~ $remote_regexp ]] \
     || [[ "${url}" =~ $ssh_regexp ]] \
     || [[ "${url}" =~ $git_regexp ]]; then
-      matches=("${BASH_REMATCH[@]}")
+    matches=("${BASH_REMATCH[@]}")
   elif [[ "${url}" =~ $file_regexp ]]; then
     matches=("${BASH_REMATCH[@]}")
     # RFC 8089: empty host implies localhost
@@ -109,7 +109,7 @@ function git::url::protocol {
   prefix="$(git::url::prefix "$1")"
 
   case "${prefix}" in
-    git@|ssh://*) echo 'ssh' ;;
+    git@ | ssh://*) echo 'ssh' ;;
     https://) echo 'https' ;;
     http://) echo 'http' ;;
     file://) echo 'file' ;;
@@ -146,13 +146,13 @@ function git::url::change_user {
     && domain="$(git::url::domain "${url}")" \
     && separator="$(git::url::separator "${url}")" \
     && repo="$(git::url::repo "${url}")"; then
-      printf '%s%s%s%s/%s' \
-        "${prefix}" \
-        "${domain}" \
-        "${separator}" \
-        "${user}" \
-        "${repo}"
-      return
+    printf '%s%s%s%s/%s' \
+      "${prefix}" \
+      "${domain}" \
+      "${separator}" \
+      "${user}" \
+      "${repo}"
+    return
   fi
 
   return 1
@@ -175,7 +175,7 @@ function git::url::prefix_for_protocol {
 function git::url::separator_for_protocol {
   case "$1" in
     ssh) echo ':' ;;
-    https|http|file|git) echo '/' ;;
+    https | http | file | git) echo '/' ;;
     *)
       git::logger::error "protocol '$1' is not valid"
       return 1
@@ -215,13 +215,13 @@ function git::url::change_protocol {
     && separator="$(git::url::separator_for_protocol "${protocol}")" \
     && user="$(git::url::user "${url}")" \
     && repo="$(git::url::repo "${url}")"; then
-      printf '%s%s%s%s/%s' \
-        "${prefix}" \
-        "${domain}" \
-        "${separator}" \
-        "${user}" \
-        "${repo}"
-      return
+    printf '%s%s%s%s/%s' \
+      "${prefix}" \
+      "${domain}" \
+      "${separator}" \
+      "${user}" \
+      "${repo}"
+    return
   fi
 
   return 1

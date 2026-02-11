@@ -27,27 +27,27 @@ function git::ctags::generate {
 
   if [[ ! -d "${tmp_file%/*}" ]] \
     && ! mkdir -p "${tmp_file%/*}"; then
-      git::logger::error "cannot make ctags directory: '${tmp_file%/*}'"
-      return 1
+    git::logger::error "cannot make ctags directory: '${tmp_file%/*}'"
+    return 1
   fi
 
   git::logger::info "Using: '${cmd_path}'"
 
   if git ls-files \
     | ctags -L - \
-    -f "${tmp_file}" \
-    --c++-kinds=+p \
-    --c-kinds=+p \
-    --exclude=.git \
-    --extra=+fq \
-    --fields=+iaS \
-    --tag-relative \
-    --totals \
-    --verbose \
-    "${extra_flags[@]}"; then
-      mv -v "${tmp_file}" "${tags_file}"
-      git::logger::info 'Success'
-      return
+      -f "${tmp_file}" \
+      --c++-kinds=+p \
+      --c-kinds=+p \
+      --exclude=.git \
+      --extra=+fq \
+      --fields=+iaS \
+      --tag-relative \
+      --totals \
+      --verbose \
+      "${extra_flags[@]}"; then
+    mv -v "${tmp_file}" "${tags_file}"
+    git::logger::info 'Success'
+    return
   fi
 
   git::logger::error "'git ls-files' or 'ctags' had errors; aborting"

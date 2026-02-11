@@ -27,7 +27,7 @@ setup_with_coverage 'git-friends/src/cscope.sh'
   local work_dir="${BATS_TEST_TMPDIR}/not-a-repo"
 
   mkdir -p "${mock_dir}" "${work_dir}"
-  cat > "${mock_dir}/cscope" <<'MOCK'
+  cat >"${mock_dir}/cscope" <<'MOCK'
 #!/bin/bash
 exit 0
 MOCK
@@ -62,7 +62,7 @@ MOCK
 
   # Mock cscope: parse the -f flag to find output file and create it
   # Also create the .in and .po companion files cscope normally generates
-  cat > "${mock_dir}/cscope" <<'MOCK'
+  cat >"${mock_dir}/cscope" <<'MOCK'
 #!/bin/bash
 cat > /dev/null  # consume stdin
 outfile=""
@@ -108,7 +108,7 @@ MOCK
     commit -m 'initial'
 
   # Mock cscope that always fails
-  cat > "${mock_dir}/cscope" <<'MOCK'
+  cat >"${mock_dir}/cscope" <<'MOCK'
 #!/bin/bash
 cat > /dev/null  # consume stdin
 exit 1
@@ -142,7 +142,7 @@ MOCK
     commit -m 'initial'
 
   # Mock cscope: verify custom flag is present
-  cat > "${mock_dir}/cscope" <<'MOCK'
+  cat >"${mock_dir}/cscope" <<'MOCK'
 #!/bin/bash
 cat > /dev/null  # consume stdin
 found_custom=0

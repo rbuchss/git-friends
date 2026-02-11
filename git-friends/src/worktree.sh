@@ -35,7 +35,7 @@ function git::worktree::save_previous {
   current_branch="$(git branch --show-current 2>/dev/null)" || return 1
   previous_file="$(git::worktree::previous_file)" || return 1
 
-  echo "${current_branch}" > "${previous_file}"
+  echo "${current_branch}" >"${previous_file}"
 }
 
 # Get the previous worktree branch.
@@ -190,9 +190,9 @@ function git::worktree::add {
     create_branch=0 \
     args=()
 
-  while (( $# > 0 )); do
+  while (($# > 0)); do
     case "$1" in
-      -b|--branch)
+      -b | --branch)
         create_branch=1
         ;;
       *)
@@ -202,7 +202,7 @@ function git::worktree::add {
     shift
   done
 
-  if (( create_branch )); then
+  if ((create_branch)); then
     git::worktree::add::new "${args[@]}"
   else
     git::worktree::add::existing "${args[@]}"
@@ -250,9 +250,9 @@ function git::worktree::add::existing {
   git::worktree::add::setup "${branch}"
   setup_result=$?
 
-  if (( setup_result == 1 )); then
+  if ((setup_result == 1)); then
     return 1
-  elif (( setup_result == 2 )); then
+  elif ((setup_result == 2)); then
     return 0
   fi
 
@@ -283,7 +283,7 @@ function git::worktree::add::new {
     worktree_absolute_path
 
   shift
-  (( $# > 0 )) && shift
+  (($# > 0)) && shift
 
   if [[ -z "${branch}" ]]; then
     git::logger::error 'usage: git::worktree::add::new <branch> [start-point] [git-worktree-args...]'
@@ -293,9 +293,9 @@ function git::worktree::add::new {
   git::worktree::add::setup "${branch}"
   setup_result=$?
 
-  if (( setup_result == 1 )); then
+  if ((setup_result == 1)); then
     return 1
-  elif (( setup_result == 2 )); then
+  elif ((setup_result == 2)); then
     return 0
   fi
 
@@ -337,9 +337,9 @@ function git::worktree::checkout {
     create_branch=0 \
     args=()
 
-  while (( $# > 0 )); do
+  while (($# > 0)); do
     case "$1" in
-      -b|--branch)
+      -b | --branch)
         create_branch=1
         ;;
       *)
@@ -349,7 +349,7 @@ function git::worktree::checkout {
     shift
   done
 
-  if (( create_branch )); then
+  if ((create_branch)); then
     git::worktree::checkout::new "${args[@]}"
   else
     git::worktree::checkout::existing "${args[@]}"

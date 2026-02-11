@@ -46,7 +46,7 @@ function git::remote::check_status {
 
   if ! git::remote::validate_remote_branch "${remote_branch}"; then
     branch_status=$?
-    if (( branch_status == 2 )); then
+    if ((branch_status == 2)); then
       # Missing remote branch is not an error, just exit cleanly
       return 0
     fi
@@ -60,7 +60,7 @@ function git::remote::check_status {
     return 1
   fi
 
-  read -r local_hash remote_hash <<< "${commit_hashes}"
+  read -r local_hash remote_hash <<<"${commit_hashes}"
 
   git::remote::compare_branches \
     "${current_branch}" \
@@ -149,7 +149,7 @@ function git::remote::validate_remote_branch {
       "Warning: Remote branch '${remote_branch}' doesn't exist" \
       "This might be a new local branch that hasn't been pushed yet"
 
-    return 2  # Special return code for missing remote branch
+    return 2 # Special return code for missing remote branch
   fi
 
   return 0
@@ -174,7 +174,7 @@ function git::remote::get_current_branch {
 
   current_branch="$(
     git symbolic-ref --short HEAD 2>/dev/null \
-    || git rev-parse --short HEAD
+      || git rev-parse --short HEAD
   )"
 
   if [[ -z "${current_branch}" ]]; then
@@ -185,7 +185,7 @@ function git::remote::get_current_branch {
 }
 
 function git::remote::validate_repository {
-  if ! git rev-parse --git-dir > /dev/null 2>&1; then
+  if ! git rev-parse --git-dir >/dev/null 2>&1; then
     git::logger::error 'Not in a git repository'
     return 1
   fi

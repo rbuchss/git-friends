@@ -33,7 +33,7 @@ function git::config::exists {
   local key="$1" \
     flags=("${@:2}")
 
-  git config "${flags[@]}" --get "${key}" > /dev/null
+  git config "${flags[@]}" --get "${key}" >/dev/null
 }
 
 function git::config::is_null {
@@ -88,7 +88,7 @@ function git::config::get_all {
 }
 
 function git::dir {
-  if (( $# == 0 )); then
+  if (($# == 0)); then
     git rev-parse --git-dir
     return
   fi

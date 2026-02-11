@@ -9,7 +9,7 @@ function git::hooks::task_runner {
     block='git::hooks::task_runner::background_block' \
     arguments=()
 
-  while (( $# != 0 )); do
+  while (($# != 0)); do
     case "$1" in
       -h | --help)
         git::hooks::task_runner::usage
@@ -97,40 +97,40 @@ function git::hooks::task_runner::body {
 
   if git::config::is_true "${config_section}.log" \
     && logfile="$(git::dir "git-friends/logs/${hook_name}.log")"; then
-      if [[ ! -d "${logfile%/*}" ]] \
-        && ! mkdir -p "${logfile%/*}"; then
-          git::logger::error "cannot make log directory: '${logfile%/*}'"
-          return 1
-      fi
+    if [[ ! -d "${logfile%/*}" ]] \
+      && ! mkdir -p "${logfile%/*}"; then
+      git::logger::error "cannot make log directory: '${logfile%/*}'"
+      return 1
+    fi
   fi
 
   if git::utility::is_not_executable "${block}"; then
     git::logger::error \
       --caller-level 3 \
       "NO command or function name: '${block}' found" \
-      >> "${logfile}"
+      >>"${logfile}"
     return 1
   fi
 
-  if (( "${#tasks[@]}" == 0 )); then
+  if (("${#tasks[@]}" == 0)); then
     git::logger::info \
       --caller-level 3 \
       "no tasks to run\n" \
-      >> "${logfile}"
+      >>"${logfile}"
     return
   fi
 
   git::logger::info \
     --caller-level 3 \
     "queue ${#tasks[*]} tasks: ${tasks[*]}" \
-    >> "${logfile}"
+    >>"${logfile}"
 
   for task in "${tasks[@]}"; do
     if git::utility::is_not_executable "${task}"; then
       git::logger::error \
         --caller-level 3 \
         "NO command or function named: '${task}' found" \
-        >> "${logfile}"
+        >>"${logfile}"
       exit_status=1
       continue
     fi
@@ -151,7 +151,7 @@ function git::hooks::task_runner::background_block {
     git::logger::warning \
       --caller-level 4 \
       "skipped ${task}" \
-      >> "${logfile}"
+      >>"${logfile}"
     return
   fi
 
@@ -163,6 +163,6 @@ function git::hooks::task_runner::background_block {
     git::logger::log \
       --level "${level}" \
       --caller-level 4 \
-      "task: ${task}\n${response}\n" \
-  ) >> "${logfile}" 2>&1 &
+      "task: ${task}\n${response}\n"
+  ) >>"${logfile}" 2>&1 &
 }

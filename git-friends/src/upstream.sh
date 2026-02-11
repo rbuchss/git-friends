@@ -22,6 +22,6 @@ function git::upstream::add {
   if origin_url="$(git config --get remote.origin.url)" \
     && upstream_url="$(git::url::change_user "${origin_url}" "${user}")" \
     && git::utility::ask "add remote '${name}':  ${upstream_url}"; then
-      git remote add "${name}" "${upstream_url}"
+    git remote add "${name}" "${upstream_url}"
   fi
 }

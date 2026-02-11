@@ -756,4 +756,3 @@ TEXT
   assert_success
   assert_line --partial 'flaggroup.item'
 }
-

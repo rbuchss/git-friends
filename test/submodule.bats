@@ -93,9 +93,9 @@ __create_repo_with_submodule() {
 
   # Allow file:// protocol for local submodule fetch
   GIT_CONFIG_COUNT=1 \
-  GIT_CONFIG_KEY_0='protocol.file.allow' \
-  GIT_CONFIG_VALUE_0='always' \
-  run git::submodule::upgrade "${sub_path}"
+    GIT_CONFIG_KEY_0='protocol.file.allow' \
+    GIT_CONFIG_VALUE_0='always' \
+    run git::submodule::upgrade "${sub_path}"
   assert_success
 }
 

@@ -29,7 +29,7 @@ __create_repo_with_files() {
   __create_repo_with_files
   cd "${repo_dir}"
 
-  printf 'no trailing newline' > 'test.txt'
+  printf 'no trailing newline' >'test.txt'
 
   run git::format::newline::process 'test.txt'
   assert_success
@@ -47,15 +47,15 @@ __create_repo_with_files() {
   __create_repo_with_files
   cd "${repo_dir}"
 
-  printf 'has trailing newline\n' > 'test.txt'
+  printf 'has trailing newline\n' >'test.txt'
   local before_size
-  before_size="$(wc -c < 'test.txt')"
+  before_size="$(wc -c <'test.txt')"
 
   run git::format::newline::process 'test.txt'
   assert_success
 
   local after_size
-  after_size="$(wc -c < 'test.txt')"
+  after_size="$(wc -c <'test.txt')"
   assert_equal "${before_size}" "${after_size}"
 }
 
@@ -82,7 +82,7 @@ __create_repo_with_files() {
   __create_repo_with_files
   cd "${repo_dir}"
 
-  printf 'content' > 'real.txt'
+  printf 'content' >'real.txt'
   ln -s 'real.txt' 'link.txt'
 
   run git::format::newline::process 'link.txt'
@@ -107,9 +107,9 @@ __create_repo_with_files() {
   __create_repo_with_files
   cd "${repo_dir}"
 
-  printf 'file one' > 'a.txt'
-  printf 'file two' > 'b.txt'
-  printf 'file three\n' > 'c.txt'
+  printf 'file one' >'a.txt'
+  printf 'file two' >'b.txt'
+  printf 'file three\n' >'c.txt'
 
   run git::format::newline::process 'a.txt' 'b.txt' 'c.txt'
   assert_success
@@ -181,7 +181,7 @@ __create_repo_with_files() {
   __create_repo_with_files
   cd "${repo_dir}"
 
-  printf 'no newline' > 'a.txt'
+  printf 'no newline' >'a.txt'
   git add 'a.txt'
   git -c user.name=test -c user.email=test \
     commit -m 'add file'
@@ -205,7 +205,7 @@ __create_repo_with_files() {
   __create_repo_with_files
   cd "${repo_dir}"
 
-  printf 'content' > 'tracked.txt'
+  printf 'content' >'tracked.txt'
   git add 'tracked.txt'
   git -c user.name=test -c user.email=test \
     commit -m 'add file'
@@ -223,7 +223,7 @@ __create_repo_with_files() {
   __create_repo_with_files
   cd "${repo_dir}"
 
-  printf 'content' > 'tracked.txt'
+  printf 'content' >'tracked.txt'
   git add 'tracked.txt'
   git -c user.name=test -c user.email=test \
     commit -m 'add file'
@@ -240,13 +240,13 @@ __create_repo_with_files() {
   cd "${repo_dir}"
 
   # Create an initial commit so HEAD exists
-  printf 'initial\n' > 'init.txt'
+  printf 'initial\n' >'init.txt'
   git add 'init.txt'
   git -c user.name=test -c user.email=test \
     commit -m 'initial'
 
   # Stage a file missing newline
-  printf 'no newline' > 'staged.txt'
+  printf 'no newline' >'staged.txt'
   git add 'staged.txt'
 
   run git::format::newline 'staged'
@@ -262,12 +262,12 @@ __create_repo_with_files() {
   __create_repo_with_files
   cd "${repo_dir}"
 
-  printf 'initial\n' > 'init.txt'
+  printf 'initial\n' >'init.txt'
   git add 'init.txt'
   git -c user.name=test -c user.email=test \
     commit -m 'initial'
 
-  printf 'no newline' > 'staged.txt'
+  printf 'no newline' >'staged.txt'
   git add 'staged.txt'
 
   run git::format::newline 'dc'
@@ -281,13 +281,13 @@ __create_repo_with_files() {
   __create_repo_with_files
   cd "${repo_dir}"
 
-  printf 'initial\n' > 'file.txt'
+  printf 'initial\n' >'file.txt'
   git add 'file.txt'
   git -c user.name=test -c user.email=test \
     commit -m 'initial'
 
   # Modify file without staging
-  printf 'modified' > 'file.txt'
+  printf 'modified' >'file.txt'
 
   run git::format::newline 'changed'
   assert_success
@@ -302,12 +302,12 @@ __create_repo_with_files() {
   __create_repo_with_files
   cd "${repo_dir}"
 
-  printf 'initial\n' > 'file.txt'
+  printf 'initial\n' >'file.txt'
   git add 'file.txt'
   git -c user.name=test -c user.email=test \
     commit -m 'initial'
 
-  printf 'changed' > 'file.txt'
+  printf 'changed' >'file.txt'
   git add 'file.txt'
   git -c user.name=test -c user.email=test \
     commit -m 'changed'
@@ -331,7 +331,7 @@ __create_repo_with_files() {
   __create_repo_with_files
   cd "${repo_dir}"
 
-  printf 'content' > 'unreadable.txt'
+  printf 'content' >'unreadable.txt'
   chmod 000 'unreadable.txt'
 
   run git::format::newline::process 'unreadable.txt'
@@ -349,7 +349,7 @@ __create_repo_with_files() {
   __create_repo_with_files
   cd "${repo_dir}"
 
-  printf 'content' > 'readonly.txt'
+  printf 'content' >'readonly.txt'
   chmod 444 'readonly.txt'
 
   run git::format::newline::process 'readonly.txt'
@@ -369,7 +369,7 @@ __create_repo_with_files() {
   __create_repo_with_files
   cd "${repo_dir}"
 
-  cat > '.gitmodules' <<'GITMODULES'
+  cat >'.gitmodules' <<'GITMODULES'
 [submodule "vendor/lib"]
   path = vendor/lib
   url = https://example.com/lib.git
@@ -386,7 +386,7 @@ GITMODULES
   __create_repo_with_files
   cd "${repo_dir}"
 
-  cat > '.gitmodules' <<'GITMODULES'
+  cat >'.gitmodules' <<'GITMODULES'
 [submodule "vendor/lib"]
   path = vendor/lib
   url = https://example.com/lib.git
@@ -403,14 +403,14 @@ GITMODULES
   __create_repo_with_files
   cd "${repo_dir}"
 
-  cat > '.gitmodules' <<'GITMODULES'
+  cat >'.gitmodules' <<'GITMODULES'
 [submodule "vendor/lib"]
   path = vendor/lib
   url = https://example.com/lib.git
 GITMODULES
 
   mkdir -p 'vendor/lib'
-  printf 'content' > 'vendor/lib/file.txt'
+  printf 'content' >'vendor/lib/file.txt'
 
   run git::format::newline::process 'vendor/lib/file.txt'
   assert_success
@@ -423,12 +423,12 @@ GITMODULES
   __create_repo_with_files
   cd "${repo_dir}"
 
-  printf 'initial\n' > 'file.txt'
+  printf 'initial\n' >'file.txt'
   git add 'file.txt'
   git -c user.name=test -c user.email=test \
     commit -m 'initial'
 
-  printf 'modified' > 'file.txt'
+  printf 'modified' >'file.txt'
 
   run git::format::newline 'df'
   assert_success
@@ -440,7 +440,7 @@ GITMODULES
   git init "${repo_dir}"
   cd "${repo_dir}"
 
-  printf 'target content' > 'target.txt'
+  printf 'target content' >'target.txt'
   ln -s 'target.txt' 'link.txt'
 
   run git::format::newline::process 'link.txt'
@@ -449,4 +449,3 @@ GITMODULES
   # The target file should NOT have been modified (symlink was skipped)
   [[ "$(tail -c1 'target.txt')" != "" ]]
 }
-

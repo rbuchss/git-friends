@@ -5,7 +5,7 @@ source "${BASH_SOURCE[0]%/*/*}/logger.sh"
 function git::hooks::refresh {
   local hooks=(.git/hooks/*)
 
-  if (( "${#hooks[@]}" != 0 )); then
+  if (("${#hooks[@]}" != 0)); then
     git::logger::info 'Clearing out old hooks:'
 
     for hook in "${hooks[@]}"; do

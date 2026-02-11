@@ -10,7 +10,7 @@ function git::hooks::pre_commit {
   local rules
   rules=("$(git::dir)"/hooks/pre-commit-test-*)
 
-  if (( ${#rules[@]} > 0 )); then
+  if ((${#rules[@]} > 0)); then
     git::logger::info 'No pre-commit rules found. Skipping tests.'
     return 0
   fi
@@ -38,7 +38,7 @@ function git::hooks::pre_commit::block {
   git::logger::info \
     --caller-level 4 \
     "run: ${rule} ${flags[*]}\n" \
-    >> "${logfile}"
+    >>"${logfile}"
 
   "${rule}" "${flags[@]}"
 }

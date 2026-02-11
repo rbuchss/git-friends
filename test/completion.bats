@@ -181,11 +181,11 @@ setup_with_coverage 'git-friends/src/completion.sh'
   # Override __git_find_on_cmdline to simulate: flags found, modes found, force not found
   __git_find_on_cmdline() {
     case "$1" in
-      *--force*--all*|*--all*--force*)
+      *--force*--all* | *--all*--force*)
         # full flags string: a flag is found
         echo "--remote"
         ;;
-      *--all*--local*|*--local*--all*)
+      *--all*--local* | *--local*--all*)
         # modes string: a mode is found
         echo "--remote"
         ;;
@@ -226,11 +226,11 @@ setup_with_coverage 'git-friends/src/completion.sh'
   # Override __git_find_on_cmdline to simulate: flags found, modes not found
   __git_find_on_cmdline() {
     case "$1" in
-      *--force*--all*|*--all*--force*)
+      *--force*--all* | *--all*--force*)
         # full flags string: a flag is found
         echo "--force"
         ;;
-      *--all*--local*|*--local*--all*)
+      *--all*--local* | *--local*--all*)
         # modes string: no mode found
         echo ""
         ;;
