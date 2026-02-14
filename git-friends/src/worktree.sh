@@ -65,6 +65,74 @@ function git::worktree::resolve_branch {
   echo "${branch}"
 }
 
+# Create symlink to shared __context__ directory in a worktree.
+# No-op if __context__ dir doesn't exist or symlink already present.
+# Usage: git::worktree::__link_context__ <worktree_path>
+function git::worktree::__link_context__ {
+  local worktree_path="$1"
+  local context_dir="${worktree_path%/*}/__context__"
+  local symlink_path="${worktree_path}/__context__"
+
+  # Skip if no shared context directory exists
+  [[ -d "${context_dir}" ]] || return 0
+
+  # Skip if symlink already exists
+  [[ -L "${symlink_path}" ]] && return 0
+
+  ln -s ../__context__ "${symlink_path}"
+}
+
+# Initialize shared __context__ directory and link it into all existing worktrees.
+# Creates __context__ at the project root if it doesn't exist.
+# Adds __context__ to git exclude if not already present.
+# Usage: git::worktree::init_context [path]
+function git::worktree::init_context {
+  local \
+    path="$1" \
+    git_cmd=(git) \
+    git_common_dir \
+    project_root \
+    context_dir \
+    exclude_file \
+    worktree_path
+
+  [[ -n "${path}" ]] && git_cmd+=(-C "${path}")
+
+  git_common_dir="$("${git_cmd[@]}" rev-parse --git-common-dir 2>/dev/null)" || {
+    git::logger::error 'Not inside a git repository'
+    return 1
+  }
+
+  # Project root is the parent of __git__
+  project_root="${git_common_dir%/__git__/.git}"
+
+  if [[ "${project_root}" == "${git_common_dir}" ]]; then
+    git::logger::error 'Not inside a bare worktree structure (expected __git__/.git layout)'
+    return 1
+  fi
+
+  context_dir="${project_root}/__context__"
+
+  if [[ ! -d "${context_dir}" ]]; then
+    mkdir "${context_dir}"
+    git::logger::info "Created shared context directory: '${context_dir}'"
+  fi
+
+  # Add __context__ to git exclude if not already present
+  exclude_file="${git_common_dir}/info/exclude"
+  mkdir -p "${git_common_dir}/info"
+  if ! grep -qFx '__context__' "${exclude_file}" 2>/dev/null; then
+    echo '__context__' >>"${exclude_file}"
+  fi
+
+  # Link __context__ into every worktree (skipping the bare __git__ entry)
+  while IFS= read -r worktree_path; do
+    git::worktree::__link_context__ "${worktree_path}"
+  done < <("${git_cmd[@]}" worktree list --porcelain | sed -n 's/^worktree //p' | grep -v '/__git__$')
+
+  git::logger::info 'Linked __context__ into all worktrees'
+}
+
 # Clone repository as a bare worktree structure.
 # Creates: <directory>/__git__/.git (bare repo) and <directory>/<main-branch> (worktree)
 # Sets up remote tracking and branch upstream for git rebase/pull to work.
@@ -145,6 +213,8 @@ function git::worktree::clone {
 
   # Set up branch tracking so git rebase/pull work without arguments
   git -C "${directory}/${main_branch}" branch --set-upstream-to="${default_remote}/${main_branch}" "${main_branch}"
+
+  git::worktree::init_context "${directory}/${main_branch}"
 
   git::logger::info "Worktree setup complete: '${directory}/${main_branch}'"
 }
@@ -263,6 +333,8 @@ function git::worktree::add::existing {
     return 1
   fi
 
+  git::worktree::__link_context__ "${worktree_absolute_path}"
+
   # Set up branch tracking if remote branch exists
   default_remote="$(git::worktree::default_remote)"
   if git show-ref --quiet "refs/remotes/${default_remote}/${branch}"; then
@@ -324,7 +396,11 @@ function git::worktree::add::new {
   # the start-point branches from HEAD (a local ref), which doesn't trigger
   # automatic tracking.
   #
-  git worktree add --no-track -b "${branch}" "${worktree_dir}" "${start_point}" "$@"
+  if ! git worktree add --no-track -b "${branch}" "${worktree_dir}" "${start_point}" "$@"; then
+    return 1
+  fi
+
+  git::worktree::__link_context__ "${worktree_absolute_path}"
 }
 
 # Create or attach a feature worktree and cd into it.
