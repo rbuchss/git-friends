@@ -1,5 +1,6 @@
 #!/bin/bash
 # shellcheck source=/dev/null
+source "${BASH_SOURCE[0]%/*}/exec.sh"
 source "${BASH_SOURCE[0]%/*}/config.sh"
 source "${BASH_SOURCE[0]%/*}/logger.sh"
 
@@ -33,7 +34,7 @@ function git::ctags::generate {
 
   git::logger::info "Using: '${cmd_path}'"
 
-  if git ls-files \
+  if git::__exec__ ls-files \
     | ctags -L - \
       -f "${tmp_file}" \
       --c++-kinds=+p \
@@ -54,3 +55,13 @@ function git::ctags::generate {
   rm -f "${tmp_file}"
   return 1
 }
+
+function git::ctags::__export__ {
+  export -f git::ctags::generate
+}
+
+function git::ctags::__recall__ {
+  export -fn git::ctags::generate
+}
+
+git::ctags::__export__

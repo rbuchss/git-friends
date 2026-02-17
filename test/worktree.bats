@@ -300,6 +300,31 @@ __create_bare_worktree_structure() {
   assert [ -d "${worktree_dir}/existing-branch" ]
 }
 
+# bats test_tags=git::worktree::add::existing
+@test "git::worktree::add::existing sets upstream tracking when remote branch exists" {
+  local source_dir="${BATS_TEST_TMPDIR}/source"
+  local bare_dir worktree_dir branch
+
+  __create_bare_worktree_structure
+  cd "${worktree_dir}/${branch}"
+
+  # Create a branch on the source and push it to our bare remote
+  git -C "${source_dir}" checkout -b 'remote-feature'
+  git -C "${source_dir}" \
+    -c user.name=test -c user.email=test \
+    commit --allow-empty -m 'feature commit'
+
+  # Fetch so the branch appears as refs/remotes/origin/remote-feature
+  git fetch origin
+
+  git::worktree::add::existing 'remote-feature'
+
+  # Verify upstream was set
+  local upstream
+  upstream="$(git -C "${worktree_dir}/remote-feature" rev-parse --abbrev-ref '@{upstream}')"
+  assert_equal "${upstream}" 'origin/remote-feature'
+}
+
 ################################################################################
 # git::worktree::add::setup (duplicate detection)
 ################################################################################

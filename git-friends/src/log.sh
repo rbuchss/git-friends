@@ -1,5 +1,6 @@
 #!/bin/bash
 # shellcheck source=/dev/null
+source "${BASH_SOURCE[0]%/*}/exec.sh"
 source "${BASH_SOURCE[0]%/*}/remote.sh"
 
 function git::log::basic {
@@ -20,7 +21,7 @@ function git::log::basic {
 
   printf -v format '%s' "${format_options[@]}"
 
-  git log \
+  git::__exec__ log \
     --pretty=format:"${format}" \
     --decorate \
     "$@"
@@ -49,3 +50,17 @@ function git::log::from_default_branch {
     "$@" \
     "${commit_range}"
 }
+
+function git::log::__export__ {
+  export -f git::log::basic
+  export -f git::log::pretty
+  export -f git::log::from_default_branch
+}
+
+function git::log::__recall__ {
+  export -fn git::log::basic
+  export -fn git::log::pretty
+  export -fn git::log::from_default_branch
+}
+
+git::log::__export__

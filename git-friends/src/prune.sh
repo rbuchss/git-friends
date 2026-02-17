@@ -1,5 +1,6 @@
 #!/bin/bash
 # shellcheck source=/dev/null
+source "${BASH_SOURCE[0]%/*}/exec.sh"
 source "${BASH_SOURCE[0]%/*}/logger.sh"
 source "${BASH_SOURCE[0]%/*}/utility.sh"
 
@@ -61,16 +62,16 @@ function git::prune::branches::local {
   local all_response
 
   [[ -z "${ref_branch}" ]] \
-    && ref_branch="$(git branch --show-current)"
+    && ref_branch="$(git::__exec__ branch --show-current)"
 
-  if ! git show-ref --verify --quiet "refs/heads/${ref_branch}"; then
+  if ! git::__exec__ show-ref --verify --quiet "refs/heads/${ref_branch}"; then
     git::logger::error "reference branch '${ref_branch}' does not exist"
     return 1
   fi
 
   while IFS= read -r merged_branch; do
     merged_branches+=("${merged_branch//[[:blank:]]/}")
-  done < <(git branch --merged "${ref_branch}" \
+  done < <(git::__exec__ branch --merged "${ref_branch}" \
     | grep -E -v "^(\*\s+.+|\s+(master|${ref_branch}))$")
 
   (("${#merged_branches[@]}" == 0)) && return
@@ -81,7 +82,7 @@ function git::prune::branches::local {
   for branch in "${merged_branches[@]}"; do
     if ((force == 1)) \
       || git::utility::ask "remove: '${branch}'" all_response; then
-      git branch -d "${branch}"
+      git::__exec__ branch -d "${branch}"
     fi
   done
 }
@@ -91,7 +92,7 @@ function git::prune::branches::remote {
     remote="${2:-origin}" \
     dry_run_response
 
-  if ! dry_run_response="$(git remote prune -n "${remote}")"; then
+  if ! dry_run_response="$(git::__exec__ remote prune -n "${remote}")"; then
     git::logger::error "remote '${remote}' is not valid"
     return 1
   fi
@@ -106,7 +107,7 @@ function git::prune::branches::remote {
 
   if ((force == 1)) \
     || git::utility::ask "confirm prune remote: '${remote}'"; then
-    git remote prune "${remote}"
+    git::__exec__ remote prune "${remote}"
   fi
 }
 
@@ -126,3 +127,21 @@ function git::prune::branches::all {
     && echo \
     && git::prune::branches::remote "${force}" "${remote}"
 }
+
+function git::prune::__export__ {
+  export -f git::prune::branches
+  export -f git::prune::branches::usage
+  export -f git::prune::branches::local
+  export -f git::prune::branches::remote
+  export -f git::prune::branches::all
+}
+
+function git::prune::__recall__ {
+  export -fn git::prune::branches
+  export -fn git::prune::branches::usage
+  export -fn git::prune::branches::local
+  export -fn git::prune::branches::remote
+  export -fn git::prune::branches::all
+}
+
+git::prune::__export__

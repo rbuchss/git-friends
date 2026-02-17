@@ -226,3 +226,37 @@ function git::url::change_protocol {
 
   return 1
 }
+
+function git::url::__export__ {
+  export -f git::url::is_valid
+  export -f git::url::parse
+  export -f git::url::prefix
+  export -f git::url::domain
+  export -f git::url::separator
+  export -f git::url::user
+  export -f git::url::repo
+  export -f git::url::repo_name
+  export -f git::url::protocol
+  export -f git::url::change_user
+  export -f git::url::prefix_for_protocol
+  export -f git::url::separator_for_protocol
+  export -f git::url::change_protocol
+}
+
+function git::url::__recall__ {
+  export -fn git::url::is_valid
+  export -fn git::url::parse
+  export -fn git::url::prefix
+  export -fn git::url::domain
+  export -fn git::url::separator
+  export -fn git::url::user
+  export -fn git::url::repo
+  export -fn git::url::repo_name
+  export -fn git::url::protocol
+  export -fn git::url::change_user
+  export -fn git::url::prefix_for_protocol
+  export -fn git::url::separator_for_protocol
+  export -fn git::url::change_protocol
+}
+
+git::url::__export__

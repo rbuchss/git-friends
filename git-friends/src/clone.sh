@@ -1,5 +1,6 @@
 #!/bin/bash
 # shellcheck source=/dev/null
+source "${BASH_SOURCE[0]%/*}/exec.sh"
 source "${BASH_SOURCE[0]%/*}/logger.sh"
 source "${BASH_SOURCE[0]%/*}/url.sh"
 
@@ -15,7 +16,7 @@ function git::clone::cd {
     return 1
   fi
 
-  if ! git clone "$@"; then
+  if ! git::__exec__ clone "$@"; then
     return 1
   fi
 
@@ -27,3 +28,13 @@ function git::clone::cd {
   git::logger::info "Changing directory to: '${directory}'"
   cd "${directory}" || return 1
 }
+
+function git::clone::__export__ {
+  export -f git::clone::cd
+}
+
+function git::clone::__recall__ {
+  export -fn git::clone::cd
+}
+
+git::clone::__export__

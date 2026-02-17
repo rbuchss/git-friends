@@ -166,3 +166,19 @@ function git::hooks::task_runner::background_block {
       "task: ${task}\n${response}\n"
   ) >>"${logfile}" 2>&1 &
 }
+
+function git::hooks::task_runner::__export__ {
+  export -f git::hooks::task_runner
+  export -f git::hooks::task_runner::usage
+  export -f git::hooks::task_runner::body
+  export -f git::hooks::task_runner::background_block
+}
+
+function git::hooks::task_runner::__recall__ {
+  export -fn git::hooks::task_runner
+  export -fn git::hooks::task_runner::usage
+  export -fn git::hooks::task_runner::body
+  export -fn git::hooks::task_runner::background_block
+}
+
+git::hooks::task_runner::__export__

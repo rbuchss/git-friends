@@ -1,5 +1,6 @@
 #!/bin/bash
 # shellcheck source=/dev/null
+source "${BASH_SOURCE[0]%/*}/exec.sh"
 source "${BASH_SOURCE[0]%/*}/logger.sh"
 source "${BASH_SOURCE[0]%/*}/utility.sh"
 
@@ -14,5 +15,15 @@ function git::rebase::to_main {
   fi
 
   git::logger::info "Found git main ref for remote: '${main_ref}' - using to rebase"
-  git rebase "${main_ref}"
+  git::__exec__ rebase "${main_ref}"
 }
+
+function git::rebase::__export__ {
+  export -f git::rebase::to_main
+}
+
+function git::rebase::__recall__ {
+  export -fn git::rebase::to_main
+}
+
+git::rebase::__export__

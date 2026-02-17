@@ -1,5 +1,6 @@
 #!/bin/bash
 # shellcheck source=/dev/null
+source "${BASH_SOURCE[0]%/*/*}/exec.sh"
 source "${BASH_SOURCE[0]%/*/*}/logger.sh"
 
 function git::hooks::refresh {
@@ -19,9 +20,19 @@ function git::hooks::refresh {
 
   git::logger::info 'Loading current hooks:'
 
-  git init
+  git::__exec__ init
 
   for hook in .git/hooks/*; do
     git::logger::info " - add: '${hook}'"
   done
 }
+
+function git::hooks::refresh::__export__ {
+  export -f git::hooks::refresh
+}
+
+function git::hooks::refresh::__recall__ {
+  export -fn git::hooks::refresh
+}
+
+git::hooks::refresh::__export__

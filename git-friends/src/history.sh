@@ -1,4 +1,6 @@
 #!/bin/bash
+# shellcheck source=/dev/null
+source "${BASH_SOURCE[0]%/*}/exec.sh"
 
 function git::history::recent {
   # show local branches
@@ -31,7 +33,7 @@ function git::history::recent {
     --no-init
   )
 
-  git for-each-ref \
+  git::__exec__ for-each-ref \
     --color=always \
     --count="${count}" \
     --sort=-committerdate \
@@ -42,10 +44,22 @@ function git::history::recent {
 }
 
 function git::history::churn {
-  git log --all -M -C --name-only --format='format:' "$@" \
+  git::__exec__ log --all -M -C --name-only --format='format:' "$@" \
     | sort \
     | grep -v '^$' \
     | uniq -c \
     | sort \
     | awk 'BEGIN { print "count file" } { print $1 " " $2 }'
 }
+
+function git::history::__export__ {
+  export -f git::history::recent
+  export -f git::history::churn
+}
+
+function git::history::__recall__ {
+  export -fn git::history::recent
+  export -fn git::history::churn
+}
+
+git::history::__export__

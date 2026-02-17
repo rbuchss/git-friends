@@ -9,3 +9,13 @@ function git::hooks::post_commit {
     'git::cscope::generate' \
     'git::ctags::generate'
 }
+
+function git::hooks::post_commit::__export__ {
+  export -f git::hooks::post_commit
+}
+
+function git::hooks::post_commit::__recall__ {
+  export -fn git::hooks::post_commit
+}
+
+git::hooks::post_commit::__export__
