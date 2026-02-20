@@ -1,7 +1,10 @@
 #!/bin/bash
 # shellcheck source=/dev/null
-source "${BASH_SOURCE[0]%/*}/exec.sh"
-source "${BASH_SOURCE[0]%/*}/remote.sh"
+source "${GIT_FRIENDS_MODULE_SRC_DIR:-${BASH_SOURCE[0]%/*}}/__module__.sh"
+source "${GIT_FRIENDS_MODULE_SRC_DIR:-${BASH_SOURCE[0]%/*}}/exec.sh"
+source "${GIT_FRIENDS_MODULE_SRC_DIR:-${BASH_SOURCE[0]%/*}}/remote.sh"
+
+git::__module__::load || return 0
 
 function git::log::basic {
   local format \
@@ -21,7 +24,7 @@ function git::log::basic {
 
   printf -v format '%s' "${format_options[@]}"
 
-  git::__exec__ log \
+  git::exec log \
     --pretty=format:"${format}" \
     --decorate \
     "$@"
@@ -63,4 +66,4 @@ function git::log::__recall__ {
   export -fn git::log::from_default_branch
 }
 
-git::log::__export__
+git::__module__::export

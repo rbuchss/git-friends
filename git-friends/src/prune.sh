@@ -1,8 +1,11 @@
 #!/bin/bash
 # shellcheck source=/dev/null
-source "${BASH_SOURCE[0]%/*}/exec.sh"
-source "${BASH_SOURCE[0]%/*}/logger.sh"
-source "${BASH_SOURCE[0]%/*}/utility.sh"
+source "${GIT_FRIENDS_MODULE_SRC_DIR:-${BASH_SOURCE[0]%/*}}/__module__.sh"
+source "${GIT_FRIENDS_MODULE_SRC_DIR:-${BASH_SOURCE[0]%/*}}/exec.sh"
+source "${GIT_FRIENDS_MODULE_SRC_DIR:-${BASH_SOURCE[0]%/*}}/logger.sh"
+source "${GIT_FRIENDS_MODULE_SRC_DIR:-${BASH_SOURCE[0]%/*}}/utility.sh"
+
+git::__module__::load || return 0
 
 function git::prune::branches {
   local cmd='git::prune::branches::local' \
@@ -62,16 +65,16 @@ function git::prune::branches::local {
   local all_response
 
   [[ -z "${ref_branch}" ]] \
-    && ref_branch="$(git::__exec__ branch --show-current)"
+    && ref_branch="$(git::exec branch --show-current)"
 
-  if ! git::__exec__ show-ref --verify --quiet "refs/heads/${ref_branch}"; then
+  if ! git::exec show-ref --verify --quiet "refs/heads/${ref_branch}"; then
     git::logger::error "reference branch '${ref_branch}' does not exist"
     return 1
   fi
 
   while IFS= read -r merged_branch; do
     merged_branches+=("${merged_branch//[[:blank:]]/}")
-  done < <(git::__exec__ branch --merged "${ref_branch}" \
+  done < <(git::exec branch --merged "${ref_branch}" \
     | grep -E -v "^(\*\s+.+|\s+(master|${ref_branch}))$")
 
   (("${#merged_branches[@]}" == 0)) && return
@@ -82,7 +85,7 @@ function git::prune::branches::local {
   for branch in "${merged_branches[@]}"; do
     if ((force == 1)) \
       || git::utility::ask "remove: '${branch}'" all_response; then
-      git::__exec__ branch -d "${branch}"
+      git::exec branch -d "${branch}"
     fi
   done
 }
@@ -92,7 +95,7 @@ function git::prune::branches::remote {
     remote="${2:-origin}" \
     dry_run_response
 
-  if ! dry_run_response="$(git::__exec__ remote prune -n "${remote}")"; then
+  if ! dry_run_response="$(git::exec remote prune -n "${remote}")"; then
     git::logger::error "remote '${remote}' is not valid"
     return 1
   fi
@@ -107,7 +110,7 @@ function git::prune::branches::remote {
 
   if ((force == 1)) \
     || git::utility::ask "confirm prune remote: '${remote}'"; then
-    git::__exec__ remote prune "${remote}"
+    git::exec remote prune "${remote}"
   fi
 }
 
@@ -144,4 +147,4 @@ function git::prune::__recall__ {
   export -fn git::prune::branches::all
 }
 
-git::prune::__export__
+git::__module__::export

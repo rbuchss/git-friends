@@ -1,13 +1,16 @@
 #!/bin/bash
 # shellcheck source=/dev/null
-source "${BASH_SOURCE[0]%/*}/exec.sh"
+source "${GIT_FRIENDS_MODULE_SRC_DIR:-${BASH_SOURCE[0]%/*}}/__module__.sh"
+source "${GIT_FRIENDS_MODULE_SRC_DIR:-${BASH_SOURCE[0]%/*}}/exec.sh"
+
+git::__module__::load || return 0
 
 function git::config::group {
   local \
     group="$1" \
     flags=("${@:2}")
 
-  git::__exec__ config "${flags[@]}" --get-regexp "^${group}"
+  git::exec config "${flags[@]}" --get-regexp "^${group}"
 }
 
 function git::config::aliases {
@@ -35,7 +38,7 @@ function git::config::exists {
   local key="$1" \
     flags=("${@:2}")
 
-  git::__exec__ config "${flags[@]}" --get "${key}" >/dev/null
+  git::exec config "${flags[@]}" --get "${key}" >/dev/null
 }
 
 function git::config::is_null {
@@ -50,7 +53,7 @@ function git::config::is_true {
   git::config::is_null "$@" \
     && return 2
 
-  value="$(git::__exec__ config "${flags[@]}" --type=bool --get "${key}")" \
+  value="$(git::exec config "${flags[@]}" --type=bool --get "${key}")" \
     && [[ "${value}" == 'true' ]]
 }
 
@@ -62,7 +65,7 @@ function git::config::is_false {
   git::config::is_null "$@" \
     && return 2
 
-  value="$(git::__exec__ config "${flags[@]}" --type=bool --get "${key}")" \
+  value="$(git::exec config "${flags[@]}" --type=bool --get "${key}")" \
     && [[ "${value}" == 'false' ]]
 }
 
@@ -79,23 +82,23 @@ function git::config::get {
   local key="$1" \
     flags=("${@:2}")
 
-  git::__exec__ config "${flags[@]}" --get "${key}"
+  git::exec config "${flags[@]}" --get "${key}"
 }
 
 function git::config::get_all {
   local key="$1" \
     flags=("${@:2}")
 
-  git::__exec__ config "${flags[@]}" --get-all "${key}"
+  git::exec config "${flags[@]}" --get-all "${key}"
 }
 
 function git::dir {
   if (($# == 0)); then
-    git::__exec__ rev-parse --git-dir
+    git::exec rev-parse --git-dir
     return
   fi
 
-  git::__exec__ rev-parse --git-path "$@"
+  git::exec rev-parse --git-path "$@"
 }
 
 function git::config::__export__ {
@@ -126,4 +129,4 @@ function git::config::__recall__ {
   export -fn git::dir
 }
 
-git::config::__export__
+git::__module__::export

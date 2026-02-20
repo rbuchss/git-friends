@@ -1,8 +1,11 @@
 #!/bin/bash
 # shellcheck source=/dev/null
-source "${BASH_SOURCE[0]%/*}/exec.sh"
-source "${BASH_SOURCE[0]%/*}/config.sh"
-source "${BASH_SOURCE[0]%/*}/logger.sh"
+source "${GIT_FRIENDS_MODULE_SRC_DIR:-${BASH_SOURCE[0]%/*}}/__module__.sh"
+source "${GIT_FRIENDS_MODULE_SRC_DIR:-${BASH_SOURCE[0]%/*}}/exec.sh"
+source "${GIT_FRIENDS_MODULE_SRC_DIR:-${BASH_SOURCE[0]%/*}}/config.sh"
+source "${GIT_FRIENDS_MODULE_SRC_DIR:-${BASH_SOURCE[0]%/*}}/logger.sh"
+
+git::__module__::load || return 0
 
 function git::cscope::generate {
   local cmd_path \
@@ -48,7 +51,7 @@ function git::cscope::generate {
 
 function git::cscope::files {
   # TODO is filtering even required?
-  git::__exec__ ls-files -- \
+  git::exec ls-files -- \
     ':*.py' \
     ':*.java' \
     ':*.properties' \
@@ -79,4 +82,4 @@ function git::cscope::__recall__ {
   export -fn git::cscope::files
 }
 
-git::cscope::__export__
+git::__module__::export

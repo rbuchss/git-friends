@@ -1,12 +1,15 @@
 #!/bin/bash
 # shellcheck source=/dev/null
-source "${BASH_SOURCE[0]%/*}/exec.sh"
-source "${BASH_SOURCE[0]%/*}/logger.sh"
+source "${GIT_FRIENDS_MODULE_SRC_DIR:-${BASH_SOURCE[0]%/*}}/__module__.sh"
+source "${GIT_FRIENDS_MODULE_SRC_DIR:-${BASH_SOURCE[0]%/*}}/exec.sh"
+source "${GIT_FRIENDS_MODULE_SRC_DIR:-${BASH_SOURCE[0]%/*}}/logger.sh"
+
+git::__module__::load || return 0
 
 function git::cd::root_dir {
   local root_dir
 
-  if ! root_dir="$(git::__exec__ rev-parse --show-toplevel)"; then
+  if ! root_dir="$(git::exec rev-parse --show-toplevel)"; then
     return 1
   fi
 
@@ -23,4 +26,4 @@ function git::cd::__recall__ {
   export -fn git::cd::root_dir
 }
 
-git::cd::__export__
+git::__module__::export

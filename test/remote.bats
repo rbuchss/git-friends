@@ -424,14 +424,14 @@ __create_cloned_repo() {
   __create_cloned_repo
   cd "${repo_dir}"
 
-  # Stub git::__exec__ to fail fetch
-  git::__exec__() {
+  # Stub git::exec to fail fetch
+  git::exec() {
     if [[ "$1" == 'fetch' ]]; then
       return 1
     fi
     command git "$@"
   }
-  export -f git::__exec__
+  export -f git::exec
 
   run --separate-stderr git::remote::fetch_remote 'origin'
   # Note: handle_fetch_error receives $? from the `!` negation (0),
@@ -446,11 +446,11 @@ __create_cloned_repo() {
 
 # bats test_tags=git::remote::get_current_branch
 @test "git::remote::get_current_branch returns failure when branch is empty" {
-  # Stub git::__exec__ to produce empty output so current_branch is empty
-  git::__exec__() {
+  # Stub git::exec to produce empty output so current_branch is empty
+  git::exec() {
     return 1
   }
-  export -f git::__exec__
+  export -f git::exec
 
   run git::remote::get_current_branch
   assert_failure

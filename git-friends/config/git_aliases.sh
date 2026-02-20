@@ -2,4 +2,4 @@
 # shellcheck source=/dev/null
 source "${HOME}/.git-friends/src/invoke.sh"
 
-git::invoke::__enable__
+git::__module__::enable 'git::invoke'

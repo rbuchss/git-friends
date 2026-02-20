@@ -1,7 +1,10 @@
 #!/bin/bash
 # shellcheck source=/dev/null
-source "${BASH_SOURCE[0]%/*}/exec.sh"
-source "${BASH_SOURCE[0]%/*}/logger.sh"
+source "${GIT_FRIENDS_MODULE_SRC_DIR:-${BASH_SOURCE[0]%/*}}/__module__.sh"
+source "${GIT_FRIENDS_MODULE_SRC_DIR:-${BASH_SOURCE[0]%/*}}/exec.sh"
+source "${GIT_FRIENDS_MODULE_SRC_DIR:-${BASH_SOURCE[0]%/*}}/logger.sh"
+
+git::__module__::load || return 0
 
 # Prompt the user with a yes/no question.
 # When a response variable name is provided, also supports all/none (a/z) to
@@ -190,7 +193,7 @@ function git::utility::get_main_ref::remote {
   local \
     remote="$1" \
     path="$2" \
-    git_cmd=(git::__exec__) \
+    git_cmd=(git::exec) \
     branch_name \
     main_branch_names
 
@@ -215,7 +218,7 @@ function git::utility::get_main_ref::remote {
 function git::utility::get_main_ref::local {
   local \
     path="$1" \
-    git_cmd=(git::__exec__) \
+    git_cmd=(git::exec) \
     branch_name \
     main_branch_names
 
@@ -246,7 +249,7 @@ function git::utility::is_bare_or_worktree {
 function git::utility::is_bare {
   local \
     path="$1" \
-    git_cmd=(git::__exec__) \
+    git_cmd=(git::exec) \
     is_bare
 
   [[ -n "${path}" ]] && git_cmd+=(-C "${path}")
@@ -261,7 +264,7 @@ function git::utility::is_bare {
 function git::utility::is_worktree {
   local \
     path="$1" \
-    git_cmd=(git::__exec__) \
+    git_cmd=(git::exec) \
     git_common_dir \
     parent_is_bare
 
@@ -272,7 +275,7 @@ function git::utility::is_worktree {
 
   [[ -z "${git_common_dir}" ]] && return 1
 
-  parent_is_bare="$(git::__exec__ --git-dir="${git_common_dir}" rev-parse --is-bare-repository 2>/dev/null)"
+  parent_is_bare="$(git::exec --git-dir="${git_common_dir}" rev-parse --is-bare-repository 2>/dev/null)"
 
   [[ "${parent_is_bare}" == 'true' ]]
 }
@@ -307,4 +310,4 @@ function git::utility::__recall__ {
   export -fn git::utility::is_worktree
 }
 
-git::utility::__export__
+git::__module__::export
