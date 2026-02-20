@@ -45,8 +45,9 @@ function git::remote::check_status {
     return 1
   fi
 
-  if ! git::remote::validate_remote_branch "${remote_branch}"; then
-    branch_status=$?
+  git::remote::validate_remote_branch "${remote_branch}"
+  branch_status=$?
+  if ((branch_status != 0)); then
     if ((branch_status == 2)); then
       # Missing remote branch is not an error, just exit cleanly
       return 0
@@ -162,8 +163,11 @@ function git::remote::fetch_remote {
   git::logger::info "Fetching latest changes from ${remote}..."
 
   # Fetch the latest changes from remote without merging
-  if ! git::__exec__ fetch "${remote}" 2>/dev/null; then
-    git::remote::handle_fetch_error "$?"
+  local fetch_status
+  git::__exec__ fetch "${remote}" 2>/dev/null
+  fetch_status=$?
+  if ((fetch_status != 0)); then
+    git::remote::handle_fetch_error "${fetch_status}"
     return $?
   fi
 

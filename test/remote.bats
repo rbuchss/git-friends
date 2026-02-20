@@ -326,9 +326,8 @@ __create_cloned_repo() {
   git checkout -b 'new-local-branch'
 
   run git::remote::check_status
-  # validate_remote_branch returns 2 for missing branch, but the exit code
-  # is lost after negation in the if condition
-  assert_failure
+  # Missing remote branch is not an error — exit cleanly
+  assert_success
 }
 
 # bats test_tags=git::remote::check_status
