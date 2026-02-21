@@ -167,9 +167,9 @@ endef
 # Test targets
 ################################################################################
 
-## Run all guards: test with coverage, lint, and format check
+## Run all guards: test with coverage, lint, format check, and function exports check
 .PHONY: guards
-guards: test lint format-check
+guards: test lint format-check function-exports-check
 
 ## Run bats tests (with kcov coverage when available, without otherwise)
 ## Override: make test TEST_PATH=test/logger.bats FILTER_TAGS=git::logger
@@ -287,3 +287,27 @@ format:
 .PHONY: format-check
 format-check:
 	shfmt -d $$(git ls-files -- $(LINTED_FILES))
+
+################################################################################
+# Function exports
+################################################################################
+
+## Check for missing function exports (CI-safe, non-interactive)
+.PHONY: function-exports-check
+function-exports-check:
+	$(THIS_DIR)/git-friends/tools/__module__/generate_function_exports.sh false
+
+## Check and optionally add missing function exports
+.PHONY: function-exports
+function-exports:
+	@if ! $(THIS_DIR)/git-friends/tools/__module__/generate_function_exports.sh false; then \
+		printf '\n> Add function exports to files? [y/N] '; \
+		read reply; \
+		if [[ "$${reply:-N}" == 'y' ]]; then \
+			$(THIS_DIR)/git-friends/tools/__module__/generate_function_exports.sh true; \
+		else \
+			echo 'Answered no - Skipping apply step'; \
+		fi \
+	else \
+		echo 'No missing function exports found!'; \
+	fi
