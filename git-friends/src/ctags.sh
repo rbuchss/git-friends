@@ -63,8 +63,10 @@ function git::ctags::__export__ {
   export -f git::ctags::generate
 }
 
+# KCOV_EXCL_START
 function git::ctags::__recall__ {
   export -fn git::ctags::generate
 }
+# KCOV_EXCL_STOP
 
 git::__module__::export

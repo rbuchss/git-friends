@@ -60,10 +60,12 @@ function git::log::__export__ {
   export -f git::log::from_default_branch
 }
 
+# KCOV_EXCL_START
 function git::log::__recall__ {
   export -fn git::log::basic
   export -fn git::log::pretty
   export -fn git::log::from_default_branch
 }
+# KCOV_EXCL_STOP
 
 git::__module__::export

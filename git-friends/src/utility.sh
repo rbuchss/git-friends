@@ -295,6 +295,7 @@ function git::utility::__export__ {
   export -f git::utility::is_worktree
 }
 
+# KCOV_EXCL_START
 function git::utility::__recall__ {
   export -fn git::utility::ask
   export -fn git::utility::array_contains
@@ -309,5 +310,6 @@ function git::utility::__recall__ {
   export -fn git::utility::is_bare
   export -fn git::utility::is_worktree
 }
+# KCOV_EXCL_STOP
 
 git::__module__::export

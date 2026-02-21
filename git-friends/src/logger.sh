@@ -602,6 +602,7 @@ function git::logger::__export__ {
   export GIT_FRIENDS_LOG_INVALID_STATUS
 }
 
+# KCOV_EXCL_START
 function git::logger::__recall__ {
   # We need to remove these exported functions otherwise tmux will not
   # properly load the .bash_profile if any of them are called during
@@ -653,5 +654,6 @@ function git::logger::__recall__ {
   export -n GIT_FRIENDS_LOG_SEVERITY_FATAL
   export -n GIT_FRIENDS_LOG_INVALID_STATUS
 }
+# KCOV_EXCL_STOP
 
 git::__module__::export

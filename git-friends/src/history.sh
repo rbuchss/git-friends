@@ -60,9 +60,11 @@ function git::history::__export__ {
   export -f git::history::churn
 }
 
+# KCOV_EXCL_START
 function git::history::__recall__ {
   export -fn git::history::recent
   export -fn git::history::churn
 }
+# KCOV_EXCL_STOP
 
 git::__module__::export

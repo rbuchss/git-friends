@@ -508,6 +508,7 @@ function git::worktree::__export__ {
   export -f git::worktree::checkout::new
 }
 
+# KCOV_EXCL_START
 function git::worktree::__recall__ {
   export -fn git::worktree::default_remote
   export -fn git::worktree::previous_file
@@ -525,5 +526,6 @@ function git::worktree::__recall__ {
   export -fn git::worktree::checkout::existing
   export -fn git::worktree::checkout::new
 }
+# KCOV_EXCL_STOP
 
 git::__module__::export

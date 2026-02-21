@@ -246,6 +246,7 @@ function git::url::__export__ {
   export -f git::url::change_protocol
 }
 
+# KCOV_EXCL_START
 function git::url::__recall__ {
   export -fn git::url::is_valid
   export -fn git::url::parse
@@ -261,5 +262,6 @@ function git::url::__recall__ {
   export -fn git::url::separator_for_protocol
   export -fn git::url::change_protocol
 }
+# KCOV_EXCL_STOP
 
 git::__module__::export

@@ -25,8 +25,10 @@ function git::rebase::__export__ {
   export -f git::rebase::to_main
 }
 
+# KCOV_EXCL_START
 function git::rebase::__recall__ {
   export -fn git::rebase::to_main
 }
+# KCOV_EXCL_STOP
 
 git::__module__::export

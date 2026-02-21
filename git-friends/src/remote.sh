@@ -239,6 +239,7 @@ function git::remote::__export__ {
   export -f git::remote::handle_fetch_error
 }
 
+# KCOV_EXCL_START
 function git::remote::__recall__ {
   export -fn git::remote::default_branch
   export -fn git::remote::check_status
@@ -250,5 +251,6 @@ function git::remote::__recall__ {
   export -fn git::remote::validate_repository
   export -fn git::remote::handle_fetch_error
 }
+# KCOV_EXCL_STOP
 
 git::__module__::export

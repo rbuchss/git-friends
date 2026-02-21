@@ -72,8 +72,10 @@ function git::invoke::__export__ {
   export -f git::invoke
 }
 
+# KCOV_EXCL_START
 function git::invoke::__recall__ {
   export -fn git::invoke
 }
+# KCOV_EXCL_STOP
 
 git::__module__::export

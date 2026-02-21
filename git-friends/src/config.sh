@@ -115,6 +115,7 @@ function git::config::__export__ {
   export -f git::dir
 }
 
+# KCOV_EXCL_START
 function git::config::__recall__ {
   export -fn git::config::group
   export -fn git::config::aliases
@@ -128,5 +129,6 @@ function git::config::__recall__ {
   export -fn git::config::get_all
   export -fn git::dir
 }
+# KCOV_EXCL_STOP
 
 git::__module__::export

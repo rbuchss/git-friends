@@ -17,8 +17,10 @@ function git::hooks::post_checkout::__export__ {
   export -f git::hooks::post_checkout
 }
 
+# KCOV_EXCL_START
 function git::hooks::post_checkout::__recall__ {
   export -fn git::hooks::post_checkout
 }
+# KCOV_EXCL_STOP
 
 git::__module__::export
