@@ -133,14 +133,16 @@ function git::invoke::__complete__ {
   if ((cword == 1)); then
     local g_subcommands='cd cld wcld wco init-context'
 
+    # Get git's completions first (__git_main overwrites COMPREPLY)
+    if type __git_main &>/dev/null; then
+      __git_main
+    fi
+
+    # Then append our custom subcommands so they always appear
     while IFS='' read -r line; do
       COMPREPLY+=("${line}")
     done < <(compgen -W "${g_subcommands}" -- "${cur}")
 
-    # Also include git's completions (commands, aliases)
-    if type __git_main &>/dev/null; then
-      __git_main
-    fi
     return
   fi
 
