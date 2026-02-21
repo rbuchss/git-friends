@@ -1,7 +1,10 @@
 #!/bin/bash
 # shellcheck source=/dev/null
-source "${BASH_SOURCE[0]%/*/*}/exec.sh"
-source "${BASH_SOURCE[0]%/*/*}/logger.sh"
+source "${GIT_FRIENDS_MODULE_SRC_DIR:-${BASH_SOURCE[0]%/*/*}}/__module__.sh"
+source "${GIT_FRIENDS_MODULE_SRC_DIR:-${BASH_SOURCE[0]%/*/*}}/exec.sh"
+source "${GIT_FRIENDS_MODULE_SRC_DIR:-${BASH_SOURCE[0]%/*/*}}/logger.sh"
+
+git::__module__::load || return 0
 
 function git::hooks::refresh {
   local hooks=(.git/hooks/*)
@@ -20,7 +23,7 @@ function git::hooks::refresh {
 
   git::logger::info 'Loading current hooks:'
 
-  git::__exec__ init
+  git::exec init
 
   for hook in .git/hooks/*; do
     git::logger::info " - add: '${hook}'"
@@ -35,4 +38,4 @@ function git::hooks::refresh::__recall__ {
   export -fn git::hooks::refresh
 }
 
-git::hooks::refresh::__export__
+git::__module__::export

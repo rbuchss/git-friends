@@ -1,7 +1,10 @@
 #!/bin/bash
 # shellcheck source=/dev/null
-source "${BASH_SOURCE[0]%/*}/exec.sh"
-source "${BASH_SOURCE[0]%/*}/logger.sh"
+source "${GIT_FRIENDS_MODULE_SRC_DIR:-${BASH_SOURCE[0]%/*}}/__module__.sh"
+source "${GIT_FRIENDS_MODULE_SRC_DIR:-${BASH_SOURCE[0]%/*}}/exec.sh"
+source "${GIT_FRIENDS_MODULE_SRC_DIR:-${BASH_SOURCE[0]%/*}}/logger.sh"
+
+git::__module__::load || return 0
 
 function git::format::newline {
   local \
@@ -35,19 +38,19 @@ function git::format::newline {
 function git::format::newline::all {
   git::format::__newline_from_command__ \
     'tracked' \
-    git::__exec__ ls-files
+    git::exec ls-files
 }
 
 function git::format::newline::staged {
   git::format::__newline_from_command__ \
     'staged' \
-    git::__exec__ diff --cached --name-only --diff-filter=ACM
+    git::exec diff --cached --name-only --diff-filter=ACM
 }
 
 function git::format::newline::changed {
   git::format::__newline_from_command__ \
     'changed' \
-    git::__exec__ diff HEAD --name-only --diff-filter=ACM
+    git::exec diff HEAD --name-only --diff-filter=ACM
 }
 
 function git::format::newline::ref {
@@ -55,7 +58,7 @@ function git::format::newline::ref {
 
   git::format::__newline_from_command__ \
     "changed against ${commit_ref}" \
-    git::__exec__ diff "${commit_ref}" --name-only --diff-filter=ACM
+    git::exec diff "${commit_ref}" --name-only --diff-filter=ACM
 }
 
 function git::format::newline::process {
@@ -131,7 +134,7 @@ function git::format::__is_in_submodule__ {
       return 0
     fi
   done < <(
-    git::__exec__ config \
+    git::exec config \
       --file .gitmodules \
       --get-regexp path \
       | awk '{print $2}' 2>/dev/null
@@ -149,7 +152,7 @@ function git::format::__newline_from_command__ {
 
   shift
 
-  if ! git::__exec__ rev-parse --git-dir >/dev/null 2>&1; then
+  if ! git::exec rev-parse --git-dir >/dev/null 2>&1; then
     git::logger::error -c 2 'Not in a git repository'
     return 1
   fi
@@ -190,4 +193,4 @@ function git::format::__recall__ {
   export -fn git::format::newline::process
 }
 
-git::format::__export__
+git::__module__::export

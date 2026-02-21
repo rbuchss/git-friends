@@ -1,10 +1,13 @@
 #!/bin/bash
 # shellcheck source=/dev/null
-source "${BASH_SOURCE[0]%/*}/exec.sh"
-source "${BASH_SOURCE[0]%/*}/cd.sh"
-source "${BASH_SOURCE[0]%/*}/clone.sh"
-source "${BASH_SOURCE[0]%/*}/worktree.sh"
-source "${BASH_SOURCE[0]%/*}/completion.sh"
+source "${GIT_FRIENDS_MODULE_SRC_DIR:-${BASH_SOURCE[0]%/*}}/__module__.sh"
+source "${GIT_FRIENDS_MODULE_SRC_DIR:-${BASH_SOURCE[0]%/*}}/exec.sh"
+source "${GIT_FRIENDS_MODULE_SRC_DIR:-${BASH_SOURCE[0]%/*}}/cd.sh"
+source "${GIT_FRIENDS_MODULE_SRC_DIR:-${BASH_SOURCE[0]%/*}}/clone.sh"
+source "${GIT_FRIENDS_MODULE_SRC_DIR:-${BASH_SOURCE[0]%/*}}/worktree.sh"
+source "${GIT_FRIENDS_MODULE_SRC_DIR:-${BASH_SOURCE[0]%/*}}/completion.sh"
+
+git::__module__::load || return 0
 
 # Unified git-friends shell wrapper.
 # Intercepts subcommands that need the current shell (cd, clone-cd, worktree-checkout)
@@ -32,7 +35,7 @@ function git::invoke {
       shift
       git::worktree::init_context "$@"
       ;;
-    *) git::__exec__ "$@" ;;
+    *) git::exec "$@" ;;
   esac
 }
 
@@ -73,4 +76,4 @@ function git::invoke::__recall__ {
   export -fn git::invoke
 }
 
-git::invoke::__export__
+git::__module__::export

@@ -1,8 +1,8 @@
 #!/bin/bash
+# shellcheck source=/dev/null
+source "${GIT_FRIENDS_MODULE_SRC_DIR:-${BASH_SOURCE[0]%/*}}/__module__.sh"
 
-# Bash source guard - prevents sourcing this file multiple times
-[[ -n "${GIT_FRIENDS_MODULE_LOGGER_LOADED}" ]] && return
-export GIT_FRIENDS_MODULE_LOGGER_LOADED=1
+git::__module__::load || return 0
 
 readonly GIT_FRIENDS_LOG_SEVERITY_TRACE=0
 readonly GIT_FRIENDS_LOG_SEVERITY_DEBUG=1
@@ -603,8 +603,6 @@ function git::logger::__export__ {
 }
 
 function git::logger::__recall__ {
-  unset GIT_FRIENDS_MODULE_LOGGER_LOADED
-
   # We need to remove these exported functions otherwise tmux will not
   # properly load the .bash_profile if any of them are called during
   # the bash --login process.
@@ -656,4 +654,4 @@ function git::logger::__recall__ {
   export -n GIT_FRIENDS_LOG_INVALID_STATUS
 }
 
-git::logger::__export__
+git::__module__::export

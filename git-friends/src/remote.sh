@@ -1,7 +1,10 @@
 #!/bin/bash
 # shellcheck source=/dev/null
-source "${BASH_SOURCE[0]%/*}/exec.sh"
-source "${BASH_SOURCE[0]%/*}/logger.sh"
+source "${GIT_FRIENDS_MODULE_SRC_DIR:-${BASH_SOURCE[0]%/*}}/__module__.sh"
+source "${GIT_FRIENDS_MODULE_SRC_DIR:-${BASH_SOURCE[0]%/*}}/exec.sh"
+source "${GIT_FRIENDS_MODULE_SRC_DIR:-${BASH_SOURCE[0]%/*}}/logger.sh"
+
+git::__module__::load || return 0
 
 function git::remote::default_branch {
   local remote_name="${1:-origin}"
@@ -12,7 +15,7 @@ function git::remote::default_branch {
   # To avoid this we can sync this symbolic ref from upstream using:
   # $ git remote set-head origin --auto.
   # This updates both what is seen in git remote show and the symbolic ref referenced here.
-  git::__exec__ symbolic-ref "refs/remotes/${remote_name}/HEAD" \
+  git::exec symbolic-ref "refs/remotes/${remote_name}/HEAD" \
     | sed "s@^refs/remotes/${remote_name}/@@"
 }
 
@@ -93,11 +96,11 @@ function git::remote::compare_branches {
   fi
 
   # Check if local is ahead, behind, or diverged
-  merge_base="$(git::__exec__ merge-base HEAD "${remote_branch}")"
+  merge_base="$(git::exec merge-base HEAD "${remote_branch}")"
 
   # Local is ahead
   if [[ "${merge_base}" == "${remote_hash}" ]]; then
-    commits_ahead="$(git::__exec__ rev-list --count "${remote_branch}"..HEAD)"
+    commits_ahead="$(git::exec rev-list --count "${remote_branch}"..HEAD)"
 
     git::logger::warning \
       "${yellow}⚠ Local repository is ${commits_ahead} commit(s) ahead of remote${nc}" \
@@ -108,7 +111,7 @@ function git::remote::compare_branches {
 
   # Local is behind
   if [[ "${merge_base}" == "${local_hash}" ]]; then
-    commits_behind="$(git::__exec__ rev-list --count HEAD.."${remote_branch}")"
+    commits_behind="$(git::exec rev-list --count HEAD.."${remote_branch}")"
 
     git::logger::error \
       "${red}⚠ Repository is OUT OF DATE!${nc}" \
@@ -120,8 +123,8 @@ function git::remote::compare_branches {
   fi
 
   # Branches have diverged
-  commits_ahead="$(git::__exec__ rev-list --count "${remote_branch}"..HEAD)"
-  commits_behind="$(git::__exec__ rev-list --count HEAD.."${remote_branch}")"
+  commits_ahead="$(git::exec rev-list --count "${remote_branch}"..HEAD)"
+  commits_behind="$(git::exec rev-list --count HEAD.."${remote_branch}")"
 
   git::logger::warning \
     "${yellow}⚠ Branches have diverged!${nc}" \
@@ -137,8 +140,8 @@ function git::remote::get_commit_hashes {
     local_hash \
     remote_hash
 
-  local_hash="$(git::__exec__ rev-parse HEAD)"
-  remote_hash="$(git::__exec__ rev-parse "${remote_branch}")"
+  local_hash="$(git::exec rev-parse HEAD)"
+  remote_hash="$(git::exec rev-parse "${remote_branch}")"
 
   printf "%s %s" "${local_hash}" "${remote_hash}"
 }
@@ -146,7 +149,7 @@ function git::remote::get_commit_hashes {
 function git::remote::validate_remote_branch {
   local remote_branch="$1"
 
-  if ! git::__exec__ show-ref --verify --quiet "refs/remotes/${remote_branch}"; then
+  if ! git::exec show-ref --verify --quiet "refs/remotes/${remote_branch}"; then
     git::logger::warning \
       "Warning: Remote branch '${remote_branch}' doesn't exist" \
       "This might be a new local branch that hasn't been pushed yet"
@@ -164,7 +167,7 @@ function git::remote::fetch_remote {
 
   # Fetch the latest changes from remote without merging
   local fetch_status
-  git::__exec__ fetch "${remote}" 2>/dev/null
+  git::exec fetch "${remote}" 2>/dev/null
   fetch_status=$?
   if ((fetch_status != 0)); then
     git::remote::handle_fetch_error "${fetch_status}"
@@ -178,8 +181,8 @@ function git::remote::get_current_branch {
   local current_branch
 
   current_branch="$(
-    git::__exec__ symbolic-ref --short HEAD 2>/dev/null \
-      || git::__exec__ rev-parse --short HEAD
+    git::exec symbolic-ref --short HEAD 2>/dev/null \
+      || git::exec rev-parse --short HEAD
   )"
 
   if [[ -z "${current_branch}" ]]; then
@@ -190,7 +193,7 @@ function git::remote::get_current_branch {
 }
 
 function git::remote::validate_repository {
-  if ! git::__exec__ rev-parse --git-dir >/dev/null 2>&1; then
+  if ! git::exec rev-parse --git-dir >/dev/null 2>&1; then
     git::logger::error 'Not in a git repository'
     return 1
   fi
@@ -248,4 +251,4 @@ function git::remote::__recall__ {
   export -fn git::remote::handle_fetch_error
 }
 
-git::remote::__export__
+git::__module__::export

@@ -1,8 +1,11 @@
 #!/bin/bash
 # shellcheck source=/dev/null
-source "${BASH_SOURCE[0]%/*}/exec.sh"
-source "${BASH_SOURCE[0]%/*}/logger.sh"
-source "${BASH_SOURCE[0]%/*}/url.sh"
+source "${GIT_FRIENDS_MODULE_SRC_DIR:-${BASH_SOURCE[0]%/*}}/__module__.sh"
+source "${GIT_FRIENDS_MODULE_SRC_DIR:-${BASH_SOURCE[0]%/*}}/exec.sh"
+source "${GIT_FRIENDS_MODULE_SRC_DIR:-${BASH_SOURCE[0]%/*}}/logger.sh"
+source "${GIT_FRIENDS_MODULE_SRC_DIR:-${BASH_SOURCE[0]%/*}}/url.sh"
+
+git::__module__::load || return 0
 
 # Clone repository and cd into it.
 # Usage: git::clone::cd <repository> [directory] [git-clone-args...]
@@ -16,7 +19,7 @@ function git::clone::cd {
     return 1
   fi
 
-  if ! git::__exec__ clone "$@"; then
+  if ! git::exec clone "$@"; then
     return 1
   fi
 
@@ -37,4 +40,4 @@ function git::clone::__recall__ {
   export -fn git::clone::cd
 }
 
-git::clone::__export__
+git::__module__::export

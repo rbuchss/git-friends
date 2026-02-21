@@ -1,8 +1,11 @@
 #!/bin/bash
 # shellcheck source=/dev/null
-source "${BASH_SOURCE[0]%/*/*}/config.sh"
-source "${BASH_SOURCE[0]%/*/*}/logger.sh"
-source "${BASH_SOURCE[0]%/*/*}/utility.sh"
+source "${GIT_FRIENDS_MODULE_SRC_DIR:-${BASH_SOURCE[0]%/*/*}}/__module__.sh"
+source "${GIT_FRIENDS_MODULE_SRC_DIR:-${BASH_SOURCE[0]%/*/*}}/config.sh"
+source "${GIT_FRIENDS_MODULE_SRC_DIR:-${BASH_SOURCE[0]%/*/*}}/logger.sh"
+source "${GIT_FRIENDS_MODULE_SRC_DIR:-${BASH_SOURCE[0]%/*/*}}/utility.sh"
+
+git::__module__::load || return 0
 
 function git::hooks::task_runner {
   local name \
@@ -181,4 +184,4 @@ function git::hooks::task_runner::__recall__ {
   export -fn git::hooks::task_runner::background_block
 }
 
-git::hooks::task_runner::__export__
+git::__module__::export

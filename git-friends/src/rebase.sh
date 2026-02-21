@@ -1,8 +1,11 @@
 #!/bin/bash
 # shellcheck source=/dev/null
-source "${BASH_SOURCE[0]%/*}/exec.sh"
-source "${BASH_SOURCE[0]%/*}/logger.sh"
-source "${BASH_SOURCE[0]%/*}/utility.sh"
+source "${GIT_FRIENDS_MODULE_SRC_DIR:-${BASH_SOURCE[0]%/*}}/__module__.sh"
+source "${GIT_FRIENDS_MODULE_SRC_DIR:-${BASH_SOURCE[0]%/*}}/exec.sh"
+source "${GIT_FRIENDS_MODULE_SRC_DIR:-${BASH_SOURCE[0]%/*}}/logger.sh"
+source "${GIT_FRIENDS_MODULE_SRC_DIR:-${BASH_SOURCE[0]%/*}}/utility.sh"
+
+git::__module__::load || return 0
 
 function git::rebase::to_main {
   local \
@@ -15,7 +18,7 @@ function git::rebase::to_main {
   fi
 
   git::logger::info "Found git main ref for remote: '${main_ref}' - using to rebase"
-  git::__exec__ rebase "${main_ref}"
+  git::exec rebase "${main_ref}"
 }
 
 function git::rebase::__export__ {
@@ -26,4 +29,4 @@ function git::rebase::__recall__ {
   export -fn git::rebase::to_main
 }
 
-git::rebase::__export__
+git::__module__::export

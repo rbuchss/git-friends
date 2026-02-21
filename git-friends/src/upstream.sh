@@ -1,9 +1,12 @@
 #!/bin/bash
 # shellcheck source=/dev/null
-source "${BASH_SOURCE[0]%/*}/exec.sh"
-source "${BASH_SOURCE[0]%/*}/logger.sh"
-source "${BASH_SOURCE[0]%/*}/url.sh"
-source "${BASH_SOURCE[0]%/*}/utility.sh"
+source "${GIT_FRIENDS_MODULE_SRC_DIR:-${BASH_SOURCE[0]%/*}}/__module__.sh"
+source "${GIT_FRIENDS_MODULE_SRC_DIR:-${BASH_SOURCE[0]%/*}}/exec.sh"
+source "${GIT_FRIENDS_MODULE_SRC_DIR:-${BASH_SOURCE[0]%/*}}/logger.sh"
+source "${GIT_FRIENDS_MODULE_SRC_DIR:-${BASH_SOURCE[0]%/*}}/url.sh"
+source "${GIT_FRIENDS_MODULE_SRC_DIR:-${BASH_SOURCE[0]%/*}}/utility.sh"
+
+git::__module__::load || return 0
 
 function git::upstream::add {
   local user="$1" \
@@ -20,10 +23,10 @@ function git::upstream::add {
     return 1
   fi
 
-  if origin_url="$(git::__exec__ config --get remote.origin.url)" \
+  if origin_url="$(git::exec config --get remote.origin.url)" \
     && upstream_url="$(git::url::change_user "${origin_url}" "${user}")" \
     && git::utility::ask "add remote '${name}':  ${upstream_url}"; then
-    git::__exec__ remote add "${name}" "${upstream_url}"
+    git::exec remote add "${name}" "${upstream_url}"
   fi
 }
 
@@ -35,4 +38,4 @@ function git::upstream::__recall__ {
   export -fn git::upstream::add
 }
 
-git::upstream::__export__
+git::__module__::export

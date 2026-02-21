@@ -1,6 +1,9 @@
 #!/bin/bash
 # shellcheck source=/dev/null
-source "${BASH_SOURCE[0]%/*}/utility.sh"
+source "${GIT_FRIENDS_MODULE_SRC_DIR:-${BASH_SOURCE[0]%/*}}/__module__.sh"
+source "${GIT_FRIENDS_MODULE_SRC_DIR:-${BASH_SOURCE[0]%/*}}/utility.sh"
+
+git::__module__::load || return 0
 
 function git::url::is_valid {
   local url="$1"
@@ -259,4 +262,4 @@ function git::url::__recall__ {
   export -fn git::url::change_protocol
 }
 
-git::url::__export__
+git::__module__::export

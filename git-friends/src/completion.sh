@@ -1,4 +1,8 @@
 #!/bin/bash
+# shellcheck source=/dev/null
+source "${GIT_FRIENDS_MODULE_SRC_DIR:-${BASH_SOURCE[0]%/*}}/__module__.sh"
+
+git::__module__::load || return 0
 
 function _git_ls {
   _git_log

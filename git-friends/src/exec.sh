@@ -1,4 +1,8 @@
 #!/bin/bash
+# shellcheck source=/dev/null
+source "${GIT_FRIENDS_MODULE_SRC_DIR:-${BASH_SOURCE[0]%/*}}/__module__.sh"
+
+git::__module__::load || return 0
 
 # Core git command invoker.
 # All internal functions use this instead of calling git directly,
@@ -7,10 +11,10 @@
 #
 # The set +e/set -e guard ensures correct behavior in bash 3.2 where
 # set -e (errexit) triggers inside functions called from conditionals
-# (e.g., `if git::__exec__ show-ref --quiet ...; then`). Without this,
+# (e.g., `if git::exec show-ref --quiet ...; then`). Without this,
 # a non-zero exit from `command git` aborts the function before the
 # caller's `if` can handle the exit code.
-function git::__exec__ {
+function git::exec {
   local rc errexit_was_set=0
   [[ $- == *e* ]] && errexit_was_set=1
   set +e
@@ -20,12 +24,12 @@ function git::__exec__ {
   return "${rc}"
 }
 
-function git::__exec__::__export__ {
-  export -f git::__exec__
+function git::exec::__export__ {
+  export -f git::exec
 }
 
-function git::__exec__::__recall__ {
-  export -fn git::__exec__
+function git::exec::__recall__ {
+  export -fn git::exec
 }
 
-git::__exec__::__export__
+git::__module__::export

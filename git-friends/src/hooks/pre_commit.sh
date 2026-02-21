@@ -1,11 +1,14 @@
 #!/bin/bash
 # shellcheck source=/dev/null
-source "${BASH_SOURCE[0]%/*/*}/exec.sh"
-source "${BASH_SOURCE[0]%/*}/task_runner.sh"
+source "${GIT_FRIENDS_MODULE_SRC_DIR:-${BASH_SOURCE[0]%/*/*}}/__module__.sh"
+source "${GIT_FRIENDS_MODULE_SRC_DIR:-${BASH_SOURCE[0]%/*/*}}/exec.sh"
+source "${GIT_FRIENDS_MODULE_SRC_DIR:-${BASH_SOURCE[0]%/*/*}}/hooks/task_runner.sh"
+
+git::__module__::load || return 0
 
 function git::hooks::pre_commit {
   # Nothing to commit or disabled so exit
-  git::__exec__ diff --cached --quiet --exit-code \
+  git::exec diff --cached --quiet --exit-code \
     && return
 
   local rules nullglob_was_set=0
@@ -57,4 +60,4 @@ function git::hooks::pre_commit::__recall__ {
   export -fn git::hooks::pre_commit::block
 }
 
-git::hooks::pre_commit::__export__
+git::__module__::export

@@ -1,8 +1,11 @@
 #!/bin/bash
 # shellcheck source=/dev/null
-source "${BASH_SOURCE[0]%/*}/exec.sh"
-source "${BASH_SOURCE[0]%/*}/logger.sh"
-source "${BASH_SOURCE[0]%/*}/utility.sh"
+source "${GIT_FRIENDS_MODULE_SRC_DIR:-${BASH_SOURCE[0]%/*}}/__module__.sh"
+source "${GIT_FRIENDS_MODULE_SRC_DIR:-${BASH_SOURCE[0]%/*}}/exec.sh"
+source "${GIT_FRIENDS_MODULE_SRC_DIR:-${BASH_SOURCE[0]%/*}}/logger.sh"
+source "${GIT_FRIENDS_MODULE_SRC_DIR:-${BASH_SOURCE[0]%/*}}/utility.sh"
+
+git::__module__::load || return 0
 
 function git::submodule::remove {
   local submodule_path
@@ -19,30 +22,30 @@ function git::submodule::remove {
       # 1: Remove the submodule entry from .git/config
       # 2: Remove the submodule directory from the superproject's .git/modules directory
       # 3: Remove the entry in .gitmodules and remove the submodule directory located at ${submodule_path}
-      git::__exec__ submodule deinit -f -- "${submodule_path}" \
+      git::exec submodule deinit -f -- "${submodule_path}" \
         && rm -rf ".git/modules/${submodule_path}" \
-        && git::__exec__ rm -f "${submodule_path}"
+        && git::exec rm -f "${submodule_path}"
     fi
   done
 }
 
 function git::submodule::sync {
   if (($# > 0)); then
-    git::__exec__ submodule update --init --recursive -- "$@"
+    git::exec submodule update --init --recursive -- "$@"
     return
   fi
 
-  git::__exec__ submodule update --init --recursive
+  git::exec submodule update --init --recursive
 }
 
 function git::submodule::upgrade {
   # NOTE: old way: git submodule foreach git pull origin master
   if (($# > 0)); then
-    git::__exec__ submodule update --recursive --remote -- "$@"
+    git::exec submodule update --recursive --remote -- "$@"
     return
   fi
 
-  git::__exec__ submodule update --recursive --remote
+  git::exec submodule update --recursive --remote
 }
 
 function git::submodule::__export__ {
@@ -57,4 +60,4 @@ function git::submodule::__recall__ {
   export -fn git::submodule::upgrade
 }
 
-git::submodule::__export__
+git::__module__::export

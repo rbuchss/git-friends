@@ -1,9 +1,12 @@
 #!/bin/bash
 # shellcheck source=/dev/null
-source "${BASH_SOURCE[0]%/*}/exec.sh"
-source "${BASH_SOURCE[0]%/*}/logger.sh"
-source "${BASH_SOURCE[0]%/*}/url.sh"
-source "${BASH_SOURCE[0]%/*}/utility.sh"
+source "${GIT_FRIENDS_MODULE_SRC_DIR:-${BASH_SOURCE[0]%/*}}/__module__.sh"
+source "${GIT_FRIENDS_MODULE_SRC_DIR:-${BASH_SOURCE[0]%/*}}/exec.sh"
+source "${GIT_FRIENDS_MODULE_SRC_DIR:-${BASH_SOURCE[0]%/*}}/logger.sh"
+source "${GIT_FRIENDS_MODULE_SRC_DIR:-${BASH_SOURCE[0]%/*}}/url.sh"
+source "${GIT_FRIENDS_MODULE_SRC_DIR:-${BASH_SOURCE[0]%/*}}/utility.sh"
+
+git::__module__::load || return 0
 
 # Get the default remote, respecting checkout.defaultRemote config.
 # Falls back to 'origin' if not set.
@@ -11,7 +14,7 @@ source "${BASH_SOURCE[0]%/*}/utility.sh"
 function git::worktree::default_remote {
   local \
     path="$1" \
-    git_cmd=(git::__exec__)
+    git_cmd=(git::exec)
 
   [[ -n "${path}" ]] && git_cmd+=(-C "${path}")
 
@@ -22,7 +25,7 @@ function git::worktree::default_remote {
 # Uses shared git dir so it's accessible from all worktrees.
 function git::worktree::previous_file {
   local git_common_dir
-  git_common_dir="$(git::__exec__ rev-parse --git-common-dir 2>/dev/null)" || return 1
+  git_common_dir="$(git::exec rev-parse --git-common-dir 2>/dev/null)" || return 1
   echo "${git_common_dir}/.git-friends-previous-worktree"
 }
 
@@ -33,7 +36,7 @@ function git::worktree::save_previous {
     current_branch \
     previous_file
 
-  current_branch="$(git::__exec__ branch --show-current 2>/dev/null)" || return 1
+  current_branch="$(git::exec branch --show-current 2>/dev/null)" || return 1
   previous_file="$(git::worktree::previous_file)" || return 1
 
   echo "${current_branch}" >"${previous_file}"
@@ -90,7 +93,7 @@ function git::worktree::__link_context__ {
 function git::worktree::init_context {
   local \
     path="$1" \
-    git_cmd=(git::__exec__) \
+    git_cmd=(git::exec) \
     git_common_dir \
     project_root \
     context_dir \
@@ -180,7 +183,7 @@ function git::worktree::clone {
 
   git::logger::info "Created worktree directory structure: '${directory}'"
 
-  if ! git::__exec__ clone --bare "${repository}" "${directory}/__git__/.git"; then
+  if ! git::exec clone --bare "${repository}" "${directory}/__git__/.git"; then
     git::logger::error "Could not clone repository: '${repository}' - exiting"
     return 1
   fi
@@ -192,8 +195,8 @@ function git::worktree::clone {
 
   git::logger::info "Configuring remote tracking for '${default_remote}'"
 
-  git::__exec__ -C "${directory}/__git__" config "remote.${default_remote}.fetch" "+refs/heads/*:refs/remotes/${default_remote}/*"
-  git::__exec__ -C "${directory}/__git__" fetch "${default_remote}"
+  git::exec -C "${directory}/__git__" config "remote.${default_remote}.fetch" "+refs/heads/*:refs/remotes/${default_remote}/*"
+  git::exec -C "${directory}/__git__" fetch "${default_remote}"
 
   # Derive the main ref from the cloned repository
   if ! main_ref="$(git::utility::get_main_ref "${default_remote}" "${directory}/__git__")"; then
@@ -207,13 +210,13 @@ function git::worktree::clone {
   git::logger::info "Found main branch: '${main_branch}' - creating worktree"
 
   # Create worktree for main branch
-  if ! git::__exec__ -C "${directory}/__git__" worktree add "../${main_branch}" "${main_branch}"; then
+  if ! git::exec -C "${directory}/__git__" worktree add "../${main_branch}" "${main_branch}"; then
     git::logger::error "Could not create main worktree for branch: '${main_branch}' - exiting"
     return 1
   fi
 
   # Set up branch tracking so git rebase/pull work without arguments
-  git::__exec__ -C "${directory}/${main_branch}" branch --set-upstream-to="${default_remote}/${main_branch}" "${main_branch}"
+  git::exec -C "${directory}/${main_branch}" branch --set-upstream-to="${default_remote}/${main_branch}" "${main_branch}"
 
   git::worktree::init_context "${directory}/${main_branch}"
 
@@ -292,7 +295,7 @@ function git::worktree::add::setup {
   worktree_absolute_path="${PWD%/*}/${branch}"
 
   # If a worktree already uses this path, no-op
-  if git::__exec__ worktree list --porcelain | grep -q "^worktree ${worktree_absolute_path}$"; then
+  if git::exec worktree list --porcelain | grep -q "^worktree ${worktree_absolute_path}$"; then
     git::logger::info "Worktree already exists at: '${worktree_dir}'"
     return 2
   fi
@@ -329,7 +332,7 @@ function git::worktree::add::existing {
 
   git::logger::info "Creating worktree for branch: '${branch}'"
 
-  if ! git::__exec__ worktree add "${worktree_dir}" "${branch}" "$@"; then
+  if ! git::exec worktree add "${worktree_dir}" "${branch}" "$@"; then
     git::logger::error "Branch '${branch}' not found - use -b/--branch to create a new branch"
     return 1
   fi
@@ -338,8 +341,8 @@ function git::worktree::add::existing {
 
   # Set up branch tracking if remote branch exists
   default_remote="$(git::worktree::default_remote)"
-  if git::__exec__ show-ref --quiet "refs/remotes/${default_remote}/${branch}"; then
-    git::__exec__ -C "${worktree_dir}" branch --set-upstream-to="${default_remote}/${branch}" "${branch}"
+  if git::exec show-ref --quiet "refs/remotes/${default_remote}/${branch}"; then
+    git::exec -C "${worktree_dir}" branch --set-upstream-to="${default_remote}/${branch}" "${branch}"
   fi
 }
 
@@ -397,7 +400,7 @@ function git::worktree::add::new {
   # the start-point branches from HEAD (a local ref), which doesn't trigger
   # automatic tracking.
   #
-  if ! git::__exec__ worktree add --no-track -b "${branch}" "${worktree_dir}" "${start_point}" "$@"; then
+  if ! git::exec worktree add --no-track -b "${branch}" "${worktree_dir}" "${start_point}" "$@"; then
     return 1
   fi
 
@@ -523,4 +526,4 @@ function git::worktree::__recall__ {
   export -fn git::worktree::checkout::new
 }
 
-git::worktree::__export__
+git::__module__::export

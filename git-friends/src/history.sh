@@ -1,6 +1,9 @@
 #!/bin/bash
 # shellcheck source=/dev/null
-source "${BASH_SOURCE[0]%/*}/exec.sh"
+source "${GIT_FRIENDS_MODULE_SRC_DIR:-${BASH_SOURCE[0]%/*}}/__module__.sh"
+source "${GIT_FRIENDS_MODULE_SRC_DIR:-${BASH_SOURCE[0]%/*}}/exec.sh"
+
+git::__module__::load || return 0
 
 function git::history::recent {
   # show local branches
@@ -33,7 +36,7 @@ function git::history::recent {
     --no-init
   )
 
-  git::__exec__ for-each-ref \
+  git::exec for-each-ref \
     --color=always \
     --count="${count}" \
     --sort=-committerdate \
@@ -44,7 +47,7 @@ function git::history::recent {
 }
 
 function git::history::churn {
-  git::__exec__ log --all -M -C --name-only --format='format:' "$@" \
+  git::exec log --all -M -C --name-only --format='format:' "$@" \
     | sort \
     | grep -v '^$' \
     | uniq -c \
@@ -62,4 +65,4 @@ function git::history::__recall__ {
   export -fn git::history::churn
 }
 
-git::history::__export__
+git::__module__::export

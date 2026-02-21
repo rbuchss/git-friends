@@ -42,6 +42,8 @@ ARG WORKDIR
 
 WORKDIR ${WORKDIR}
 
+ENV GIT_FRIENDS_MODULE_SRC_DIR=${WORKDIR}/git-friends/src
+
 RUN chown --recursive ${USER}:${GROUP} ${WORKDIR}
 
 USER ${USER}
@@ -61,6 +63,12 @@ FROM git-friends-tester-base AS git-friends-tester-github-actions
 ARG USER
 ARG GROUP
 
-COPY --chown=${USER}:${GROUP} . ./cyberdyne/
+# Set working directory for GitHub Actions (even though GH docs recommend not to,
+# we need it to properly locate git-friends source files)
+WORKDIR /github/workspace
+
+ENV GIT_FRIENDS_MODULE_SRC_DIR=/github/workspace/git-friends/src
+
+COPY --chown=${USER}:${GROUP} . .
 
 ENTRYPOINT ["./.github/actions/run-make/entrypoint.sh"]
