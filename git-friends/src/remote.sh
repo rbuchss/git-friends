@@ -1,5 +1,6 @@
 #!/bin/bash
 # shellcheck source=/dev/null
+source "${BASH_SOURCE[0]%/*}/exec.sh"
 source "${BASH_SOURCE[0]%/*}/logger.sh"
 
 function git::remote::default_branch {
@@ -11,7 +12,7 @@ function git::remote::default_branch {
   # To avoid this we can sync this symbolic ref from upstream using:
   # $ git remote set-head origin --auto.
   # This updates both what is seen in git remote show and the symbolic ref referenced here.
-  git symbolic-ref "refs/remotes/${remote_name}/HEAD" \
+  git::__exec__ symbolic-ref "refs/remotes/${remote_name}/HEAD" \
     | sed "s@^refs/remotes/${remote_name}/@@"
 }
 
@@ -91,11 +92,11 @@ function git::remote::compare_branches {
   fi
 
   # Check if local is ahead, behind, or diverged
-  merge_base="$(git merge-base HEAD "${remote_branch}")"
+  merge_base="$(git::__exec__ merge-base HEAD "${remote_branch}")"
 
   # Local is ahead
   if [[ "${merge_base}" == "${remote_hash}" ]]; then
-    commits_ahead="$(git rev-list --count "${remote_branch}"..HEAD)"
+    commits_ahead="$(git::__exec__ rev-list --count "${remote_branch}"..HEAD)"
 
     git::logger::warning \
       "${yellow}⚠ Local repository is ${commits_ahead} commit(s) ahead of remote${nc}" \
@@ -106,7 +107,7 @@ function git::remote::compare_branches {
 
   # Local is behind
   if [[ "${merge_base}" == "${local_hash}" ]]; then
-    commits_behind="$(git rev-list --count HEAD.."${remote_branch}")"
+    commits_behind="$(git::__exec__ rev-list --count HEAD.."${remote_branch}")"
 
     git::logger::error \
       "${red}⚠ Repository is OUT OF DATE!${nc}" \
@@ -118,8 +119,8 @@ function git::remote::compare_branches {
   fi
 
   # Branches have diverged
-  commits_ahead="$(git rev-list --count "${remote_branch}"..HEAD)"
-  commits_behind="$(git rev-list --count HEAD.."${remote_branch}")"
+  commits_ahead="$(git::__exec__ rev-list --count "${remote_branch}"..HEAD)"
+  commits_behind="$(git::__exec__ rev-list --count HEAD.."${remote_branch}")"
 
   git::logger::warning \
     "${yellow}⚠ Branches have diverged!${nc}" \
@@ -135,8 +136,8 @@ function git::remote::get_commit_hashes {
     local_hash \
     remote_hash
 
-  local_hash="$(git rev-parse HEAD)"
-  remote_hash="$(git rev-parse "${remote_branch}")"
+  local_hash="$(git::__exec__ rev-parse HEAD)"
+  remote_hash="$(git::__exec__ rev-parse "${remote_branch}")"
 
   printf "%s %s" "${local_hash}" "${remote_hash}"
 }
@@ -144,7 +145,7 @@ function git::remote::get_commit_hashes {
 function git::remote::validate_remote_branch {
   local remote_branch="$1"
 
-  if ! git show-ref --verify --quiet "refs/remotes/${remote_branch}"; then
+  if ! git::__exec__ show-ref --verify --quiet "refs/remotes/${remote_branch}"; then
     git::logger::warning \
       "Warning: Remote branch '${remote_branch}' doesn't exist" \
       "This might be a new local branch that hasn't been pushed yet"
@@ -161,7 +162,7 @@ function git::remote::fetch_remote {
   git::logger::info "Fetching latest changes from ${remote}..."
 
   # Fetch the latest changes from remote without merging
-  if ! git fetch "${remote}" 2>/dev/null; then
+  if ! git::__exec__ fetch "${remote}" 2>/dev/null; then
     git::remote::handle_fetch_error "$?"
     return $?
   fi
@@ -173,8 +174,8 @@ function git::remote::get_current_branch {
   local current_branch
 
   current_branch="$(
-    git symbolic-ref --short HEAD 2>/dev/null \
-      || git rev-parse --short HEAD
+    git::__exec__ symbolic-ref --short HEAD 2>/dev/null \
+      || git::__exec__ rev-parse --short HEAD
   )"
 
   if [[ -z "${current_branch}" ]]; then
@@ -185,7 +186,7 @@ function git::remote::get_current_branch {
 }
 
 function git::remote::validate_repository {
-  if ! git rev-parse --git-dir >/dev/null 2>&1; then
+  if ! git::__exec__ rev-parse --git-dir >/dev/null 2>&1; then
     git::logger::error 'Not in a git repository'
     return 1
   fi
@@ -218,3 +219,29 @@ function git::remote::handle_fetch_error {
 
   return "${status}"
 }
+
+function git::remote::__export__ {
+  export -f git::remote::default_branch
+  export -f git::remote::check_status
+  export -f git::remote::compare_branches
+  export -f git::remote::get_commit_hashes
+  export -f git::remote::validate_remote_branch
+  export -f git::remote::fetch_remote
+  export -f git::remote::get_current_branch
+  export -f git::remote::validate_repository
+  export -f git::remote::handle_fetch_error
+}
+
+function git::remote::__recall__ {
+  export -fn git::remote::default_branch
+  export -fn git::remote::check_status
+  export -fn git::remote::compare_branches
+  export -fn git::remote::get_commit_hashes
+  export -fn git::remote::validate_remote_branch
+  export -fn git::remote::fetch_remote
+  export -fn git::remote::get_current_branch
+  export -fn git::remote::validate_repository
+  export -fn git::remote::handle_fetch_error
+}
+
+git::remote::__export__

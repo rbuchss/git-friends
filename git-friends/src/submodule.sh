@@ -1,5 +1,6 @@
 #!/bin/bash
 # shellcheck source=/dev/null
+source "${BASH_SOURCE[0]%/*}/exec.sh"
 source "${BASH_SOURCE[0]%/*}/logger.sh"
 source "${BASH_SOURCE[0]%/*}/utility.sh"
 
@@ -18,28 +19,42 @@ function git::submodule::remove {
       # 1: Remove the submodule entry from .git/config
       # 2: Remove the submodule directory from the superproject's .git/modules directory
       # 3: Remove the entry in .gitmodules and remove the submodule directory located at ${submodule_path}
-      git submodule deinit -f -- "${submodule_path}" \
+      git::__exec__ submodule deinit -f -- "${submodule_path}" \
         && rm -rf ".git/modules/${submodule_path}" \
-        && git rm -f "${submodule_path}"
+        && git::__exec__ rm -f "${submodule_path}"
     fi
   done
 }
 
 function git::submodule::sync {
   if (($# > 0)); then
-    git submodule update --init --recursive -- "$@"
+    git::__exec__ submodule update --init --recursive -- "$@"
     return
   fi
 
-  git submodule update --init --recursive
+  git::__exec__ submodule update --init --recursive
 }
 
 function git::submodule::upgrade {
   # NOTE: old way: git submodule foreach git pull origin master
   if (($# > 0)); then
-    git submodule update --recursive --remote -- "$@"
+    git::__exec__ submodule update --recursive --remote -- "$@"
     return
   fi
 
-  git submodule update --recursive --remote
+  git::__exec__ submodule update --recursive --remote
 }
+
+function git::submodule::__export__ {
+  export -f git::submodule::remove
+  export -f git::submodule::sync
+  export -f git::submodule::upgrade
+}
+
+function git::submodule::__recall__ {
+  export -fn git::submodule::remove
+  export -fn git::submodule::sync
+  export -fn git::submodule::upgrade
+}
+
+git::submodule::__export__

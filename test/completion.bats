@@ -94,29 +94,104 @@ setup_with_coverage 'git-friends/src/completion.sh'
 }
 
 ################################################################################
-# _g_wco
+# git::invoke::__complete__ (unified g wrapper completion)
 ################################################################################
 
-# bats test_tags=_g_wco
-@test "_g_wco with cur starting with - populates COMPREPLY with flags" {
-  local COMP_WORDS=('g-wco' '-b')
+# bats test_tags=git::invoke::__complete__
+@test "git::invoke::__complete__ completes subcommands at position 1" {
+  local COMP_WORDS=('g' 'wc')
   local COMP_CWORD=1
   local COMPREPLY=()
 
-  _g_wco
+  git::invoke::__complete__
 
-  # compgen -W '- -b --branch' -- '-b' should produce '-b'
+  [[ " ${COMPREPLY[*]} " == *' wcld '* ]]
+  [[ " ${COMPREPLY[*]} " == *' wco '* ]]
+}
+
+# bats test_tags=git::invoke::__complete__
+@test "git::invoke::__complete__ wco with cur starting with - populates COMPREPLY with flags" {
+  local COMP_WORDS=('g' 'wco' '-b')
+  local COMP_CWORD=2
+  local COMPREPLY=()
+
+  git::invoke::__complete__
+
   [[ " ${COMPREPLY[*]} " == *' -b '* ]]
 }
 
-# bats test_tags=_g_wco
-@test "_g_wco with cur not starting with - completes refs" {
-  local COMP_WORDS=('g-wco' 'feat')
-  local COMP_CWORD=1
+# bats test_tags=git::invoke::__complete__
+@test "git::invoke::__complete__ wco with cur not starting with - completes refs" {
+  local COMP_WORDS=('g' 'wco' 'feat')
+  local COMP_CWORD=2
 
-  run _g_wco
+  run git::invoke::__complete__
   assert_success
   assert_output 'COMPLETE_REFS'
+}
+
+################################################################################
+# git::invoke::__complete__ — __git_main fallback and no-completion cases
+################################################################################
+
+# bats test_tags=git::invoke::__complete__
+@test "git::invoke::__complete__ delegates unknown subcommands to __git_main" {
+  local COMP_WORDS=('g' 'status' '')
+  local COMP_CWORD=2
+
+  __git_main() { echo "GIT_MAIN_DELEGATED"; }
+  export -f __git_main
+
+  run git::invoke::__complete__
+  assert_success
+  assert_output 'GIT_MAIN_DELEGATED'
+}
+
+# bats test_tags=git::invoke::__complete__
+@test "git::invoke::__complete__ uses _get_comp_words_by_ref when available" {
+  _get_comp_words_by_ref() {
+    while (($# > 0)); do
+      case "$1" in
+        -n) shift ;;
+        cur) cur="${COMP_WORDS[COMP_CWORD]}" ;;
+        words) words=("${COMP_WORDS[@]}") ;;
+        cword) cword="${COMP_CWORD}" ;;
+        prev) prev="${COMP_WORDS[COMP_CWORD - 1]:-}" ;;
+      esac
+      shift
+    done
+  }
+  export -f _get_comp_words_by_ref
+
+  local COMP_WORDS=('g' 'cd')
+  local COMP_CWORD=1
+  local COMPREPLY=()
+
+  git::invoke::__complete__
+
+  [[ " ${COMPREPLY[*]} " == *' cd '* ]]
+}
+
+# bats test_tags=git::invoke::__complete__
+@test "git::invoke::__complete__ produces no completions for cd subcommand" {
+  local COMP_WORDS=('g' 'cd' '')
+  local COMP_CWORD=2
+  local COMPREPLY=()
+
+  git::invoke::__complete__
+
+  ((${#COMPREPLY[@]} == 0))
+}
+
+# bats test_tags=git::invoke::__complete__
+@test "git::invoke::__complete__ produces no completions for cld subcommand" {
+  local COMP_WORDS=('g' 'cld' '')
+  local COMP_CWORD=2
+  local COMPREPLY=()
+
+  git::invoke::__complete__
+
+  ((${#COMPREPLY[@]} == 0))
 }
 
 ################################################################################
@@ -247,18 +322,18 @@ setup_with_coverage 'git-friends/src/completion.sh'
 }
 
 ################################################################################
-# _g_wco fallback to __git_heads
+# git::invoke::__complete__ wco fallback to __git_heads
 ################################################################################
 
-# bats test_tags=_g_wco
-@test "_g_wco falls back to __git_heads when __git_complete_refs is unavailable" {
-  local COMP_WORDS=('g-wco' 'feat')
-  local COMP_CWORD=1
+# bats test_tags=git::invoke::__complete__
+@test "git::invoke::__complete__ wco falls back to __git_heads when __git_complete_refs is unavailable" {
+  local COMP_WORDS=('g' 'wco' 'feat')
+  local COMP_CWORD=2
 
   # Unset __git_complete_refs so the fallback path is taken
   unset -f __git_complete_refs
 
-  run _g_wco
+  run git::invoke::__complete__
   assert_success
   assert_output 'GITCOMP_DIRECT: main feature'
 }

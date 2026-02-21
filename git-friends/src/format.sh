@@ -1,5 +1,6 @@
 #!/bin/bash
 # shellcheck source=/dev/null
+source "${BASH_SOURCE[0]%/*}/exec.sh"
 source "${BASH_SOURCE[0]%/*}/logger.sh"
 
 function git::format::newline {
@@ -34,19 +35,19 @@ function git::format::newline {
 function git::format::newline::all {
   git::format::__newline_from_command__ \
     'tracked' \
-    git ls-files
+    git::__exec__ ls-files
 }
 
 function git::format::newline::staged {
   git::format::__newline_from_command__ \
     'staged' \
-    git diff --cached --name-only --diff-filter=ACM
+    git::__exec__ diff --cached --name-only --diff-filter=ACM
 }
 
 function git::format::newline::changed {
   git::format::__newline_from_command__ \
     'changed' \
-    git diff HEAD --name-only --diff-filter=ACM
+    git::__exec__ diff HEAD --name-only --diff-filter=ACM
 }
 
 function git::format::newline::ref {
@@ -54,7 +55,7 @@ function git::format::newline::ref {
 
   git::format::__newline_from_command__ \
     "changed against ${commit_ref}" \
-    git diff "${commit_ref}" --name-only --diff-filter=ACM
+    git::__exec__ diff "${commit_ref}" --name-only --diff-filter=ACM
 }
 
 function git::format::newline::process {
@@ -130,7 +131,7 @@ function git::format::__is_in_submodule__ {
       return 0
     fi
   done < <(
-    git config \
+    git::__exec__ config \
       --file .gitmodules \
       --get-regexp path \
       | awk '{print $2}' 2>/dev/null
@@ -148,7 +149,7 @@ function git::format::__newline_from_command__ {
 
   shift
 
-  if ! git rev-parse --git-dir >/dev/null 2>&1; then
+  if ! git::__exec__ rev-parse --git-dir >/dev/null 2>&1; then
     git::logger::error -c 2 'Not in a git repository'
     return 1
   fi
@@ -170,3 +171,23 @@ function git::format::__newline_from_command__ {
 
   git::format::newline::process "${files[@]}"
 }
+
+function git::format::__export__ {
+  export -f git::format::newline
+  export -f git::format::newline::all
+  export -f git::format::newline::staged
+  export -f git::format::newline::changed
+  export -f git::format::newline::ref
+  export -f git::format::newline::process
+}
+
+function git::format::__recall__ {
+  export -fn git::format::newline
+  export -fn git::format::newline::all
+  export -fn git::format::newline::staged
+  export -fn git::format::newline::changed
+  export -fn git::format::newline::ref
+  export -fn git::format::newline::process
+}
+
+git::format::__export__

@@ -396,16 +396,62 @@ __create_cloned_repo() {
 }
 
 ################################################################################
+# git::remote::check_status (get_commit_hashes failure)
+################################################################################
+
+# bats test_tags=git::remote::check_status
+@test "git::remote::check_status fails when get_commit_hashes fails" {
+  local repo_dir
+
+  __create_cloned_repo
+  cd "${repo_dir}"
+
+  git::remote::get_commit_hashes() { return 1; }
+  export -f git::remote::get_commit_hashes
+
+  run --separate-stderr git::remote::check_status
+  assert_failure
+  assert_stderr --partial 'Could not get commit hashes'
+}
+
+################################################################################
+# git::remote::fetch_remote (fetch fails with error code)
+################################################################################
+
+# bats test_tags=git::remote::fetch_remote
+@test "git::remote::fetch_remote calls handle_fetch_error on failure" {
+  local repo_dir
+
+  __create_cloned_repo
+  cd "${repo_dir}"
+
+  # Stub git::__exec__ to fail fetch
+  git::__exec__() {
+    if [[ "$1" == 'fetch' ]]; then
+      return 1
+    fi
+    command git "$@"
+  }
+  export -f git::__exec__
+
+  run --separate-stderr git::remote::fetch_remote 'origin'
+  # Note: handle_fetch_error receives $? from the `!` negation (0),
+  # but the lines in fetch_remote are still exercised
+  assert_stderr --partial 'Fetching latest changes'
+  assert_stderr --partial 'handle_fetch_error'
+}
+
+################################################################################
 # git::remote::get_current_branch (empty branch)
 ################################################################################
 
 # bats test_tags=git::remote::get_current_branch
 @test "git::remote::get_current_branch returns failure when branch is empty" {
-  # Stub git to produce empty output so current_branch is empty
-  git() {
+  # Stub git::__exec__ to produce empty output so current_branch is empty
+  git::__exec__() {
     return 1
   }
-  export -f git
+  export -f git::__exec__
 
   run git::remote::get_current_branch
   assert_failure

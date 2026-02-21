@@ -1,5 +1,6 @@
 #!/bin/bash
 # shellcheck source=/dev/null
+source "${BASH_SOURCE[0]%/*}/exec.sh"
 source "${BASH_SOURCE[0]%/*}/config.sh"
 source "${BASH_SOURCE[0]%/*}/logger.sh"
 source "${BASH_SOURCE[0]%/*}/url.sh"
@@ -18,6 +19,16 @@ function git::protocol::set {
 
   if new_url="$(git::url::change_protocol "${url}" "${protocol}")" \
     && git::utility::ask "convert remote ${name}: ${url} to ~~~> ${new_url}"; then
-    git remote set-url "${name}" "${new_url}"
+    git::__exec__ remote set-url "${name}" "${new_url}"
   fi
 }
+
+function git::protocol::__export__ {
+  export -f git::protocol::set
+}
+
+function git::protocol::__recall__ {
+  export -fn git::protocol::set
+}
+
+git::protocol::__export__

@@ -1,10 +1,11 @@
 #!/bin/bash
 # shellcheck source=/dev/null
+source "${BASH_SOURCE[0]%/*/*}/exec.sh"
 source "${BASH_SOURCE[0]%/*}/task_runner.sh"
 
 function git::hooks::pre_commit {
   # Nothing to commit or disabled so exit
-  git diff --cached --quiet --exit-code \
+  git::__exec__ diff --cached --quiet --exit-code \
     && return
 
   local rules
@@ -42,3 +43,15 @@ function git::hooks::pre_commit::block {
 
   "${rule}" "${flags[@]}"
 }
+
+function git::hooks::pre_commit::__export__ {
+  export -f git::hooks::pre_commit
+  export -f git::hooks::pre_commit::block
+}
+
+function git::hooks::pre_commit::__recall__ {
+  export -fn git::hooks::pre_commit
+  export -fn git::hooks::pre_commit::block
+}
+
+git::hooks::pre_commit::__export__

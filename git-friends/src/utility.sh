@@ -1,5 +1,6 @@
 #!/bin/bash
 # shellcheck source=/dev/null
+source "${BASH_SOURCE[0]%/*}/exec.sh"
 source "${BASH_SOURCE[0]%/*}/logger.sh"
 
 # Prompt the user with a yes/no question.
@@ -189,7 +190,7 @@ function git::utility::get_main_ref::remote {
   local \
     remote="$1" \
     path="$2" \
-    git_cmd=(git) \
+    git_cmd=(git::__exec__) \
     branch_name \
     main_branch_names
 
@@ -214,7 +215,7 @@ function git::utility::get_main_ref::remote {
 function git::utility::get_main_ref::local {
   local \
     path="$1" \
-    git_cmd=(git) \
+    git_cmd=(git::__exec__) \
     branch_name \
     main_branch_names
 
@@ -245,7 +246,7 @@ function git::utility::is_bare_or_worktree {
 function git::utility::is_bare {
   local \
     path="$1" \
-    git_cmd=(git) \
+    git_cmd=(git::__exec__) \
     is_bare
 
   [[ -n "${path}" ]] && git_cmd+=(-C "${path}")
@@ -260,7 +261,7 @@ function git::utility::is_bare {
 function git::utility::is_worktree {
   local \
     path="$1" \
-    git_cmd=(git) \
+    git_cmd=(git::__exec__) \
     git_common_dir \
     parent_is_bare
 
@@ -271,7 +272,39 @@ function git::utility::is_worktree {
 
   [[ -z "${git_common_dir}" ]] && return 1
 
-  parent_is_bare="$(git --git-dir="${git_common_dir}" rev-parse --is-bare-repository 2>/dev/null)"
+  parent_is_bare="$(git::__exec__ --git-dir="${git_common_dir}" rev-parse --is-bare-repository 2>/dev/null)"
 
   [[ "${parent_is_bare}" == 'true' ]]
 }
+
+function git::utility::__export__ {
+  export -f git::utility::ask
+  export -f git::utility::array_contains
+  export -f git::utility::expand_indices
+  export -f git::utility::is_executable
+  export -f git::utility::is_not_executable
+  export -f git::utility::main_branch_names
+  export -f git::utility::get_main_ref
+  export -f git::utility::get_main_ref::remote
+  export -f git::utility::get_main_ref::local
+  export -f git::utility::is_bare_or_worktree
+  export -f git::utility::is_bare
+  export -f git::utility::is_worktree
+}
+
+function git::utility::__recall__ {
+  export -fn git::utility::ask
+  export -fn git::utility::array_contains
+  export -fn git::utility::expand_indices
+  export -fn git::utility::is_executable
+  export -fn git::utility::is_not_executable
+  export -fn git::utility::main_branch_names
+  export -fn git::utility::get_main_ref
+  export -fn git::utility::get_main_ref::remote
+  export -fn git::utility::get_main_ref::local
+  export -fn git::utility::is_bare_or_worktree
+  export -fn git::utility::is_bare
+  export -fn git::utility::is_worktree
+}
+
+git::utility::__export__

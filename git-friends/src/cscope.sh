@@ -1,5 +1,6 @@
 #!/bin/bash
 # shellcheck source=/dev/null
+source "${BASH_SOURCE[0]%/*}/exec.sh"
 source "${BASH_SOURCE[0]%/*}/config.sh"
 source "${BASH_SOURCE[0]%/*}/logger.sh"
 
@@ -47,7 +48,7 @@ function git::cscope::generate {
 
 function git::cscope::files {
   # TODO is filtering even required?
-  git ls-files -- \
+  git::__exec__ ls-files -- \
     ':*.py' \
     ':*.java' \
     ':*.properties' \
@@ -67,3 +68,15 @@ function git::cscope::files {
     ':*.hxx' \
     ':*.ino'
 }
+
+function git::cscope::__export__ {
+  export -f git::cscope::generate
+  export -f git::cscope::files
+}
+
+function git::cscope::__recall__ {
+  export -fn git::cscope::generate
+  export -fn git::cscope::files
+}
+
+git::cscope::__export__

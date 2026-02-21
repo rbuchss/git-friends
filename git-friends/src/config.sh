@@ -1,11 +1,13 @@
 #!/bin/bash
+# shellcheck source=/dev/null
+source "${BASH_SOURCE[0]%/*}/exec.sh"
 
 function git::config::group {
   local \
     group="$1" \
     flags=("${@:2}")
 
-  git config "${flags[@]}" --get-regexp "^${group}"
+  git::__exec__ config "${flags[@]}" --get-regexp "^${group}"
 }
 
 function git::config::aliases {
@@ -33,7 +35,7 @@ function git::config::exists {
   local key="$1" \
     flags=("${@:2}")
 
-  git config "${flags[@]}" --get "${key}" >/dev/null
+  git::__exec__ config "${flags[@]}" --get "${key}" >/dev/null
 }
 
 function git::config::is_null {
@@ -48,7 +50,7 @@ function git::config::is_true {
   git::config::is_null "$@" \
     && return 2
 
-  value="$(git config "${flags[@]}" --type=bool --get "${key}")" \
+  value="$(git::__exec__ config "${flags[@]}" --type=bool --get "${key}")" \
     && [[ "${value}" == 'true' ]]
 }
 
@@ -60,7 +62,7 @@ function git::config::is_false {
   git::config::is_null "$@" \
     && return 2
 
-  value="$(git config "${flags[@]}" --type=bool --get "${key}")" \
+  value="$(git::__exec__ config "${flags[@]}" --type=bool --get "${key}")" \
     && [[ "${value}" == 'false' ]]
 }
 
@@ -77,21 +79,51 @@ function git::config::get {
   local key="$1" \
     flags=("${@:2}")
 
-  git config "${flags[@]}" --get "${key}"
+  git::__exec__ config "${flags[@]}" --get "${key}"
 }
 
 function git::config::get_all {
   local key="$1" \
     flags=("${@:2}")
 
-  git config "${flags[@]}" --get-all "${key}"
+  git::__exec__ config "${flags[@]}" --get-all "${key}"
 }
 
 function git::dir {
   if (($# == 0)); then
-    git rev-parse --git-dir
+    git::__exec__ rev-parse --git-dir
     return
   fi
 
-  git rev-parse --git-path "$@"
+  git::__exec__ rev-parse --git-path "$@"
 }
+
+function git::config::__export__ {
+  export -f git::config::group
+  export -f git::config::aliases
+  export -f git::config::exists
+  export -f git::config::is_null
+  export -f git::config::is_true
+  export -f git::config::is_false
+  export -f git::config::is_truthy
+  export -f git::config::is_falsey
+  export -f git::config::get
+  export -f git::config::get_all
+  export -f git::dir
+}
+
+function git::config::__recall__ {
+  export -fn git::config::group
+  export -fn git::config::aliases
+  export -fn git::config::exists
+  export -fn git::config::is_null
+  export -fn git::config::is_true
+  export -fn git::config::is_false
+  export -fn git::config::is_truthy
+  export -fn git::config::is_falsey
+  export -fn git::config::get
+  export -fn git::config::get_all
+  export -fn git::dir
+}
+
+git::config::__export__

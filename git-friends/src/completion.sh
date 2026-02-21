@@ -107,27 +107,68 @@ function _git_wa {
   esac
 }
 
-# Completion for g-wco bash alias (git::worktree::checkout)
-# Completes branch names and -b/--branch flags
-function _g_wco {
-  local cur="${COMP_WORDS[COMP_CWORD]}"
+# Completion for the git::invoke wrapper function.
+# Dispatches to subcommand-specific completions or falls back to git completion.
+function git::invoke::__complete__ {
+  local cur words cword prev
 
-  case "${cur}" in
-    -*)
-      # Include '-' for previous worktree, plus flags
-      while IFS='' read -r line; do
-        COMPREPLY+=("${line}")
-      done < <(compgen -W '- -b --branch' -- "${cur}")
+  # Set up completion variables. When registered via __git_complete, these are
+  # already provided by __git_func_wrap; re-initializing is harmless.
+  # Falls back to raw COMP_WORDS when _get_comp_words_by_ref is unavailable.
+  if declare -F _get_comp_words_by_ref >/dev/null 2>&1; then
+    _get_comp_words_by_ref -n =: cur words cword prev
+  else
+    cur="${COMP_WORDS[COMP_CWORD]}"
+    words=("${COMP_WORDS[@]}")
+    cword="${COMP_CWORD}"
+    # shellcheck disable=SC2034
+    prev="${COMP_WORDS[COMP_CWORD - 1]:-}"
+  fi
+
+  # First argument: complete g subcommands + git commands
+  if ((cword == 1)); then
+    local g_subcommands='cd cld wcld wco init-context'
+
+    while IFS='' read -r line; do
+      COMPREPLY+=("${line}")
+    done < <(compgen -W "${g_subcommands}" -- "${cur}")
+
+    # Also include git's completions (commands, aliases)
+    if type __git_main &>/dev/null; then
+      __git_main
+    fi
+    return
+  fi
+
+  # Subcommand-specific completions
+  case "${words[1]}" in
+    wco)
+      case "${cur}" in
+        -*)
+          while IFS='' read -r line; do
+            COMPREPLY+=("${line}")
+          done < <(compgen -W '- -b --branch' -- "${cur}")
+          ;;
+        *)
+          if type __git_complete_refs &>/dev/null; then
+            __git_complete_refs
+          elif type __git_heads &>/dev/null; then
+            __gitcomp_direct "$(__git_heads "" "${cur}" " ")"
+          fi
+          ;;
+      esac
+      ;;
+    wcld | cld)
+      # No special completion — accepts URLs/paths
+      ;;
+    cd | init-context)
+      # No arguments to complete
       ;;
     *)
-      # Complete with branch names (local and remote tracking)
-      if type __git_complete_refs &>/dev/null; then
-        __git_complete_refs
-      elif type __git_heads &>/dev/null; then
-        __gitcomp_direct "$(__git_heads "" "${cur}" " ")"
+      # Delegate to git's completion
+      if type __git_main &>/dev/null; then
+        __git_main
       fi
       ;;
   esac
 }
-
-complete -F _g_wco g-wco

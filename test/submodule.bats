@@ -104,6 +104,38 @@ __create_repo_with_submodule() {
 ################################################################################
 
 # bats test_tags=git::submodule::remove
+@test "git::submodule::remove removes submodule when user confirms" {
+  local repo_dir sub_path
+
+  __create_repo_with_submodule
+  cd "${repo_dir}"
+
+  # Stub ask to always return yes
+  git::utility::ask() { return 0; }
+  export -f git::utility::ask
+
+  run git::submodule::remove "${sub_path}"
+  assert_success
+  assert [ ! -d "${sub_path}" ]
+}
+
+# bats test_tags=git::submodule::remove
+@test "git::submodule::remove skips when user declines" {
+  local repo_dir sub_path
+
+  __create_repo_with_submodule
+  cd "${repo_dir}"
+
+  # Stub ask to decline
+  git::utility::ask() { return 1; }
+  export -f git::utility::ask
+
+  run git::submodule::remove "${sub_path}"
+  assert_success
+  assert [ -d "${sub_path}" ]
+}
+
+# bats test_tags=git::submodule::remove
 @test "git::submodule::remove with nonexistent path returns failure" {
   local repo_dir
 

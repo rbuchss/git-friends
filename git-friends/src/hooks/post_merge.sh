@@ -9,3 +9,13 @@ function git::hooks::post_merge {
     'git::cscope::generate' \
     'git::ctags::generate'
 }
+
+function git::hooks::post_merge::__export__ {
+  export -f git::hooks::post_merge
+}
+
+function git::hooks::post_merge::__recall__ {
+  export -fn git::hooks::post_merge
+}
+
+git::hooks::post_merge::__export__
