@@ -5,6 +5,15 @@ setup_suite() {
 
   root_dir="$(repo_root)"
 
+  # Override inherited GIT_FRIENDS_MODULE_HOME_DIR to ensure correct module name
+  # derivation. When the user's shell sources git-friends via homesick symlinks
+  # (~/.git-friends/src/), GIT_FRIENDS_MODULE_HOME_DIR resolves to $HOME instead
+  # of the repo root, producing wrong module names like
+  # 'git::::Users::russ::.git-friends::src::logger'.
+  # Docker avoids this via explicit ENV in the Dockerfile.
+  export GIT_FRIENDS_MODULE_HOME_DIR="${root_dir}"
+  export GIT_FRIENDS_MODULE_SRC_DIR="${root_dir}/git-friends/src"
+
   load "${root_dir}/vendor/test/bats/bats-support/load.bash" # this is required by bats-assert!
   load "${root_dir}/vendor/test/bats/bats-assert/load.bash"
 
