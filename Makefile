@@ -204,7 +204,6 @@ test-with-coverage:
 		--bash-parse-files-in-dir=./git-friends/src/ \
 		--configure=command-name="$(call test-command)" \
 		coverage \
-		-- \
 		$(call test-command))
 	@$(MAKE) --no-print-directory coverage-pr-report
 

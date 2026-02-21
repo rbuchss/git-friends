@@ -322,6 +322,39 @@ setup_with_coverage 'git-friends/src/completion.sh'
 }
 
 ################################################################################
+# _git_prune_branches — all mode exhausted positional args
+################################################################################
+
+# bats test_tags=_git_prune_branches
+@test "_git_prune_branches with --all mode exhausted positional args produces no completions" {
+  local -a words=('git' 'prune-branches' '--all' 'origin' 'main' '')
+  local cword=5 cur=''
+
+  run _git_prune_branches
+  assert_success
+  refute_output
+}
+
+################################################################################
+# git::invoke::__complete__ — __git_main at cword 1
+################################################################################
+
+# bats test_tags=git::invoke::__complete__
+@test "git::invoke::__complete__ includes __git_main completions at position 1" {
+  __git_main() { COMPREPLY+=('status' 'stash'); }
+  export -f __git_main
+
+  local COMP_WORDS=('g' 'st')
+  local COMP_CWORD=1
+  local COMPREPLY=()
+
+  git::invoke::__complete__
+
+  [[ " ${COMPREPLY[*]} " == *' status '* ]]
+  [[ " ${COMPREPLY[*]} " == *' stash '* ]]
+}
+
+################################################################################
 # git::invoke::__complete__ wco fallback to __git_heads
 ################################################################################
 

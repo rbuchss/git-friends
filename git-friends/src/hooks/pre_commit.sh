@@ -8,10 +8,13 @@ function git::hooks::pre_commit {
   git::__exec__ diff --cached --quiet --exit-code \
     && return
 
-  local rules
+  local rules nullglob_was_set=0
+  shopt -q nullglob && nullglob_was_set=1
+  shopt -s nullglob
   rules=("$(git::dir)"/hooks/pre-commit-test-*)
+  ((nullglob_was_set)) || shopt -u nullglob
 
-  if ((${#rules[@]} > 0)); then
+  if ((${#rules[@]} == 0)); then
     git::logger::info 'No pre-commit rules found. Skipping tests.'
     return 0
   fi
