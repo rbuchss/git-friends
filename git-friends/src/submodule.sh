@@ -54,10 +54,12 @@ function git::submodule::__export__ {
   export -f git::submodule::upgrade
 }
 
+# KCOV_EXCL_START
 function git::submodule::__recall__ {
   export -fn git::submodule::remove
   export -fn git::submodule::sync
   export -fn git::submodule::upgrade
 }
+# KCOV_EXCL_STOP
 
 git::__module__::export

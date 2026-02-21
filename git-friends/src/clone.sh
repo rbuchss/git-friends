@@ -36,8 +36,10 @@ function git::clone::__export__ {
   export -f git::clone::cd
 }
 
+# KCOV_EXCL_START
 function git::clone::__recall__ {
   export -fn git::clone::cd
 }
+# KCOV_EXCL_STOP
 
 git::__module__::export

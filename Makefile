@@ -181,6 +181,7 @@ test:
 			--include-path=./git-friends/src/ \
 			--include-pattern=.sh \
 			--exclude-pattern=/test/$(COMMA)/coverage/$(COMMA)/report/ \
+			--exclude-region='KCOV_EXCL_START:KCOV_EXCL_STOP' \
 			--bash-method=DEBUG \
 			--bash-parser="$(COVERAGE_BASH_PARSER)" \
 			--bash-parse-files-in-dir=./git-friends/src/ \

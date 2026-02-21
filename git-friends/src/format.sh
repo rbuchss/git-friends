@@ -184,6 +184,7 @@ function git::format::__export__ {
   export -f git::format::newline::process
 }
 
+# KCOV_EXCL_START
 function git::format::__recall__ {
   export -fn git::format::newline
   export -fn git::format::newline::all
@@ -192,5 +193,6 @@ function git::format::__recall__ {
   export -fn git::format::newline::ref
   export -fn git::format::newline::process
 }
+# KCOV_EXCL_STOP
 
 git::__module__::export

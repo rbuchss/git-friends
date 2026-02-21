@@ -22,8 +22,10 @@ function git::cd::__export__ {
   export -f git::cd::root_dir
 }
 
+# KCOV_EXCL_START
 function git::cd::__recall__ {
   export -fn git::cd::root_dir
 }
+# KCOV_EXCL_STOP
 
 git::__module__::export

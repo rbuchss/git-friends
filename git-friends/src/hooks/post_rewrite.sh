@@ -21,8 +21,10 @@ function git::hooks::post_rewrite::__export__ {
   export -f git::hooks::post_rewrite
 }
 
+# KCOV_EXCL_START
 function git::hooks::post_rewrite::__recall__ {
   export -fn git::hooks::post_rewrite
 }
+# KCOV_EXCL_STOP
 
 git::__module__::export

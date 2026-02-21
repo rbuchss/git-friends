@@ -17,8 +17,10 @@ function git::hooks::post_merge::__export__ {
   export -f git::hooks::post_merge
 }
 
+# KCOV_EXCL_START
 function git::hooks::post_merge::__recall__ {
   export -fn git::hooks::post_merge
 }
+# KCOV_EXCL_STOP
 
 git::__module__::export

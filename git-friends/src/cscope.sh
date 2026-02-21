@@ -77,9 +77,11 @@ function git::cscope::__export__ {
   export -f git::cscope::files
 }
 
+# KCOV_EXCL_START
 function git::cscope::__recall__ {
   export -fn git::cscope::generate
   export -fn git::cscope::files
 }
+# KCOV_EXCL_STOP
 
 git::__module__::export

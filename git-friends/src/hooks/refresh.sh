@@ -34,8 +34,10 @@ function git::hooks::refresh::__export__ {
   export -f git::hooks::refresh
 }
 
+# KCOV_EXCL_START
 function git::hooks::refresh::__recall__ {
   export -fn git::hooks::refresh
 }
+# KCOV_EXCL_STOP
 
 git::__module__::export

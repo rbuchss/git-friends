@@ -34,8 +34,10 @@ function git::upstream::__export__ {
   export -f git::upstream::add
 }
 
+# KCOV_EXCL_START
 function git::upstream::__recall__ {
   export -fn git::upstream::add
 }
+# KCOV_EXCL_STOP
 
 git::__module__::export

@@ -28,8 +28,10 @@ function git::exec::__export__ {
   export -f git::exec
 }
 
+# KCOV_EXCL_START
 function git::exec::__recall__ {
   export -fn git::exec
 }
+# KCOV_EXCL_STOP
 
 git::__module__::export

@@ -139,6 +139,7 @@ function git::prune::__export__ {
   export -f git::prune::branches::all
 }
 
+# KCOV_EXCL_START
 function git::prune::__recall__ {
   export -fn git::prune::branches
   export -fn git::prune::branches::usage
@@ -146,5 +147,6 @@ function git::prune::__recall__ {
   export -fn git::prune::branches::remote
   export -fn git::prune::branches::all
 }
+# KCOV_EXCL_STOP
 
 git::__module__::export

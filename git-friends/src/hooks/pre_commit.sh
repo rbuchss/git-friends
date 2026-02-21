@@ -55,9 +55,11 @@ function git::hooks::pre_commit::__export__ {
   export -f git::hooks::pre_commit::block
 }
 
+# KCOV_EXCL_START
 function git::hooks::pre_commit::__recall__ {
   export -fn git::hooks::pre_commit
   export -fn git::hooks::pre_commit::block
 }
+# KCOV_EXCL_STOP
 
 git::__module__::export

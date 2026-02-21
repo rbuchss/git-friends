@@ -177,11 +177,13 @@ function git::hooks::task_runner::__export__ {
   export -f git::hooks::task_runner::background_block
 }
 
+# KCOV_EXCL_START
 function git::hooks::task_runner::__recall__ {
   export -fn git::hooks::task_runner
   export -fn git::hooks::task_runner::usage
   export -fn git::hooks::task_runner::body
   export -fn git::hooks::task_runner::background_block
 }
+# KCOV_EXCL_STOP
 
 git::__module__::export

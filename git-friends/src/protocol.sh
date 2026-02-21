@@ -30,8 +30,10 @@ function git::protocol::__export__ {
   export -f git::protocol::set
 }
 
+# KCOV_EXCL_START
 function git::protocol::__recall__ {
   export -fn git::protocol::set
 }
+# KCOV_EXCL_STOP
 
 git::__module__::export
