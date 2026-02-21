@@ -391,6 +391,7 @@ bats_require_minimum_version 1.5.0
 # bats test_tags=git::__module__,git::__module__::__get_module_name__
 @test "git::__module__::__get_module_name__ derives git::cd from cd.sh" {
   local result=''
+  GIT_FRIENDS_MODULE_HOME_DIR='/path/to'
 
   git::__module__::__get_module_name__ result '1 /path/to/git-friends/src/cd.sh'
 
@@ -400,6 +401,7 @@ bats_require_minimum_version 1.5.0
 # bats test_tags=git::__module__,git::__module__::__get_module_name__
 @test "git::__module__::__get_module_name__ derives git::logger from logger.sh" {
   local result=''
+  GIT_FRIENDS_MODULE_HOME_DIR='/path/to'
 
   git::__module__::__get_module_name__ result '1 /path/to/git-friends/src/logger.sh'
 
@@ -409,6 +411,7 @@ bats_require_minimum_version 1.5.0
 # bats test_tags=git::__module__,git::__module__::__get_module_name__
 @test "git::__module__::__get_module_name__ derives git::exec from exec.sh" {
   local result=''
+  GIT_FRIENDS_MODULE_HOME_DIR='/path/to'
 
   git::__module__::__get_module_name__ result '1 /path/to/git-friends/src/exec.sh'
 
@@ -418,6 +421,7 @@ bats_require_minimum_version 1.5.0
 # bats test_tags=git::__module__,git::__module__::__get_module_name__
 @test "git::__module__::__get_module_name__ derives git::hooks::post_commit from hooks/post_commit.sh" {
   local result=''
+  GIT_FRIENDS_MODULE_HOME_DIR='/path/to'
 
   git::__module__::__get_module_name__ result '1 /path/to/git-friends/src/hooks/post_commit.sh'
 
@@ -427,6 +431,7 @@ bats_require_minimum_version 1.5.0
 # bats test_tags=git::__module__,git::__module__::__get_module_name__
 @test "git::__module__::__get_module_name__ derives git::hooks::task_runner from hooks/task_runner.sh" {
   local result=''
+  GIT_FRIENDS_MODULE_HOME_DIR='/path/to'
 
   git::__module__::__get_module_name__ result '1 /path/to/git-friends/src/hooks/task_runner.sh'
 
@@ -436,10 +441,65 @@ bats_require_minimum_version 1.5.0
 # bats test_tags=git::__module__,git::__module__::__get_module_name__
 @test "git::__module__::__get_module_name__ derives git::completion from completion.sh" {
   local result=''
+  GIT_FRIENDS_MODULE_HOME_DIR='/path/to'
 
   git::__module__::__get_module_name__ result '1 /path/to/git-friends/src/completion.sh'
 
   assert_equal "${result}" 'git::completion'
+}
+
+# Edge case: dot-prefixed .git-friends symlink path (homesick installs to ~/.git-friends)
+# bats test_tags=git::__module__,git::__module__::__get_module_name__
+@test "git::__module__::__get_module_name__ handles .git-friends symlink path" {
+  local result=''
+  GIT_FRIENDS_MODULE_HOME_DIR='/Users/russ'
+
+  git::__module__::__get_module_name__ result '1 /Users/russ/.git-friends/src/logger.sh'
+
+  assert_equal "${result}" 'git::logger'
+}
+
+# bats test_tags=git::__module__,git::__module__::__get_module_name__
+@test "git::__module__::__get_module_name__ handles .git-friends symlink path for hooks" {
+  local result=''
+  GIT_FRIENDS_MODULE_HOME_DIR='/Users/russ'
+
+  git::__module__::__get_module_name__ result '1 /Users/russ/.git-friends/src/hooks/post_commit.sh'
+
+  assert_equal "${result}" 'git::hooks::post_commit'
+}
+
+# Edge case: real path through .homesick/repos
+# bats test_tags=git::__module__,git::__module__::__get_module_name__
+@test "git::__module__::__get_module_name__ handles .homesick real path" {
+  local result=''
+  GIT_FRIENDS_MODULE_HOME_DIR='/Users/russ/.homesick/repos/git-friends'
+
+  git::__module__::__get_module_name__ result '1 /Users/russ/.homesick/repos/git-friends/git-friends/src/cd.sh'
+
+  assert_equal "${result}" 'git::cd'
+}
+
+# Edge case: Docker/CI path
+# bats test_tags=git::__module__,git::__module__::__get_module_name__
+@test "git::__module__::__get_module_name__ handles Docker workspace path" {
+  local result=''
+  GIT_FRIENDS_MODULE_HOME_DIR='/workspace'
+
+  git::__module__::__get_module_name__ result '1 /workspace/git-friends/src/worktree.sh'
+
+  assert_equal "${result}" 'git::worktree'
+}
+
+# Edge case: preserves underscores in filenames (post_commit should NOT become post::commit)
+# bats test_tags=git::__module__,git::__module__::__get_module_name__
+@test "git::__module__::__get_module_name__ preserves underscores in filenames" {
+  local result=''
+  GIT_FRIENDS_MODULE_HOME_DIR='/Users/russ'
+
+  git::__module__::__get_module_name__ result '1 /Users/russ/.git-friends/src/hooks/pre_commit.sh'
+
+  assert_equal "${result}" 'git::hooks::pre_commit'
 }
 
 ################################################################################

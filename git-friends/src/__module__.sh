@@ -11,6 +11,13 @@ if [[ -z "${GIT_FRIENDS_MODULE_SRC_DIR}" ]]; then
   fi
 fi
 
+# Derive home directory (parent of project dir) for module name resolution.
+# e.g., /Users/russ/.git-friends/src → /Users/russ
+if [[ -z "${GIT_FRIENDS_MODULE_HOME_DIR}" ]]; then
+  GIT_FRIENDS_MODULE_HOME_DIR="${GIT_FRIENDS_MODULE_SRC_DIR%/*/*}"
+  export GIT_FRIENDS_MODULE_HOME_DIR
+fi
+
 GIT_FRIENDS_MODULES_LOADED=()
 GIT_FRIENDS_MODULES_EXPORTED=()
 GIT_FRIENDS_MODULES_ENABLED=()
@@ -394,6 +401,7 @@ function git::__module__::__get_module_name__ {
   local _output_var="$1" \
     _caller_info="$2" \
     _source_filepath \
+    _relative_filepath \
     _module
 
   _source_filepath="${_caller_info#* *}"
@@ -402,17 +410,29 @@ function git::__module__::__get_module_name__ {
     return 1
   fi
 
-  # Extract path relative to git-friends/src/
-  _module="${_source_filepath##*/git-friends/src/}"
+  # Strip home directory prefix to get project-relative path
+  _relative_filepath="${_source_filepath/${GIT_FRIENDS_MODULE_HOME_DIR}/}"
 
   # Remove .sh extension
-  _module="${_module%.sh}"
+  _module="${_relative_filepath%.sh}"
 
-  # Replace directory separators with :: (hooks/ → hooks::)
+  # Remove dots (e.g., .git-friends → git-friends)
+  _module="${_module//./}"
+
+  # Replace hyphens with underscores (e.g., git-friends → git_friends)
+  _module="${_module//-/_}"
+
+  # Replace directory separators with :: (e.g., /git_friends/src/ → ::git_friends::src::)
   _module="${_module//\//::}"
 
-  # Prefix with git::
-  _module="git::${_module}"
+  # Strip leading ::
+  _module="${_module#::}"
+
+  # Remove ::src namespace
+  _module="${_module/::src/}"
+
+  # Map project name to namespace (git_friends:: → git::)
+  _module="${_module/#git_friends::/git::}"
 
   printf -v "${_output_var}" '%s' "${_module}"
 }
