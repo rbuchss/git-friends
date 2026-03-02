@@ -9,8 +9,10 @@ sandcube
 Vault
 TODO
 
-# ignore repo root level claude configs
-/.claude
+# ignore claude local/transient files
+/.claude/settings.local.json
+/.claude/todos.json
+CLAUDE.local.md
 
 ################################################################################
 # vim ignores
