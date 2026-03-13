@@ -4,6 +4,7 @@ source "${GIT_FRIENDS_MODULE_SRC_DIR:-${BASH_SOURCE[0]%/*}}/__module__.sh"
 source "${GIT_FRIENDS_MODULE_SRC_DIR:-${BASH_SOURCE[0]%/*}}/exec.sh"
 source "${GIT_FRIENDS_MODULE_SRC_DIR:-${BASH_SOURCE[0]%/*}}/cd.sh"
 source "${GIT_FRIENDS_MODULE_SRC_DIR:-${BASH_SOURCE[0]%/*}}/clone.sh"
+source "${GIT_FRIENDS_MODULE_SRC_DIR:-${BASH_SOURCE[0]%/*}}/layout.sh"
 source "${GIT_FRIENDS_MODULE_SRC_DIR:-${BASH_SOURCE[0]%/*}}/worktree.sh"
 source "${GIT_FRIENDS_MODULE_SRC_DIR:-${BASH_SOURCE[0]%/*}}/completion.sh"
 
@@ -30,6 +31,14 @@ function git::invoke {
     wco)
       shift
       git::worktree::checkout "$@"
+      ;;
+    c2w)
+      shift
+      git::layout::to_worktree::cd "$@"
+      ;;
+    w2c)
+      shift
+      git::layout::to_clone::cd "$@"
       ;;
     init-context)
       shift

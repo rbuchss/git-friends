@@ -194,6 +194,28 @@ setup_with_coverage 'git-friends/src/completion.sh'
   ((${#COMPREPLY[@]} == 0))
 }
 
+# bats test_tags=git::invoke::__complete__
+@test "git::invoke::__complete__ produces no completions for c2w subcommand" {
+  local COMP_WORDS=('g' 'c2w' '')
+  local COMP_CWORD=2
+  local COMPREPLY=()
+
+  git::invoke::__complete__
+
+  ((${#COMPREPLY[@]} == 0))
+}
+
+# bats test_tags=git::invoke::__complete__
+@test "git::invoke::__complete__ produces no completions for w2c subcommand" {
+  local COMP_WORDS=('g' 'w2c' '')
+  local COMP_CWORD=2
+  local COMPREPLY=()
+
+  git::invoke::__complete__
+
+  ((${#COMPREPLY[@]} == 0))
+}
+
 ################################################################################
 # _git_prune_branches
 ################################################################################

@@ -131,7 +131,7 @@ function git::invoke::__complete__ {
 
   # First argument: complete g subcommands + git commands
   if ((cword == 1)); then
-    local g_subcommands='cd cld wcld wco init-context'
+    local g_subcommands='cd cld wcld wco c2w w2c init-context'
 
     # Get git's completions first (__git_main overwrites COMPREPLY)
     if type __git_main &>/dev/null; then
@@ -167,7 +167,7 @@ function git::invoke::__complete__ {
     wcld | cld)
       # No special completion — accepts URLs/paths
       ;;
-    cd | init-context)
+    cd | c2w | w2c | init-context)
       # No arguments to complete
       ;;
     *)
