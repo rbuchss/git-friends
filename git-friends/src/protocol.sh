@@ -26,13 +26,27 @@ function git::protocol::set {
   fi
 }
 
+# Returns 0 if the remote URL uses HTTPS, 1 otherwise.
+# Returns 0 if the remote or repo does not exist (nothing to check).
+function git::protocol::is_https {
+  local \
+    remote="${1:-origin}" \
+    url
+
+  url="$(git::exec config --get "remote.${remote}.url" 2>/dev/null)" || return 0
+
+  [[ -n "${url}" ]] && [[ "$(git::url::protocol "${url}")" == "https" ]]
+}
+
 function git::protocol::__export__ {
   export -f git::protocol::set
+  export -f git::protocol::is_https
 }
 
 # KCOV_EXCL_START
 function git::protocol::__recall__ {
   export -fn git::protocol::set
+  export -fn git::protocol::is_https
 }
 # KCOV_EXCL_STOP
 

@@ -99,6 +99,34 @@ function _git_wt {
   _git_worktree
 }
 
+function _git_setup_config {
+  local templates='gitconfig-local agent-env'
+  local index=1 has_template=0 has_flag=0
+
+  # shellcheck disable=SC2154
+  while ((index < cword)); do
+    # shellcheck disable=SC2154
+    case "${words[index]}" in
+      gitconfig-local | agent-env) has_template=1 ;;
+      --force | -f | --merge | -m | --help | -h) has_flag=1 ;;
+      *) ;;
+    esac
+    ((index++))
+  done
+
+  # shellcheck disable=SC2154
+  case "${cur}" in
+    -*)
+      ((has_flag == 0)) && __gitcomp '--force --help --merge'
+      ;;
+    *)
+      ((has_template == 0)) && __gitcomp "${templates}"
+      ;;
+  esac
+
+  return 0
+}
+
 function _git_wa {
   # shellcheck disable=SC2154
   case "${cur}" in

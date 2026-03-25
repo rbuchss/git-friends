@@ -94,6 +94,100 @@ setup_with_coverage 'git-friends/src/completion.sh'
 }
 
 ################################################################################
+# _git_setup_config
+################################################################################
+
+# bats test_tags=_git_setup_config
+@test "_git_setup_config with cur starting with - completes flags" {
+  local -a words=('git' 'setup-config' '-')
+  local cword=2 cur='-'
+
+  run _git_setup_config
+  assert_success
+  assert_output 'GITCOMP: --force --help --merge'
+}
+
+# bats test_tags=_git_setup_config
+@test "_git_setup_config with empty cur completes template names" {
+  local -a words=('git' 'setup-config' '')
+  local cword=2 cur=''
+
+  run _git_setup_config
+  assert_success
+  assert_output 'GITCOMP: gitconfig-local agent-env'
+}
+
+# bats test_tags=_git_setup_config
+@test "_git_setup_config with partial cur completes matching templates" {
+  local -a words=('git' 'setup-config' 'git')
+  local cword=2 cur='git'
+
+  run _git_setup_config
+  assert_success
+  assert_output 'GITCOMP: gitconfig-local agent-env'
+}
+
+# bats test_tags=_git_setup_config
+@test "_git_setup_config does not suggest templates after template is chosen" {
+  local -a words=('git' 'setup-config' 'gitconfig-local' '')
+  local cword=3 cur=''
+
+  run _git_setup_config
+  assert_success
+  refute_output
+}
+
+# bats test_tags=_git_setup_config
+@test "_git_setup_config does not suggest flags after flag is present" {
+  local -a words=('git' 'setup-config' '--force' '-')
+  local cword=3 cur='-'
+
+  run _git_setup_config
+  assert_success
+  refute_output
+}
+
+# bats test_tags=_git_setup_config
+@test "_git_setup_config does not suggest flags after --merge is present" {
+  local -a words=('git' 'setup-config' '--merge' '-')
+  local cword=3 cur='-'
+
+  run _git_setup_config
+  assert_success
+  refute_output
+}
+
+# bats test_tags=_git_setup_config
+@test "_git_setup_config suggests flags after template when typing -" {
+  local -a words=('git' 'setup-config' 'agent-env' '-')
+  local cword=3 cur='-'
+
+  run _git_setup_config
+  assert_success
+  assert_output 'GITCOMP: --force --help --merge'
+}
+
+# bats test_tags=_git_setup_config
+@test "_git_setup_config suggests templates after --force" {
+  local -a words=('git' 'setup-config' '--force' '')
+  local cword=3 cur=''
+
+  run _git_setup_config
+  assert_success
+  assert_output 'GITCOMP: gitconfig-local agent-env'
+}
+
+# bats test_tags=_git_setup_config
+@test "_git_setup_config suggests templates after --merge" {
+  local -a words=('git' 'setup-config' '--merge' '')
+  local cword=3 cur=''
+
+  run _git_setup_config
+  assert_success
+  assert_output 'GITCOMP: gitconfig-local agent-env'
+}
+
+################################################################################
 # git::invoke::__complete__ (unified g wrapper completion)
 ################################################################################
 
