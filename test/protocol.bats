@@ -73,3 +73,83 @@ setup_with_coverage 'git-friends/src/protocol.sh'
   run git config --get remote.origin.url
   assert_output 'https://github.com/test/repo.git'
 }
+
+################################################################################
+# git::protocol::is_https
+################################################################################
+
+# bats test_tags=git::protocol::is_https
+@test "git::protocol::is_https returns 0 for HTTPS remote" {
+  local repo_dir="${BATS_TEST_TMPDIR}/repo"
+
+  git init "${repo_dir}"
+  git -C "${repo_dir}" remote add origin 'https://github.com/user/repo.git'
+  cd "${repo_dir}"
+
+  run git::protocol::is_https
+
+  assert_success
+}
+
+# bats test_tags=git::protocol::is_https
+@test "git::protocol::is_https returns 1 for SSH remote" {
+  local repo_dir="${BATS_TEST_TMPDIR}/repo"
+
+  git init "${repo_dir}"
+  git -C "${repo_dir}" remote add origin 'git@github.com:user/repo.git'
+  cd "${repo_dir}"
+
+  run git::protocol::is_https
+
+  assert_failure
+}
+
+# bats test_tags=git::protocol::is_https
+@test "git::protocol::is_https returns 1 for ssh:// remote" {
+  local repo_dir="${BATS_TEST_TMPDIR}/repo"
+
+  git init "${repo_dir}"
+  git -C "${repo_dir}" remote add origin 'ssh://git@github.com/user/repo.git'
+  cd "${repo_dir}"
+
+  run git::protocol::is_https
+
+  assert_failure
+}
+
+# bats test_tags=git::protocol::is_https
+@test "git::protocol::is_https returns 0 when not in a git repo" {
+  cd "${BATS_TEST_TMPDIR}"
+
+  run git::protocol::is_https
+
+  assert_success
+}
+
+# bats test_tags=git::protocol::is_https
+@test "git::protocol::is_https returns 0 when remote does not exist" {
+  local repo_dir="${BATS_TEST_TMPDIR}/repo"
+
+  git init "${repo_dir}"
+  cd "${repo_dir}"
+
+  run git::protocol::is_https
+
+  assert_success
+}
+
+# bats test_tags=git::protocol::is_https
+@test "git::protocol::is_https accepts custom remote name" {
+  local repo_dir="${BATS_TEST_TMPDIR}/repo"
+
+  git init "${repo_dir}"
+  git -C "${repo_dir}" remote add origin 'https://github.com/user/repo.git'
+  git -C "${repo_dir}" remote add upstream 'git@github.com:user/repo.git'
+  cd "${repo_dir}"
+
+  run git::protocol::is_https upstream
+  assert_failure
+
+  run git::protocol::is_https origin
+  assert_success
+}

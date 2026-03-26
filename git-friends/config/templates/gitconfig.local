@@ -1,0 +1,34 @@
+################################################################################
+# Local git configuration
+#
+# Machine-specific settings that should not be shared across environments.
+# This file is included by the main gitconfig via:
+#   [include]
+#     path = ~/.gitconfig.local
+#
+# Install with:
+#   git setup-config gitconfig-local
+#   # or manually: cp ~/.git-friends/config/templates/gitconfig.local ~/.gitconfig.local
+#
+# This file is NOT version controlled.
+################################################################################
+
+# Git identity for this machine.
+# [user]
+#   name = Your Name
+#   email = your@email.com
+
+# SSH protocol rewrite: converts HTTPS GitHub URLs to SSH.
+#
+# Useful for personal machines with SSH keys configured.
+# Uncomment the block below to enable.
+# Leave commented in environments using HTTPS token auth
+# (e.g., CI/CD, agent loops with scoped GITHUB_TOKEN).
+#
+# [url "git@github.com:"]
+#   insteadOf = https://github.com/
+#   # For Go modules to work (with Go 1.11 or newer),
+#   # you'll also need to set the GOPRIVATE variable,
+#   # to avoid using the public servers to fetch the code:
+#   #   $ go get github.com/private/repo
+#   #   $ export GOPRIVATE=github.com/private/repo
