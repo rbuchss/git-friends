@@ -75,71 +75,58 @@ setup_with_coverage 'git-friends/src/protocol.sh'
 }
 
 ################################################################################
-# git::protocol::is_https
+# git::protocol::is (generic predicate)
 ################################################################################
 
-# bats test_tags=git::protocol::is_https
-@test "git::protocol::is_https returns 0 for HTTPS remote" {
+# bats test_tags=git::protocol::is
+@test "git::protocol::is returns 0 when protocol matches" {
   local repo_dir="${BATS_TEST_TMPDIR}/repo"
 
   git init "${repo_dir}"
   git -C "${repo_dir}" remote add origin 'https://github.com/user/repo.git'
   cd "${repo_dir}"
 
-  run git::protocol::is_https
+  run git::protocol::is 'https'
 
   assert_success
 }
 
-# bats test_tags=git::protocol::is_https
-@test "git::protocol::is_https returns 1 for SSH remote" {
+# bats test_tags=git::protocol::is
+@test "git::protocol::is returns 1 when protocol does not match" {
   local repo_dir="${BATS_TEST_TMPDIR}/repo"
 
   git init "${repo_dir}"
-  git -C "${repo_dir}" remote add origin 'git@github.com:user/repo.git'
+  git -C "${repo_dir}" remote add origin 'https://github.com/user/repo.git'
   cd "${repo_dir}"
 
-  run git::protocol::is_https
+  run git::protocol::is 'ssh'
 
   assert_failure
 }
 
-# bats test_tags=git::protocol::is_https
-@test "git::protocol::is_https returns 1 for ssh:// remote" {
-  local repo_dir="${BATS_TEST_TMPDIR}/repo"
-
-  git init "${repo_dir}"
-  git -C "${repo_dir}" remote add origin 'ssh://git@github.com/user/repo.git'
-  cd "${repo_dir}"
-
-  run git::protocol::is_https
-
-  assert_failure
-}
-
-# bats test_tags=git::protocol::is_https
-@test "git::protocol::is_https returns 0 when not in a git repo" {
+# bats test_tags=git::protocol::is
+@test "git::protocol::is returns 0 when not in a git repo" {
   cd "${BATS_TEST_TMPDIR}"
 
-  run git::protocol::is_https
+  run git::protocol::is 'https'
 
   assert_success
 }
 
-# bats test_tags=git::protocol::is_https
-@test "git::protocol::is_https returns 0 when remote does not exist" {
+# bats test_tags=git::protocol::is
+@test "git::protocol::is returns 0 when remote does not exist" {
   local repo_dir="${BATS_TEST_TMPDIR}/repo"
 
   git init "${repo_dir}"
   cd "${repo_dir}"
 
-  run git::protocol::is_https
+  run git::protocol::is 'https'
 
   assert_success
 }
 
-# bats test_tags=git::protocol::is_https
-@test "git::protocol::is_https accepts custom remote name" {
+# bats test_tags=git::protocol::is
+@test "git::protocol::is accepts custom remote name" {
   local repo_dir="${BATS_TEST_TMPDIR}/repo"
 
   git init "${repo_dir}"
@@ -147,9 +134,161 @@ setup_with_coverage 'git-friends/src/protocol.sh'
   git -C "${repo_dir}" remote add upstream 'git@github.com:user/repo.git'
   cd "${repo_dir}"
 
-  run git::protocol::is_https upstream
+  run git::protocol::is 'https' upstream
   assert_failure
 
-  run git::protocol::is_https origin
+  run git::protocol::is 'https' origin
   assert_success
+}
+
+################################################################################
+# git::protocol::is_https
+################################################################################
+
+# bats test_tags=git::protocol::is_https
+@test "git::protocol::is_https matches HTTPS remote" {
+  local repo_dir="${BATS_TEST_TMPDIR}/repo"
+
+  git init "${repo_dir}"
+  git -C "${repo_dir}" remote add origin 'https://github.com/user/repo.git'
+  cd "${repo_dir}"
+
+  run git::protocol::is_https
+  assert_success
+}
+
+# bats test_tags=git::protocol::is_https
+@test "git::protocol::is_https rejects SSH remote" {
+  local repo_dir="${BATS_TEST_TMPDIR}/repo"
+
+  git init "${repo_dir}"
+  git -C "${repo_dir}" remote add origin 'git@github.com:user/repo.git'
+  cd "${repo_dir}"
+
+  run git::protocol::is_https
+  assert_failure
+}
+
+################################################################################
+# git::protocol::is_ssh
+################################################################################
+
+# bats test_tags=git::protocol::is_ssh
+@test "git::protocol::is_ssh matches SCP-style SSH remote" {
+  local repo_dir="${BATS_TEST_TMPDIR}/repo"
+
+  git init "${repo_dir}"
+  git -C "${repo_dir}" remote add origin 'git@github.com:user/repo.git'
+  cd "${repo_dir}"
+
+  run git::protocol::is_ssh
+  assert_success
+}
+
+# bats test_tags=git::protocol::is_ssh
+@test "git::protocol::is_ssh matches ssh:// remote" {
+  local repo_dir="${BATS_TEST_TMPDIR}/repo"
+
+  git init "${repo_dir}"
+  git -C "${repo_dir}" remote add origin 'ssh://git@github.com/user/repo.git'
+  cd "${repo_dir}"
+
+  run git::protocol::is_ssh
+  assert_success
+}
+
+# bats test_tags=git::protocol::is_ssh
+@test "git::protocol::is_ssh rejects HTTPS remote" {
+  local repo_dir="${BATS_TEST_TMPDIR}/repo"
+
+  git init "${repo_dir}"
+  git -C "${repo_dir}" remote add origin 'https://github.com/user/repo.git'
+  cd "${repo_dir}"
+
+  run git::protocol::is_ssh
+  assert_failure
+}
+
+################################################################################
+# git::protocol::is_http
+################################################################################
+
+# bats test_tags=git::protocol::is_http
+@test "git::protocol::is_http matches HTTP remote" {
+  local repo_dir="${BATS_TEST_TMPDIR}/repo"
+
+  git init "${repo_dir}"
+  git -C "${repo_dir}" remote add origin 'http://github.com/user/repo.git'
+  cd "${repo_dir}"
+
+  run git::protocol::is_http
+  assert_success
+}
+
+# bats test_tags=git::protocol::is_http
+@test "git::protocol::is_http rejects HTTPS remote" {
+  local repo_dir="${BATS_TEST_TMPDIR}/repo"
+
+  git init "${repo_dir}"
+  git -C "${repo_dir}" remote add origin 'https://github.com/user/repo.git'
+  cd "${repo_dir}"
+
+  run git::protocol::is_http
+  assert_failure
+}
+
+################################################################################
+# git::protocol::is_git
+################################################################################
+
+# bats test_tags=git::protocol::is_git
+@test "git::protocol::is_git matches git:// remote" {
+  local repo_dir="${BATS_TEST_TMPDIR}/repo"
+
+  git init "${repo_dir}"
+  git -C "${repo_dir}" remote add origin 'git://github.com/user/repo.git'
+  cd "${repo_dir}"
+
+  run git::protocol::is_git
+  assert_success
+}
+
+# bats test_tags=git::protocol::is_git
+@test "git::protocol::is_git rejects SSH remote" {
+  local repo_dir="${BATS_TEST_TMPDIR}/repo"
+
+  git init "${repo_dir}"
+  git -C "${repo_dir}" remote add origin 'git@github.com:user/repo.git'
+  cd "${repo_dir}"
+
+  run git::protocol::is_git
+  assert_failure
+}
+
+################################################################################
+# git::protocol::is_file
+################################################################################
+
+# bats test_tags=git::protocol::is_file
+@test "git::protocol::is_file matches file:// remote" {
+  local repo_dir="${BATS_TEST_TMPDIR}/repo"
+
+  git init "${repo_dir}"
+  git -C "${repo_dir}" remote add origin 'file:///path/to/repo.git'
+  cd "${repo_dir}"
+
+  run git::protocol::is_file
+  assert_success
+}
+
+# bats test_tags=git::protocol::is_file
+@test "git::protocol::is_file rejects HTTPS remote" {
+  local repo_dir="${BATS_TEST_TMPDIR}/repo"
+
+  git init "${repo_dir}"
+  git -C "${repo_dir}" remote add origin 'https://github.com/user/repo.git'
+  cd "${repo_dir}"
+
+  run git::protocol::is_file
+  assert_failure
 }
