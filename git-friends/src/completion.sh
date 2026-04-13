@@ -159,7 +159,7 @@ function git::invoke::__complete__ {
 
   # First argument: complete g subcommands + git commands
   if ((cword == 1)); then
-    local g_subcommands='cd cld wcld wco c2w w2c init-context'
+    local g_subcommands='cd cld wcld wco c2w w2c init-context sync-context'
 
     # Get git's completions first (__git_main overwrites COMPREPLY)
     if type __git_main &>/dev/null; then
@@ -194,6 +194,18 @@ function git::invoke::__complete__ {
       ;;
     wcld | cld)
       # No special completion — accepts URLs/paths
+      ;;
+    sync-context)
+      case "${cur}" in
+        -*)
+          while IFS='' read -r line; do
+            COMPREPLY+=("${line}")
+          done < <(compgen -W '--push --pull --color --no-color' -- "${cur}")
+          ;;
+        *)
+          # Remote host/path: no special completion
+          ;;
+      esac
       ;;
     cd | c2w | w2c | init-context)
       # No arguments to complete
