@@ -9,7 +9,8 @@ function git::history::recent {
   # show local branches
   # (change to "ref/heads"
   # to include both local + remote branches)
-  local count="${1:-0}" \
+  local \
+    count="${1:-0}" \
     branch \
     spacer \
     format \

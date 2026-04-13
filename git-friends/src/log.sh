@@ -7,7 +7,8 @@ source "${GIT_FRIENDS_MODULE_SRC_DIR:-${BASH_SOURCE[0]%/*}}/remote.sh"
 git::__module__::load || return 0
 
 function git::log::basic {
-  local format \
+  local \
+    format \
     format_options \
     date_regexp=' (--date[[:space:]=]|--relative-date)'
 
@@ -43,7 +44,8 @@ function git::log::from_default_branch {
     return
   fi
 
-  local default_branch \
+  local \
+    default_branch \
     commit_range
 
   default_branch="$(git::remote::default_branch)"

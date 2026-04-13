@@ -31,7 +31,8 @@ function git::hooks::pre_commit {
 }
 
 function git::hooks::pre_commit::block {
-  local rule="$1" \
+  local \
+    rule="$1" \
     logfile="$2" \
     skip=("${@:3}") \
     regexp='^.*pre-commit-test-([^\.]+).*$' \
