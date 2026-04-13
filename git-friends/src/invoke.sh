@@ -6,6 +6,7 @@ source "${GIT_FRIENDS_MODULE_SRC_DIR:-${BASH_SOURCE[0]%/*}}/cd.sh"
 source "${GIT_FRIENDS_MODULE_SRC_DIR:-${BASH_SOURCE[0]%/*}}/clone.sh"
 source "${GIT_FRIENDS_MODULE_SRC_DIR:-${BASH_SOURCE[0]%/*}}/layout.sh"
 source "${GIT_FRIENDS_MODULE_SRC_DIR:-${BASH_SOURCE[0]%/*}}/worktree.sh"
+source "${GIT_FRIENDS_MODULE_SRC_DIR:-${BASH_SOURCE[0]%/*}}/context.sh"
 source "${GIT_FRIENDS_MODULE_SRC_DIR:-${BASH_SOURCE[0]%/*}}/completion.sh"
 
 git::__module__::load || return 0
@@ -43,6 +44,10 @@ function git::invoke {
     init-context)
       shift
       git::worktree::init_context "$@"
+      ;;
+    sync-context)
+      shift
+      git::context::sync "$@"
       ;;
     *) git::exec "$@" ;;
   esac
