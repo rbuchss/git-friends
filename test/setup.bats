@@ -80,6 +80,10 @@ setup_with_coverage 'git-friends/src/setup.sh'
 @test "git::setup::config agent-env installs to target path" {
   local target="${BATS_TEST_TMPDIR}/agent.env"
 
+  # Run from a non-git directory so the post-install protocol prompt
+  # is not triggered (is_https returns true when not in a repo).
+  cd "${BATS_TEST_TMPDIR}"
+
   run --separate-stderr git::setup::config agent-env "${target}"
 
   assert_success
@@ -91,6 +95,7 @@ setup_with_coverage 'git-friends/src/setup.sh'
 @test "git::setup::config agent-env copies template content" {
   local target="${BATS_TEST_TMPDIR}/agent.env"
 
+  cd "${BATS_TEST_TMPDIR}"
   git::setup::config agent-env "${target}"
 
   run grep 'GITHUB_TOKEN' "${target}"

@@ -19,8 +19,13 @@ function git::credential::token_helper {
   local action="$1"
   local line
 
-  # Consume stdin per git credential helper protocol
-  while IFS= read -r line && [[ -n "${line}" ]]; do :; done
+  # Consume stdin per git credential helper protocol.
+  # Skip when stdin is a TTY — git never invokes the helper with a TTY stdin,
+  # so this only happens in tests or interactive invocation, where blocking
+  # on read would hang indefinitely.
+  if [[ ! -t 0 ]]; then
+    while IFS= read -r line && [[ -n "${line}" ]]; do :; done
+  fi
 
   # Only respond to 'get' requests; ignore 'store' and 'erase'
   if [[ "${action}" != "get" ]]; then
