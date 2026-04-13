@@ -8,7 +8,8 @@ source "${GIT_FRIENDS_MODULE_SRC_DIR:-${BASH_SOURCE[0]%/*}}/utility.sh"
 git::__module__::load || return 0
 
 function git::prune::branches {
-  local cmd='git::prune::branches::local' \
+  local \
+    cmd='git::prune::branches::local' \
     force=0 \
     arguments=()
 
@@ -58,7 +59,8 @@ USAGE_TEXT
 }
 
 function git::prune::branches::local {
-  local force="$1" \
+  local \
+    force="$1" \
     ref_branch="$2" \
     merged_branches=()
   # shellcheck disable=SC2034
@@ -91,7 +93,8 @@ function git::prune::branches::local {
 }
 
 function git::prune::branches::remote {
-  local force="$1" \
+  local \
+    force="$1" \
     remote="${2:-origin}" \
     dry_run_response
 
@@ -115,7 +118,8 @@ function git::prune::branches::remote {
 }
 
 function git::prune::branches::all {
-  local force="$1" \
+  local \
+    force="$1" \
     remote="$2" \
     ref_branch="$3"
 

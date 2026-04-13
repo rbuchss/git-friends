@@ -9,7 +9,8 @@ source "${GIT_FRIENDS_MODULE_SRC_DIR:-${BASH_SOURCE[0]%/*}}/utility.sh"
 git::__module__::load || return 0
 
 function git::upstream::add {
-  local user="$1" \
+  local \
+    user="$1" \
     name="${2:-upstream}" \
     origin_url \
     upstream_url

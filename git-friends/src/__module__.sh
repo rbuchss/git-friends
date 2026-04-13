@@ -42,7 +42,8 @@ GIT_FRIENDS_MODULE_DISABLE_ACTION='__disable__'
 # Note this requires the `|| return 0` logical compound since bash source must exit early.
 #
 function git::__module__::load {
-  local module="$1" \
+  local \
+    module="$1" \
     should_source_status=0 \
     should_not_source_status=1
 
@@ -82,7 +83,8 @@ function git::__module__::is_loaded {
 }
 
 function git::__module__::unload {
-  local module \
+  local \
+    module \
     modules=("$@")
 
   # Generates module based on filename if none specified
@@ -123,7 +125,8 @@ function git::__module__::is_unloaded {
 }
 
 function git::__module__::export {
-  local module \
+  local \
+    module \
     modules=("$@")
 
   # Generates module based on filename if none specified
@@ -161,7 +164,8 @@ function git::__module__::is_exported {
 }
 
 function git::__module__::recall {
-  local module \
+  local \
+    module \
     modules=("$@")
 
   # Generates module based on filename if none specified
@@ -202,7 +206,8 @@ function git::__module__::is_recalled {
 }
 
 function git::__module__::enable {
-  local module \
+  local \
+    module \
     modules=("$@")
 
   # Generates module based on filename if none specified
@@ -240,7 +245,8 @@ function git::__module__::is_enabled {
 }
 
 function git::__module__::disable {
-  local module \
+  local \
+    module \
     modules=("$@")
 
   # Generates module based on filename if none specified
@@ -281,7 +287,8 @@ function git::__module__::is_disabled {
 }
 
 function git::__module__::__action__ {
-  local module="$1" \
+  local \
+    module="$1" \
     action="$2" \
     handler="$3" \
     module_action_function
@@ -316,7 +323,8 @@ function git::__module__::__action__ {
 }
 
 function git::__module__::__action__::__module_action_handler__ {
-  local module="$1" \
+  local \
+    module="$1" \
     action="$2" \
     module_action_function
 
@@ -337,7 +345,8 @@ function git::__module__::__action__::__module_action_handler__ {
 }
 
 function git::__module__::__is_in_state__ {
-  local module="$1" \
+  local \
+    module="$1" \
     action="$2" \
     log_caller_level="${3:-4}" \
     in_cache_response=0 \
@@ -398,41 +407,42 @@ function git::__module__::__invoke_function_if_exists__ {
 }
 
 function git::__module__::__get_module_name__ {
-  local _output_var="$1" \
-    _caller_info="$2" \
-    _source_filepath \
-    _relative_filepath \
-    _module
+  local \
+    __output_var__="$1" \
+    caller_info="$2" \
+    source_filepath \
+    relative_filepath \
+    __module_name__
 
-  _source_filepath="${_caller_info#* *}"
+  source_filepath="${caller_info#* *}"
 
-  if [[ -z "${_source_filepath}" || "${_source_filepath}" == 'NULL' ]]; then
+  if [[ -z "${source_filepath}" || "${source_filepath}" == 'NULL' ]]; then
     return 1
   fi
 
   # Strip home directory prefix to get project-relative path
-  _relative_filepath="${_source_filepath/${GIT_FRIENDS_MODULE_HOME_DIR}/}"
+  relative_filepath="${source_filepath/${GIT_FRIENDS_MODULE_HOME_DIR}/}"
 
   # Remove .sh extension
-  _module="${_relative_filepath%.sh}"
+  __module_name__="${relative_filepath%.sh}"
 
   # Remove dots (e.g., .git-friends → git-friends)
-  _module="${_module//./}"
+  __module_name__="${__module_name__//./}"
 
   # Replace hyphens with underscores (e.g., git-friends → git_friends)
-  _module="${_module//-/_}"
+  __module_name__="${__module_name__//-/_}"
 
   # Replace directory separators with :: (e.g., /git_friends/src/ → ::git_friends::src::)
-  _module="${_module//\//::}"
+  __module_name__="${__module_name__//\//::}"
 
   # Strip leading ::
-  _module="${_module#::}"
+  __module_name__="${__module_name__#::}"
 
   # Remove ::src namespace
-  _module="${_module/::src/}"
+  __module_name__="${__module_name__/::src/}"
 
   # Map project name to namespace (git_friends:: → git::)
-  _module="${_module/#git_friends::/git::}"
+  __module_name__="${__module_name__/#git_friends::/git::}"
 
-  printf -v "${_output_var}" '%s' "${_module}"
+  printf -v "${__output_var__}" '%s' "${__module_name__}"
 }

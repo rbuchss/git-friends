@@ -8,7 +8,8 @@ source "${GIT_FRIENDS_MODULE_SRC_DIR:-${BASH_SOURCE[0]%/*}}/logger.sh"
 git::__module__::load || return 0
 
 function git::cscope::generate {
-  local cmd_path \
+  local \
+    cmd_path \
     tmp_file \
     extra_flags=("$@")
 

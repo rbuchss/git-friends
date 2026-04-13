@@ -10,7 +10,8 @@ source "${GIT_FRIENDS_MODULE_SRC_DIR:-${BASH_SOURCE[0]%/*}}/utility.sh"
 git::__module__::load || return 0
 
 function git::protocol::set {
-  local protocol="$1" \
+  local \
+    protocol="$1" \
     name="${2:-origin}" \
     url \
     new_url

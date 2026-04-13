@@ -25,7 +25,8 @@ function _git_ldi {
 }
 
 function _git_prune_branches {
-  local index=1 \
+  local \
+    index=1 \
     flag_index=1 \
     mode='local' \
     modes='--all --local --remote' \

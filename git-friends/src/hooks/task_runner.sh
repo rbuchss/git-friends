@@ -8,7 +8,8 @@ source "${GIT_FRIENDS_MODULE_SRC_DIR:-${BASH_SOURCE[0]%/*/*}}/utility.sh"
 git::__module__::load || return 0
 
 function git::hooks::task_runner {
-  local name \
+  local \
+    name \
     block='git::hooks::task_runner::background_block' \
     arguments=()
 
@@ -78,7 +79,8 @@ USAGE_TEXT
 }
 
 function git::hooks::task_runner::body {
-  local hook_name="$1" \
+  local \
+    hook_name="$1" \
     config_section="git-friends.$1" \
     block="$2" \
     tasks=("${@:3}") \
@@ -145,7 +147,8 @@ function git::hooks::task_runner::body {
 }
 
 function git::hooks::task_runner::background_block {
-  local task="$1" \
+  local \
+    task="$1" \
     logfile="$2" \
     skip=("${@:3}") \
     level='ERROR'

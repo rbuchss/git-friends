@@ -35,7 +35,8 @@ function git::config::aliases {
 }
 
 function git::config::exists {
-  local key="$1" \
+  local \
+    key="$1" \
     flags=("${@:2}")
 
   git::exec config "${flags[@]}" --get "${key}" >/dev/null
@@ -46,7 +47,8 @@ function git::config::is_null {
 }
 
 function git::config::is_true {
-  local value \
+  local \
+    value \
     key="$1" \
     flags=("${@:2}")
 
@@ -58,7 +60,8 @@ function git::config::is_true {
 }
 
 function git::config::is_false {
-  local value \
+  local \
+    value \
     key="$1" \
     flags=("${@:2}")
 
@@ -79,14 +82,16 @@ function git::config::is_falsey {
 }
 
 function git::config::get {
-  local key="$1" \
+  local \
+    key="$1" \
     flags=("${@:2}")
 
   git::exec config "${flags[@]}" --get "${key}"
 }
 
 function git::config::get_all {
-  local key="$1" \
+  local \
+    key="$1" \
     flags=("${@:2}")
 
   git::exec config "${flags[@]}" --get-all "${key}"
