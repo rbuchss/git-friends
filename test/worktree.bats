@@ -219,6 +219,7 @@ __create_bare_worktree_structure() {
 @test "git::worktree::add::setup sets worktree_dir and worktree_absolute_path" {
   local \
     repo_dir \
+    project_root \
     worktree_dir \
     worktree_absolute_path \
     _status=0
@@ -229,8 +230,33 @@ __create_bare_worktree_structure() {
   git::worktree::add::setup 'feature' || _status=$?
 
   assert_equal "${_status}" 0
-  assert_equal "${worktree_dir}" '../feature'
+  assert_equal "${worktree_dir}" "${BATS_TEST_TMPDIR}/feature"
   assert_equal "${worktree_absolute_path}" "${BATS_TEST_TMPDIR}/feature"
+}
+
+# bats test_tags=git::worktree::add::setup
+@test "git::worktree::add::setup derives project root from bare worktree layout" {
+  local \
+    bare_dir \
+    worktree_dir \
+    branch \
+    project_root \
+    worktree_absolute_path \
+    _status=0
+
+  __create_bare_worktree_structure
+
+  # Resolve symlinks (macOS /var -> /private/var)
+  cd "$(cd "${worktree_dir}/${branch}" && pwd -P)"
+  local expected_root
+  expected_root="$(cd "${worktree_dir}" && pwd -P)"
+
+  git::worktree::add::setup 'feature' || _status=$?
+
+  assert_equal "${_status}" 0
+  assert_equal "${project_root}" "${expected_root}"
+  assert_equal "${worktree_dir}" "${expected_root}/feature"
+  assert_equal "${worktree_absolute_path}" "${expected_root}/feature"
 }
 
 ################################################################################
@@ -340,6 +366,7 @@ __create_bare_worktree_structure() {
 
   # The main branch worktree already exists
   local \
+    project_root \
     worktree_dir_out \
     worktree_absolute_path \
     _status=0
@@ -736,10 +763,36 @@ __create_bare_worktree_structure() {
 
   mkdir -p "${project_dir}/__context__" "${worktree_path}"
 
-  run git::worktree::__link_context__ "${worktree_path}"
+  run git::worktree::__link_context__ "${worktree_path}" "${project_dir}"
   assert_success
   assert [ -L "${worktree_path}/__context__" ]
   assert_equal "$(readlink "${worktree_path}/__context__")" "../__context__"
+}
+
+# bats test_tags=git::worktree::__link_context__
+@test "git::worktree::__link_context__ creates correct symlink for slashed branch" {
+  local project_dir="${BATS_TEST_TMPDIR}/ctx-project"
+  local worktree_path="${project_dir}/feat/my-branch"
+
+  mkdir -p "${project_dir}/__context__" "${worktree_path}"
+
+  run git::worktree::__link_context__ "${worktree_path}" "${project_dir}"
+  assert_success
+  assert [ -L "${worktree_path}/__context__" ]
+  assert_equal "$(readlink "${worktree_path}/__context__")" "../../__context__"
+}
+
+# bats test_tags=git::worktree::__link_context__
+@test "git::worktree::__link_context__ creates correct symlink for deeply nested branch" {
+  local project_dir="${BATS_TEST_TMPDIR}/ctx-project"
+  local worktree_path="${project_dir}/a/b/c"
+
+  mkdir -p "${project_dir}/__context__" "${worktree_path}"
+
+  run git::worktree::__link_context__ "${worktree_path}" "${project_dir}"
+  assert_success
+  assert [ -L "${worktree_path}/__context__" ]
+  assert_equal "$(readlink "${worktree_path}/__context__")" "../../../__context__"
 }
 
 # bats test_tags=git::worktree::__link_context__
@@ -749,7 +802,7 @@ __create_bare_worktree_structure() {
 
   mkdir -p "${worktree_path}"
 
-  run git::worktree::__link_context__ "${worktree_path}"
+  run git::worktree::__link_context__ "${worktree_path}" "${project_dir}"
   assert_success
   assert [ ! -L "${worktree_path}/__context__" ]
 }
@@ -762,7 +815,7 @@ __create_bare_worktree_structure() {
   mkdir -p "${project_dir}/__context__" "${worktree_path}"
   ln -s ../__context__ "${worktree_path}/__context__"
 
-  run git::worktree::__link_context__ "${worktree_path}"
+  run git::worktree::__link_context__ "${worktree_path}" "${project_dir}"
   assert_success
   assert [ -L "${worktree_path}/__context__" ]
   assert_equal "$(readlink "${worktree_path}/__context__")" "../__context__"
@@ -957,6 +1010,21 @@ __create_bare_worktree_structure() {
 }
 
 # bats test_tags=git::worktree::add::existing
+@test "git::worktree::add::existing symlinks __context__ for slashed branch" {
+  local bare_dir worktree_dir branch
+
+  __create_bare_worktree_structure
+  cd "${worktree_dir}/${branch}"
+
+  git branch 'feat/slashed-branch'
+
+  run git::worktree::add::existing 'feat/slashed-branch'
+  assert_success
+  assert [ -L "${worktree_dir}/feat/slashed-branch/__context__" ]
+  assert_equal "$(readlink "${worktree_dir}/feat/slashed-branch/__context__")" "../../__context__"
+}
+
+# bats test_tags=git::worktree::add::existing
 @test "git::worktree::add::existing skips context when __context__ dir does not exist" {
   local bare_dir worktree_dir branch
 
@@ -989,6 +1057,19 @@ __create_bare_worktree_structure() {
   assert_success
   assert [ -L "${worktree_dir}/ctx-new-branch/__context__" ]
   assert_equal "$(readlink "${worktree_dir}/ctx-new-branch/__context__")" "../__context__"
+}
+
+# bats test_tags=git::worktree::add::new
+@test "git::worktree::add::new symlinks __context__ for slashed branch" {
+  local bare_dir worktree_dir branch
+
+  __create_bare_worktree_structure
+  cd "${worktree_dir}/${branch}"
+
+  run git::worktree::add::new 'feat/slashed-new' "origin/${branch}"
+  assert_success
+  assert [ -L "${worktree_dir}/feat/slashed-new/__context__" ]
+  assert_equal "$(readlink "${worktree_dir}/feat/slashed-new/__context__")" "../../__context__"
 }
 
 # bats test_tags=git::worktree::add::new
