@@ -69,21 +69,55 @@ function git::worktree::resolve_branch {
   echo "${branch}"
 }
 
+# Derive the project root from the git common directory.
+# Only works for bare worktree structures with __git__/.git layout.
+# Returns 1 if not in a bare worktree layout.
+function git::worktree::__project_root__ {
+  local git_common_dir
+  git_common_dir="$(git::exec rev-parse --git-common-dir 2>/dev/null)" || return 1
+
+  # Resolve relative path to absolute
+  if [[ "${git_common_dir}" != /* ]]; then
+    git_common_dir="$(cd "${git_common_dir}" && pwd)"
+  fi
+
+  local root="${git_common_dir%/__git__/.git}"
+
+  # Pattern didn't match: not a bare worktree layout
+  [[ "${root}" == "${git_common_dir}" ]] && return 1
+
+  echo "${root}"
+}
+
 # Create symlink to shared __context__ directory in a worktree.
+# Handles branches with slashes (e.g. feature/foo) by computing the correct
+# relative depth from the worktree back to the project root.
 # No-op if __context__ dir doesn't exist or symlink already present.
-# Usage: git::worktree::__link_context__ <worktree_path>
+# Usage: git::worktree::__link_context__ <worktree_path> <project_root>
 function git::worktree::__link_context__ {
-  local worktree_path="$1"
-  local context_dir="${worktree_path%/*}/__context__"
-  local symlink_path="${worktree_path}/__context__"
+  local \
+    worktree_path="$1" \
+    project_root="$2" \
+    symlink_path="$1/__context__" \
+    relative \
+    symlink_target=""
 
   # Skip if no shared context directory exists
-  [[ -d "${context_dir}" ]] || return 0
+  [[ -d "${project_root}/__context__" ]] || return 0
 
   # Skip if symlink already exists
   [[ -L "${symlink_path}" ]] && return 0
 
-  ln -s ../__context__ "${symlink_path}"
+  # Compute relative path: count directory depth of worktree below project root
+  # For "main" → "../__context__", for "feat/bar" → "../../__context__"
+  relative="${worktree_path#"${project_root}/"}"
+  while [[ "${relative}" == */* ]]; do
+    symlink_target="../${symlink_target}"
+    relative="${relative#*/}"
+  done
+  symlink_target="../${symlink_target}__context__"
+
+  ln -s "${symlink_target}" "${symlink_path}"
 }
 
 # Initialize shared __context__ directory and link it into all existing worktrees.
@@ -131,7 +165,7 @@ function git::worktree::init_context {
 
   # Link __context__ into every worktree (skipping the bare __git__ entry)
   while IFS= read -r worktree_path; do
-    git::worktree::__link_context__ "${worktree_path}"
+    git::worktree::__link_context__ "${worktree_path}" "${project_root}"
   done < <("${git_cmd[@]}" worktree list --porcelain | sed -n 's/^worktree //p' | grep -v '/__git__$')
 
   git::logger::info 'Linked __context__ into all worktrees'
@@ -285,14 +319,17 @@ function git::worktree::add {
 
 # Shared setup for worktree add operations.
 # Checks if worktree already exists.
-# Sets worktree_dir and worktree_absolute_path variables in caller's scope.
+# Sets project_root, worktree_dir, and worktree_absolute_path variables in caller's scope.
 # Returns 0 if setup successful and should proceed, 1 if error, 2 if worktree exists.
 function git::worktree::add::setup {
   local branch="$1"
 
   # Set in caller's scope (not local to this function)
-  worktree_dir="../${branch}"
-  worktree_absolute_path="${PWD%/*}/${branch}"
+  # Derive project root from git common dir for bare worktree layouts,
+  # falling back to parent directory for regular clones.
+  project_root="$(git::worktree::__project_root__)" || project_root="${PWD%/*}"
+  worktree_dir="${project_root}/${branch}"
+  worktree_absolute_path="${project_root}/${branch}"
 
   # If a worktree already uses this path, no-op
   if git::exec worktree list --porcelain | grep -q "^worktree ${worktree_absolute_path}$"; then
@@ -310,6 +347,7 @@ function git::worktree::add::existing {
   local \
     branch="$1" \
     default_remote \
+    project_root \
     setup_result \
     worktree_dir \
     worktree_absolute_path
@@ -337,7 +375,7 @@ function git::worktree::add::existing {
     return 1
   fi
 
-  git::worktree::__link_context__ "${worktree_absolute_path}"
+  git::worktree::__link_context__ "${worktree_absolute_path}" "${project_root}"
 
   # Set up branch tracking if remote branch exists
   default_remote="$(git::worktree::default_remote)"
@@ -354,6 +392,7 @@ function git::worktree::add::new {
     branch="$1" \
     start_point="$2" \
     default_remote \
+    project_root \
     setup_result \
     worktree_dir \
     worktree_absolute_path
@@ -404,7 +443,7 @@ function git::worktree::add::new {
     return 1
   fi
 
-  git::worktree::__link_context__ "${worktree_absolute_path}"
+  git::worktree::__link_context__ "${worktree_absolute_path}" "${project_root}"
 }
 
 # Create or attach a feature worktree and cd into it.
@@ -441,7 +480,10 @@ function git::worktree::checkout {
 # Fails if branch doesn't exist.
 # Usage: git::worktree::checkout::existing <branch>
 function git::worktree::checkout::existing {
-  local branch="$1"
+  local \
+    branch="$1" \
+    project_root \
+    worktree_dir
 
   if [[ -z "${branch}" ]]; then
     git::logger::error 'usage: git::worktree::checkout::existing <branch>'
@@ -454,7 +496,8 @@ function git::worktree::checkout::existing {
     return 1
   fi
 
-  local worktree_dir="../${branch}"
+  project_root="$(git::worktree::__project_root__)" || project_root="${PWD%/*}"
+  worktree_dir="${project_root}/${branch}"
 
   if ! git::worktree::add::existing "${branch}"; then
     return 1
@@ -470,14 +513,18 @@ function git::worktree::checkout::existing {
 # Create new branch worktree and cd into it.
 # Usage: git::worktree::checkout::new <branch> [start-point]
 function git::worktree::checkout::new {
-  local branch="$1"
+  local \
+    branch="$1" \
+    project_root \
+    worktree_dir
 
   if [[ -z "${branch}" ]]; then
     git::logger::error 'usage: git::worktree::checkout::new <branch> [start-point]'
     return 1
   fi
 
-  local worktree_dir="../${branch}"
+  project_root="$(git::worktree::__project_root__)" || project_root="${PWD%/*}"
+  worktree_dir="${project_root}/${branch}"
 
   if ! git::worktree::add::new "$@"; then
     return 1
