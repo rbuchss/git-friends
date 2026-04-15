@@ -537,3 +537,220 @@ __mock_rsync_ssh__() {
   assert_success
   assert_stderr --partial 'Found conflicts'
 }
+
+################################################################################
+# git::context::sync remote persistence
+################################################################################
+
+# bats test_tags=git::context::sync
+@test "git::context::sync saves remote spec on first successful run" {
+  __create_bare_worktree_structure
+  __mock_rsync_ssh__
+  cd "${worktree_dir}/${branch}"
+
+  run --separate-stderr git::context::sync --push 'user@host:/remote/proj'
+  assert_success
+  assert_stderr --partial "Saved remote 'user@host:/remote/proj' to sync-context.remote"
+
+  run git --git-dir="${bare_dir}" config sync-context.remote
+  assert_success
+  assert_output 'user@host:/remote/proj'
+}
+
+# bats test_tags=git::context::sync
+@test "git::context::sync uses saved remote when no arg given" {
+  __create_bare_worktree_structure
+  __mock_rsync_ssh__
+  cd "${worktree_dir}/${branch}"
+
+  git --git-dir="${bare_dir}" config sync-context.remote 'saved@host:/saved/path'
+
+  run --separate-stderr git::context::sync
+  assert_success
+  assert_stderr --partial "Using saved remote 'saved@host:/saved/path'"
+
+  run cat "${BATS_TEST_TMPDIR}/rsync_calls"
+  assert_output --partial 'saved@host:/saved/path/__context__/'
+}
+
+# bats test_tags=git::context::sync
+@test "git::context::sync errors when no arg and no saved remote" {
+  __create_bare_worktree_structure
+  cd "${worktree_dir}/${branch}"
+
+  run --separate-stderr git::context::sync
+  assert_failure
+  assert_stderr --partial 'No remote saved'
+  assert_stderr --partial 'usage:'
+}
+
+# bats test_tags=git::context::sync
+@test "git::context::sync arg overrides saved remote and re-saves on success" {
+  __create_bare_worktree_structure
+  __mock_rsync_ssh__
+  cd "${worktree_dir}/${branch}"
+
+  git --git-dir="${bare_dir}" config sync-context.remote 'old@host:/old/path'
+
+  run --separate-stderr git::context::sync --push 'new@host:/new/path'
+  assert_success
+  assert_stderr --partial "Updated saved remote from 'old@host:/old/path' to 'new@host:/new/path'"
+
+  run git --git-dir="${bare_dir}" config sync-context.remote
+  assert_success
+  assert_output 'new@host:/new/path'
+}
+
+# bats test_tags=git::context::sync
+@test "git::context::sync does NOT save when remote root check fails" {
+  __create_bare_worktree_structure
+  cd "${worktree_dir}/${branch}"
+
+  # ssh stub: 'test -d' always returns failure (and no fallback path matches)
+  git::context::__ssh__() { return 1; }
+  export -f git::context::__ssh__
+
+  run --separate-stderr git::context::sync --push 'user@host:/nonexistent'
+  assert_failure
+
+  run git --git-dir="${bare_dir}" config sync-context.remote
+  assert_failure
+}
+
+# bats test_tags=git::context::sync
+@test "git::context::sync does NOT save when push fails" {
+  __create_bare_worktree_structure
+  __mock_rsync_ssh__
+  cd "${worktree_dir}/${branch}"
+
+  # Override rsync to fail (overrides the mock from __mock_rsync_ssh__)
+  git::context::__rsync__() { return 1; }
+  export -f git::context::__rsync__
+
+  run git::context::sync --push 'user@host:/remote/proj'
+  assert_failure
+
+  run git --git-dir="${bare_dir}" config sync-context.remote
+  assert_failure
+}
+
+# bats test_tags=git::context::sync
+@test "git::context::sync --push uses saved remote when no arg given" {
+  __create_bare_worktree_structure
+  __mock_rsync_ssh__
+  cd "${worktree_dir}/${branch}"
+
+  git --git-dir="${bare_dir}" config sync-context.remote 'pushuser@host:/p/path'
+
+  run git::context::sync --push
+  assert_success
+
+  run cat "${BATS_TEST_TMPDIR}/rsync_calls"
+  # --update is the push-mode rsync flag
+  assert_output --partial '--update'
+  assert_output --partial 'pushuser@host:/p/path/__context__/'
+}
+
+################################################################################
+# git::context::sync --set / --unset / --show
+################################################################################
+
+# bats test_tags=git::context::sync
+@test "git::context::sync --set saves spec without syncing" {
+  __create_cloned_repo
+  __mock_rsync_ssh__
+  cd "${repo_dir}"
+
+  run --separate-stderr git::context::sync --set 'me@host:/path'
+  assert_success
+  assert_stderr --partial "Saved remote 'me@host:/path' to sync-context.remote"
+
+  run git --git-dir="${repo_dir}/.git" config sync-context.remote
+  assert_success
+  assert_output 'me@host:/path'
+}
+
+# bats test_tags=git::context::sync
+@test "git::context::sync --set overwrites and logs update" {
+  __create_cloned_repo
+  cd "${repo_dir}"
+
+  git --git-dir="${repo_dir}/.git" config sync-context.remote 'old@host:/old'
+
+  run --separate-stderr git::context::sync --set 'new@host:/new'
+  assert_success
+  assert_stderr --partial "Updated saved remote from 'old@host:/old' to 'new@host:/new'"
+
+  run git --git-dir="${repo_dir}/.git" config sync-context.remote
+  assert_success
+  assert_output 'new@host:/new'
+}
+
+# bats test_tags=git::context::sync
+@test "git::context::sync --set requires a remote spec" {
+  __create_cloned_repo
+  cd "${repo_dir}"
+
+  run --separate-stderr git::context::sync --set
+  assert_failure
+  assert_stderr --partial '--set requires a remote spec'
+}
+
+# bats test_tags=git::context::sync
+@test "git::context::sync --unset clears saved remote" {
+  __create_cloned_repo
+  cd "${repo_dir}"
+
+  git --git-dir="${repo_dir}/.git" config sync-context.remote 'me@host:/path'
+
+  run --separate-stderr git::context::sync --unset
+  assert_success
+  assert_stderr --partial "Unset saved remote 'me@host:/path'"
+
+  run git --git-dir="${repo_dir}/.git" config sync-context.remote
+  assert_failure
+}
+
+# bats test_tags=git::context::sync
+@test "git::context::sync --unset is no-op when nothing saved" {
+  __create_cloned_repo
+  cd "${repo_dir}"
+
+  run --separate-stderr git::context::sync --unset
+  assert_success
+  assert_stderr --partial 'No saved remote to unset'
+}
+
+# bats test_tags=git::context::sync
+@test "git::context::sync --show prints saved remote" {
+  __create_cloned_repo
+  cd "${repo_dir}"
+
+  git --git-dir="${repo_dir}/.git" config sync-context.remote 'me@host:/path'
+
+  run git::context::sync --show
+  assert_success
+  assert_output 'me@host:/path'
+}
+
+# bats test_tags=git::context::sync
+@test "git::context::sync --show returns 1 when nothing saved" {
+  __create_cloned_repo
+  cd "${repo_dir}"
+
+  run git::context::sync --show
+  assert_failure
+  refute_output
+}
+
+# bats test_tags=git::context::sync
+@test "git::context::sync --set is silent when spec is unchanged" {
+  __create_cloned_repo
+  cd "${repo_dir}"
+
+  git --git-dir="${repo_dir}/.git" config sync-context.remote 'me@host:/path'
+
+  run --separate-stderr git::context::sync --set 'me@host:/path'
+  assert_success
+  refute_stderr
+}

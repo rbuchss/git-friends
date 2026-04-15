@@ -3,6 +3,7 @@
 source "${GIT_FRIENDS_MODULE_SRC_DIR:-${BASH_SOURCE[0]%/*}}/__module__.sh"
 source "${GIT_FRIENDS_MODULE_SRC_DIR:-${BASH_SOURCE[0]%/*}}/exec.sh"
 source "${GIT_FRIENDS_MODULE_SRC_DIR:-${BASH_SOURCE[0]%/*}}/logger.sh"
+source "${GIT_FRIENDS_MODULE_SRC_DIR:-${BASH_SOURCE[0]%/*}}/config.sh"
 
 git::__module__::load || return 0
 
@@ -276,14 +277,79 @@ function git::context::merge {
   git::logger::info "Sync complete"
 }
 
+# Read the saved remote spec from git config.
+# Prints the spec on stdout, empty if unset. Always returns 0 so callers
+# can use `var="$(...)"` cleanly without errexit headaches.
+# Usage: git::context::__get_saved_remote__
+function git::context::__get_saved_remote__ {
+  git::config::get 'sync-context.remote' 2>/dev/null || true
+}
+
+# Save the remote spec to git config (local scope = bare repo's config).
+# Usage: git::context::__save_remote__ <spec>
+function git::context::__save_remote__ {
+  local spec="$1"
+  git::exec config 'sync-context.remote' "${spec}"
+}
+
+# Set the saved remote spec with diff-aware logging.
+# - First save: logs "Saved remote ..."
+# - Override: logs "Updated saved remote from ... to ..."
+# - Same as previous: silent (no-op log)
+# Used by both --set and the auto-save-on-success block.
+# Usage: git::context::__set_remote__ <spec>
+function git::context::__set_remote__ {
+  local \
+    spec="$1" \
+    previous
+  previous="$(git::context::__get_saved_remote__)"
+  git::context::__save_remote__ "${spec}"
+  if [[ -z "${previous}" ]]; then
+    git::logger::info "Saved remote '${spec}' to sync-context.remote"
+  elif [[ "${previous}" != "${spec}" ]]; then
+    git::logger::info "Updated saved remote from '${previous}' to '${spec}'"
+  fi
+}
+
+# Clear the saved remote spec. Idempotent: silent-success when nothing saved.
+# Usage: git::context::__unset_remote__
+function git::context::__unset_remote__ {
+  local saved
+  saved="$(git::context::__get_saved_remote__)"
+  if [[ -z "${saved}" ]]; then
+    git::logger::info 'No saved remote to unset'
+    return 0
+  fi
+  git::exec config --unset 'sync-context.remote'
+  git::logger::info "Unset saved remote '${saved}'"
+}
+
+# Print the saved remote spec to stdout.
+# Returns 0 when set, 1 when unset (matches `git config --get` semantics).
+# Usage: git::context::__show_remote__
+function git::context::__show_remote__ {
+  local saved
+  saved="$(git::context::__get_saved_remote__)"
+  if [[ -z "${saved}" ]]; then
+    return 1
+  fi
+  echo "${saved}"
+}
+
 # Sync the __context__ directory with a remote host.
-# Bidirectional by default with conflict prompting.
-# Usage: git::context::sync [--push|--pull] [--color|--no-color] <user@host[:path]>
+# Bidirectional by default with conflict prompting. The remote spec is
+# saved to git config (sync-context.remote) on success and reused when
+# omitted on subsequent invocations.
+# Usage: git::context::sync [--push|--pull] [--color|--no-color] [<user@host[:path]>]
 function git::context::sync {
   local \
     mode='merge' \
     color='auto' \
+    source_was_cli=0 \
+    sync_status=0 \
+    action='' \
     remote_spec \
+    set_spec \
     local_path \
     remote_host \
     remote_path
@@ -294,6 +360,17 @@ function git::context::sync {
       --pull) mode='pull' ;;
       --color) color='always' ;;
       --no-color) color='never' ;;
+      --set)
+        shift
+        if (($# == 0)); then
+          git::logger::error '--set requires a remote spec'
+          return 1
+        fi
+        action='set'
+        set_spec="$1"
+        ;;
+      --unset) action='unset' ;;
+      --show) action='show' ;;
       -*)
         git::logger::error "Unknown option: '$1'"
         return 1
@@ -304,13 +381,39 @@ function git::context::sync {
           return 1
         fi
         remote_spec="$1"
+        source_was_cli=1
         ;;
     esac
     shift
   done
 
+  # Management actions are terminal: short-circuit before sync logic.
+  case "${action}" in
+    set)
+      git::context::__set_remote__ "${set_spec}"
+      return $?
+      ;;
+    unset)
+      git::context::__unset_remote__
+      return $?
+      ;;
+    show)
+      git::context::__show_remote__
+      return $?
+      ;;
+  esac
+
+  # Fall back to saved remote when none given on the CLI
   if [[ -z "${remote_spec}" ]]; then
-    git::logger::error 'usage: git sync-context [--push|--pull] [--color|--no-color] <user@host[:path]>'
+    remote_spec="$(git::context::__get_saved_remote__)"
+    if [[ -n "${remote_spec}" ]]; then
+      git::logger::info "Using saved remote '${remote_spec}'"
+    fi
+  fi
+
+  if [[ -z "${remote_spec}" ]]; then
+    git::logger::error 'usage: git sync-context [--push|--pull] [--color|--no-color] [<user@host[:path]>]'
+    git::logger::error 'No remote saved. Pass one once to set the default.'
     return 1
   fi
 
@@ -346,10 +449,16 @@ function git::context::sync {
   git::logger::info "Syncing context (${mode}) with '${remote_host}'"
 
   case "${mode}" in
-    push) git::context::push "${local_path}" "${remote_host}" "${remote_path}" ;;
-    pull) git::context::pull "${local_path}" "${remote_host}" "${remote_path}" ;;
-    merge) git::context::merge "${local_path}" "${remote_host}" "${remote_path}" "${color}" ;;
+    push) git::context::push "${local_path}" "${remote_host}" "${remote_path}" || sync_status=$? ;;
+    pull) git::context::pull "${local_path}" "${remote_host}" "${remote_path}" || sync_status=$? ;;
+    merge) git::context::merge "${local_path}" "${remote_host}" "${remote_path}" "${color}" || sync_status=$? ;;
   esac
+
+  if ((sync_status == 0)) && ((source_was_cli)); then
+    git::context::__set_remote__ "${remote_spec}"
+  fi
+
+  return "${sync_status}"
 }
 
 function git::context::__export__ {

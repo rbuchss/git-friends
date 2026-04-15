@@ -201,7 +201,7 @@ function git::invoke::__complete__ {
         -*)
           while IFS='' read -r line; do
             COMPREPLY+=("${line}")
-          done < <(compgen -W '--push --pull --color --no-color' -- "${cur}")
+          done < <(compgen -W '--push --pull --color --no-color --set --unset --show' -- "${cur}")
           ;;
         *)
           # Remote host/path: no special completion
