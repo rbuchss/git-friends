@@ -28,6 +28,53 @@ __create_repo_with_merged_branches() {
   git -C "${repo_dir}" merge 'merged-feature'
 }
 
+# Helper to create a repo with a squash-merged branch.
+# The branch's changes are squashed onto the main branch as a single commit, so
+# the branch is patch-equivalent to main but NOT an ancestor of it (git branch
+# --merged does not list it and git branch -d refuses it). Sets repo_dir in the
+# caller's scope and leaves the main branch checked out.
+__create_repo_with_squash_merged_branch() {
+  repo_dir="${BATS_TEST_TMPDIR}/squash-repo"
+
+  git init "${repo_dir}"
+  git -C "${repo_dir}" \
+    -c user.name=test -c user.email=test \
+    commit --allow-empty -m 'initial'
+
+  local main_branch
+  main_branch="$(git -C "${repo_dir}" branch --show-current)"
+
+  git -C "${repo_dir}" checkout -b 'squashed-feature'
+  echo 'feature content' >"${repo_dir}/feature.txt"
+  git -C "${repo_dir}" add feature.txt
+  git -C "${repo_dir}" \
+    -c user.name=test -c user.email=test \
+    commit -m 'feature work'
+
+  git -C "${repo_dir}" checkout "${main_branch}"
+  git -C "${repo_dir}" merge --squash 'squashed-feature'
+  git -C "${repo_dir}" \
+    -c user.name=test -c user.email=test \
+    commit -m 'squashed feature'
+}
+
+# Add a divergent branch carrying real, unmerged work on top of the
+# squash-merged branch. Such a branch must never be detected as squash-merged.
+# Leaves the main branch checked out.
+__add_divergent_branch() {
+  local main_branch
+  main_branch="$(git -C "${repo_dir}" branch --show-current)"
+
+  git -C "${repo_dir}" checkout -b 'divergent-feature' 'squashed-feature'
+  echo 'unmerged work' >>"${repo_dir}/feature.txt"
+  git -C "${repo_dir}" add feature.txt
+  git -C "${repo_dir}" \
+    -c user.name=test -c user.email=test \
+    commit -m 'unmerged work'
+
+  git -C "${repo_dir}" checkout "${main_branch}"
+}
+
 ################################################################################
 # git::prune::branches::usage
 ################################################################################
@@ -112,6 +159,121 @@ __create_repo_with_merged_branches() {
 
   # Branch should be deleted
   ! git branch | grep -q 'merged-feature'
+}
+
+# bats test_tags=git::prune::branches::local
+@test "git::prune::branches::local force-removes squash-merged branches" {
+  local repo_dir
+
+  __create_repo_with_squash_merged_branch
+  cd "${repo_dir}"
+
+  # The branch exists and is not an ancestor of main (safe -d would refuse it).
+  git branch | grep -q 'squashed-feature'
+  ! git branch --merged | grep -q 'squashed-feature'
+
+  run git::prune::branches::local 1
+  assert_success
+
+  # Squash-merged branch should be force-deleted.
+  ! git branch | grep -q 'squashed-feature'
+}
+
+# bats test_tags=git::prune::branches::local
+@test "git::prune::branches::local prompt path keeps squash-merged branch on 'no'" {
+  local repo_dir
+
+  __create_repo_with_squash_merged_branch
+  cd "${repo_dir}"
+
+  # force=0 takes the prompt path; declining must preserve the branch.
+  git::prune::branches::local 0 <<<'n'
+
+  git branch | grep -q 'squashed-feature'
+}
+
+# bats test_tags=git::prune::branches::local
+@test "git::prune::branches::local prompt path removes squash-merged branch on 'yes'" {
+  local repo_dir
+
+  __create_repo_with_squash_merged_branch
+  cd "${repo_dir}"
+
+  # force=0 takes the prompt path; confirming force-deletes the branch.
+  git::prune::branches::local 0 <<<'y'
+
+  ! git branch | grep -q 'squashed-feature'
+}
+
+# bats test_tags=git::prune::branches::local
+@test "git::prune::branches::local preserves divergent branches under force" {
+  local repo_dir
+
+  __create_repo_with_squash_merged_branch
+  __add_divergent_branch
+  cd "${repo_dir}"
+
+  run git::prune::branches::local 1
+  assert_success
+
+  # A divergent branch carrying real unmerged work must survive even under
+  # force (the squash-merged branch's removal is covered separately).
+  git branch | grep -q 'divergent-feature'
+}
+
+# bats test_tags=git::prune::branches::local
+@test "git::prune::branches::local never prunes main branch names" {
+  local repo_dir="${BATS_TEST_TMPDIR}/protected"
+
+  git init -b 'main' "${repo_dir}"
+  git -C "${repo_dir}" \
+    -c user.name=test -c user.email=test \
+    commit --allow-empty -m 'initial'
+
+  # 'master' and 'mainline' are ancestry-merged into 'main' but protected.
+  git -C "${repo_dir}" branch 'master'
+  git -C "${repo_dir}" branch 'mainline'
+  cd "${repo_dir}"
+
+  run git::prune::branches::local 1 'main'
+  assert_success
+
+  git branch | grep -q 'master'
+  git branch | grep -q 'mainline'
+  git branch | grep -q 'main'
+}
+
+################################################################################
+# git::prune::branches::is_squash_merged
+################################################################################
+
+# bats test_tags=git::prune::branches::is_squash_merged
+@test "git::prune::branches::is_squash_merged detects a squash-merged branch" {
+  local repo_dir
+
+  __create_repo_with_squash_merged_branch
+  cd "${repo_dir}"
+
+  local main_branch
+  main_branch="$(git branch --show-current)"
+
+  run git::prune::branches::is_squash_merged "${main_branch}" 'squashed-feature'
+  assert_success
+}
+
+# bats test_tags=git::prune::branches::is_squash_merged
+@test "git::prune::branches::is_squash_merged rejects a divergent branch" {
+  local repo_dir
+
+  __create_repo_with_squash_merged_branch
+  __add_divergent_branch
+  cd "${repo_dir}"
+
+  local main_branch
+  main_branch="$(git branch --show-current)"
+
+  run git::prune::branches::is_squash_merged "${main_branch}" 'divergent-feature'
+  assert_failure
 }
 
 ################################################################################
